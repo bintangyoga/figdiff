@@ -1,0 +1,24 @@
+name: Bug report
+description: Something in figdiff does not work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect, and what happened?
+    validations:
+      required: true
+  - type: input
+    id: figcraft-version
+    attributes:
+      label: FigCraft version
+      placeholder: "0.10.0"
+  - type: input
+    id: figdiff-version
+    attributes:
+      label: figdiff version
+  - type: textarea
+    id: sample
+    attributes:
+      label: Sample files or steps to reproduce
+      description: Attach a small .figcraft pair only if you have the right to share it.

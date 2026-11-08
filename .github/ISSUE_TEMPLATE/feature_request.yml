@@ -1,0 +1,15 @@
+name: Feature or use case
+description: Suggest a feature or describe how you would use figdiff
+labels: [enhancement]
+body:
+  - type: textarea
+    id: usecase
+    attributes:
+      label: Your use case
+      description: How do you use FigCraft and Git today, and what would you want from a design diff?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help?

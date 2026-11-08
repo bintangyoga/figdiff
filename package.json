@@ -1,0 +1,46 @@
+{
+  "name": "figdiff",
+  "version": "0.0.0",
+  "description": "Review FigCraft design changes like code: semantic and visual diffs for .figcraft files.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "figdiff": "dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bintangyoga/figdiff.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bintangyoga/figdiff/issues"
+  },
+  "homepage": "https://github.com/bintangyoga/figdiff#readme",
+  "keywords": [
+    "figcraft",
+    "design",
+    "diff",
+    "github-action",
+    "design-systems"
+  ],
+  "dependencies": {
+    "fflate": "^0.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

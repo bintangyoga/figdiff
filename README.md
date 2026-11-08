@@ -1,0 +1,256 @@
+# figdiff
+
+**Review design changes the way you review code.**
+
+`figdiff` compares two versions of a [FigCraft](https://github.com/storytold/figcraft) design file (`.figcraft`) and explains what changed, both as a readable list of changes and as before/after images.
+
+> **Status: planning (pre-alpha).** Nothing is implemented yet. This README describes the problem, the planned design, and the roadmap. Commands shown below are the intended interface, not working software. Feedback on the plan is very welcome: please open an issue.
+
+> **Not affiliated.** figdiff is an independent community project. It is not made by, endorsed by, or connected to the FigCraft / ArtCraft authors. FigCraft is a trademark of its respective owners.
+
+---
+
+## Table of contents
+
+- [The problem](#the-problem)
+- [The idea](#the-idea)
+- [Planned usage](#planned-usage)
+- [How it will work](#how-it-will-work)
+- [Who is it for](#who-is-it-for)
+- [Roadmap](#roadmap)
+- [Risks and open questions](#risks-and-open-questions)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## The problem
+
+A `.figcraft` file is a zip archive. When it changes in a Git repository, GitHub and `git diff` can only say "binary file changed". A reviewer has no way to tell whether a designer moved one button or rebuilt a whole screen, short of opening the file in FigCraft and comparing by eye.
+
+Code has diffs, pull request comments, and review tools. Design files, stored in the same repositories, have none of that.
+
+## The idea
+
+figdiff gives design files the same review workflow as code:
+
+- **Semantic diff.** A list of changes in plain language, for example:
+  `Frame "Login" › Button "Sign in": fill #2563EB → #1D4ED8`
+- **Visual diff.** Before, after, and highlighted-difference images for every frame that changed.
+- **Automatic pull request comments.** A GitHub Action that posts both of the above on every pull request that touches a design file.
+
+## Planned usage
+
+> These commands are the intended interface and may change.
+
+**Compare two files locally**
+
+```sh
+npx figdiff before.figcraft after.figcraft
+```
+
+```text
+Page "Screens"
+  Frame "Login"
+    ~ Button "Sign in": fill #2563EB → #1D4ED8
+    ~ Card: padding 16 → 24
+    + Text "Forgot password?"
+  Frame "Home"
+    - Banner "Promo"
+
+12 changes in 2 frames
+```
+
+**Generate a shareable report**
+
+```sh
+npx figdiff before.figcraft after.figcraft --html report.html
+```
+
+One self-contained HTML file with before/after images, a slider, and the list of changes. No server needed, so it can be sent by email or chat to a developer or client.
+
+**Compare against another Git branch**
+
+```sh
+npx figdiff design/app.figcraft --against main
+```
+
+**Run on every pull request**
+
+```yaml
+# .github/workflows/design-diff.yml
+name: Design diff
+on: pull_request
+
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: bintangyoga/figdiff@v1
+        with:
+          files: "design/**/*.figcraft"
+```
+
+## How it will work
+
+```text
+before.figcraft ─┐                    ┌─ semantic diff (changes as text/JSON)
+                 ├─► parse + match ──►┤
+after.figcraft  ─┘                    └─ visual diff (render + compare images)
+```
+
+1. **Parser.** Opens the `.figcraft` archive and reads its `document.json` into an internal model. This is the only part that depends on the file format, so it is isolated and versioned.
+2. **Differ.** Matches nodes between the two versions (by id, with fallbacks) and produces a list of added, removed, moved, and modified nodes.
+3. **Renderer.** Uses FigCraft's own headless CLI (`figcraft-cli`) to render the changed frames to images, then compares them pixel by pixel.
+4. **Reporters.** Terminal output, JSON, a self-contained HTML report, and a GitHub pull request comment.
+
+Design principles:
+
+- **Independent.** A separate project. It reads the public file format and uses the public CLI; it does not modify FigCraft.
+- **Local-first.** Runs on your machine or in your CI. No accounts, no servers, no telemetry.
+- **Resilient to format changes.** FigCraft is in alpha and its format may change. The parser is kept separate from the diff logic and tested against files from multiple FigCraft versions.
+- **Useful without Git.** The CLI and HTML report work on any two files.
+
+## Who is it for
+
+- **Developers** who receive design files and want to know what changed since the last version.
+- **Design engineers and designers who use Git**, and want design changes reviewed in pull requests.
+- **Freelancers and agencies** who exchange versions with clients and need a clear "what changed since last time" report.
+
+---
+
+## Roadmap
+
+Estimated timeline: about 18 weeks to v1.0, assuming one maintainer at roughly 10 hours per week. Each phase ends with a usable release, and the next phase starts only after the exit criteria are met.
+
+| Phase | Weeks | Goal | Release |
+| --- | --- | --- | --- |
+| 0 | 1–2 | Research and setup | n/a |
+| 1 | 3–6 | Semantic diff in the CLI | v0.1.0 |
+| 2 | 7–10 | HTML report and visual diff | v0.2.0 |
+| 3 | 11–14 | GitHub Action | v0.3.0 |
+| 4 | 15–18 | Public launch | v1.0.0 |
+| 5 | After v1.0 | Driven by user demand | n/a |
+
+### Phase 0: Research and setup (weeks 1–2)
+
+Confirm that FigCraft's file format and CLI are stable enough to build on, before writing product code.
+
+- [ ] Download sample files from FigCraft's `examples/` folder, unzip them, and study the structure of `document.json`
+- [ ] Document the node schema: id, type, name, parent, position, size, fills, strokes, text, auto layout, components, variables
+- [ ] Verify that node ids stay stable when a file is saved again (critical for matching nodes between versions)
+- [ ] Test `figcraft-cli render`, `export --node`, and `convert` on headless Linux
+- [ ] Check whether `figcraft-cli` is available as a prebuilt binary or must be built with Cargo
+- [ ] Check name availability on npm and GitHub; choose a fallback name if needed
+- [ ] Set up the repository: TypeScript, linting, tests, CI
+
+**Deliverables:** format notes (`docs/format-notes.md`), 5–10 before/after sample file pairs, a working project skeleton.
+
+**Exit criteria:** the `document.json` schema is understood and node ids are proven stable, or a fallback matching strategy is designed.
+
+### Phase 1: Semantic diff in the CLI (weeks 3–6)
+
+Deliver `figdiff a.figcraft b.figcraft` printing a correct list of changes in the terminal. No images yet.
+
+- [ ] Parser for core properties: type, name, hierarchy, position, size, fills, strokes, corner radius, text, font
+- [ ] Node matching by id, with fallback to name and hierarchy path
+- [ ] Detect added, removed, reparented, and modified nodes
+- [ ] Group results by page and top-level frame so output is easy to read
+- [ ] Summary line (for example, "12 changes in 3 frames")
+- [ ] `--json` output for use by other tools
+- [ ] Tests using the sample file pairs from Phase 0
+
+**Release:** `v0.1.0` on npm, usable with `npx figdiff`.
+
+**Exit criteria:** on every sample pair, the list of changes is complete and contains no false changes.
+
+### Phase 2: HTML report and visual diff (weeks 7–10)
+
+Deliver a self-contained HTML report that anyone can open, including designers who do not use Git.
+
+- [ ] Render changed frames from both versions with `figcraft-cli export --node` at 1x and 2x
+- [ ] Pixel comparison with highlighted changed areas
+- [ ] Per-frame views: side by side, swipe slider, and difference overlay
+- [ ] Semantic change list next to the images; clicking a change highlights its location
+- [ ] A single `report.html` with embedded images and no server
+- [ ] Graceful fallback when `figcraft-cli` is unavailable: semantic diff only, with a clear message
+- [ ] `git difftool` integration and `--against <branch>` support
+
+**Release:** `v0.2.0`, with the first demo GIF in this README.
+
+**Exit criteria:** 3–5 people outside the project open the report and understand the changes without extra explanation.
+
+### Phase 3: GitHub Action (weeks 11–14)
+
+Deliver an automatic comment on every pull request that changes a `.figcraft` file, set up with one workflow file.
+
+- [ ] Detect changed `.figcraft` files in a pull request and check out both the base and head versions
+- [ ] Install `figcraft-cli` on the runner, with caching
+- [ ] Pull request comment with a summary, per-frame changes, and before/after images
+- [ ] Host images via workflow artifacts or a dedicated branch (GitHub comments need image URLs)
+- [ ] Update a single comment on each push instead of posting new ones
+- [ ] Configuration options: file patterns, render scale, frame limit, comment language
+- [ ] Public example repository that uses the Action as a live demo
+
+**Release:** `v0.3.0` and a listing on GitHub Marketplace.
+
+**Exit criteria:** the Action runs reliably on the example repository and on at least one real project.
+
+### Phase 4: Public launch (weeks 15–18)
+
+Deliver a project that other people can use and contribute to, then announce it.
+
+- [ ] Support for advanced properties: components and instances, variants, variables and tokens, effects, prototyping, images
+- [ ] Performance testing on large files (thousands of nodes); target a diff in a few seconds
+- [ ] Compatibility table of tested FigCraft versions, updated with each FigCraft release
+- [ ] Documentation: CLI guide, Action guide, contributor guide
+- [ ] `good first issue` labels to welcome contributors
+- [ ] Announcement: FigCraft community, Show HN, Reddit, and design communities
+
+**Release:** `v1.0.0`, with a stable CLI and JSON output format.
+
+### Phase 5: After v1.0
+
+Direction will follow user demand. Candidates:
+
+- **Three-way merge** of design files from different branches, with conflict markers
+- **Token and consistency checks** that warn in a pull request about colors or spacing outside the design system
+- **Other platforms:** GitLab CI, Gitea, Forgejo
+- **MCP server**, so AI agents can ask "what changed in this design?"
+- **Automatic design changelog** generated from Git tags
+- **Upstream collaboration:** open a diff report directly in FigCraft, if the maintainers are interested
+
+---
+
+## Risks and open questions
+
+| Risk | Impact | Mitigation |
+| --- | --- | --- |
+| The `.figcraft` format changes (FigCraft is alpha) | Parser breaks on new FigCraft releases | Isolated parser, compatibility table, tests on files from each version |
+| Node ids are not stable between saves | Diffs full of false changes | Fallback matching by name and path, validated in Phase 0 |
+| `figcraft-cli` is hard to install in CI | Slow or failing GitHub Action | Cache the binary; fall back to semantic diff only |
+| FigCraft adds its own diff feature | Less reason to use figdiff | Focus on review in Git and pull requests; talk to the maintainers early |
+| Small FigCraft user base | Slow adoption | Start from real needs; keep the core model usable for other formats later |
+
+Open questions:
+
+- Is the project name `figdiff` available on npm and GitHub?
+- Does `figcraft-cli` ship as a downloadable binary for Linux, macOS, and Windows?
+- How much of FigCraft's built-in `versions/` and `branches/` data is useful to reuse?
+
+## Contributing
+
+Contributions are welcome, even at this early stage. The most useful things right now:
+
+- Feedback on the plan: open an issue with your use case
+- Sample `.figcraft` file pairs (before/after) that you are allowed to share
+- Notes on the file format, once Phase 0 begins
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+## License
+
+[MIT](LICENSE)
