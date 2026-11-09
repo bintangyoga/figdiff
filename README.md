@@ -261,9 +261,9 @@ Deliver an automatic comment on every pull request that changes a `.figcraft` fi
 Deliver a project that other people can use and contribute to, then announce it.
 
 - [ ] Support for advanced properties: components and instances, variants, variables and tokens, effects, prototyping, images
-- [ ] Performance testing on large files (thousands of nodes); target a diff in a few seconds
-- [ ] Compatibility table of tested FigCraft versions, updated with each FigCraft release
-- [ ] Documentation: CLI guide, Action guide, contributor guide
+- [x] Performance testing on large files (a 10,000-node test runs in CI; see `test/performance.test.ts`)
+- [x] Compatibility table of tested FigCraft versions ([docs/compatibility.md](docs/compatibility.md)); still to update with each FigCraft release
+- [x] Documentation: [CLI guide](docs/cli.md), [Action guide](docs/action.md), [contributor guide](CONTRIBUTING.md)
 - [ ] `good first issue` labels to welcome contributors
 - [ ] Announcement: FigCraft community, Show HN, Reddit, and design communities
 

@@ -1,13 +1,14 @@
 # Contributing to figdiff
 
-Thanks for your interest! figdiff is at the planning stage, so the best contributions right now are ideas, feedback, and sample files rather than code.
+Thanks for your interest! figdiff is in alpha. Code, tests, documentation, ideas and sample files are all welcome.
 
 ## Ways to help today
 
 - **Share your use case.** Open an issue describing how you use FigCraft and Git, and what you would want from a design diff.
 - **Review the roadmap.** If a phase, deliverable, or risk looks wrong, open an issue or a pull request against `README.md`.
 - **Provide sample files.** Before/after pairs of `.figcraft` files help us test. Only share files you have the right to share, and prefer small, simple designs.
-- **Document the format.** Once Phase 0 starts, notes about the structure of `document.json` are very valuable.
+- **Document the format.** Notes about the structure of `document.json` go in `docs/format-notes.md`.
+- **Test with your own files.** Does a design saved twice keep the same node ids? Tell us in an issue.
 
 ## Reporting issues
 
@@ -22,12 +23,23 @@ Please include:
 1. Open an issue first for anything larger than a small fix, so we can agree on the approach.
 2. Keep pull requests focused: one change per pull request.
 3. Write clear commit messages in the imperative mood ("Add parser for fills").
-4. Add or update tests when code changes (once code exists).
+4. Add or update tests when code changes.
 5. Update the README or docs when behavior changes.
 
 ## Code style
 
-Details will be added when the project skeleton lands in Phase 0. The plan is TypeScript, with a linter and formatter enforced in CI.
+TypeScript (ESM, Node 20 or later), strict mode. Keep functions small and pure where you can: `run()` in `src/run.ts` returns what to print and write instead of doing it, which keeps the tests simple.
+
+## Development
+
+```sh
+npm install
+npm run typecheck
+npm test
+npm run build
+```
+
+The layout: `src/parser` reads `.figcraft` files, `src/diff` compares trees, `src/report.ts` and `src/html.ts` format the result, `src/render` talks to `figcraft-cli`, and `src/action` is the GitHub Action. CI runs typecheck, tests and build on Node 20 and 22.
 
 ## Conduct
 
