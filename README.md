@@ -76,7 +76,7 @@ Page "App"
 4 changes in 2 frames (1 removed, 3 property changes)
 ```
 
-Useful flags: `--html report.html` also writes a self-contained HTML report, `--json` prints the summary and every change as JSON, and `--exit-code` exits with 1 when the files differ, so it can fail a CI step.
+Useful flags: `--html report.html` also writes a self-contained HTML report (add `--images` for rendered before/after images), `--json` prints the summary and every change as JSON, and `--exit-code` exits with 1 when the files differ, so it can fail a CI step.
 
 **Generate a shareable report**
 
@@ -84,7 +84,7 @@ Useful flags: `--html report.html` also writes a self-contained HTML report, `--
 npx figdiff before.figcraft after.figcraft --html report.html
 ```
 
-One self-contained HTML file with the list of changes, filters, and light and dark mode. No server needed, so it can be sent by email or chat to a developer or client. Before/after images with a swipe slider are built into the report but are not filled in yet: they need FigCraft's renderer (see Phase 2).
+One self-contained HTML file with the list of changes, filters, and light and dark mode. No server needed, so it can be sent by email or chat to a developer or client. With `--images` (and FigCraft's `figcraft-cli` installed) it also embeds before/after images with a swipe slider and a difference view. This part is experimental: it has been tested with a stand-in for `figcraft-cli` but not yet with the real one.
 
 **Compare against another Git branch**
 
@@ -192,13 +192,15 @@ Deliver `figdiff a.figcraft b.figcraft` printing a correct list of changes in th
 Deliver a self-contained HTML report that anyone can open, including designers who do not use Git.
 
 - [x] Self-contained HTML report of the semantic diff (`--html report.html`), with filters and light/dark mode
-- [x] Before/after swipe slider, ready to receive rendered images
-- [ ] Render changed frames from both versions with `figcraft-cli export --node` at 1x and 2x
-- [ ] Pixel comparison with highlighted changed areas
-- [ ] Per-frame views: side by side, swipe slider, and difference overlay
+- [x] Before/after swipe slider and a difference view with the share of changed pixels
+- [x] Pixel comparison with highlighted changed areas (own PNG decoder, no dependencies; checked against real FigCraft PNGs)
+- [x] A single `report.html` with embedded images and no server
+- [x] Graceful fallback when `figcraft-cli` is unavailable: the report is still written, with a warning
+- [x] Frames that exist in only one version (added or removed) are shown on their own
+- [ ] Verify rendering against a real `figcraft-cli` (implemented from its documentation and tested with a stand-in; the exact `--node` and `--page` behavior is unconfirmed)
+- [ ] Render at 2x as well as 1x
+- [ ] Side-by-side view next to the swipe slider
 - [ ] Semantic change list next to the images; clicking a change highlights its location
-- [ ] A single `report.html` with embedded images and no server
-- [ ] Graceful fallback when `figcraft-cli` is unavailable: semantic diff only, with a clear message
 - [ ] `git difftool` integration and `--against <branch>` support
 
 **Release:** `v0.2.0`, with the first demo GIF in this README.

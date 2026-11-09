@@ -67,6 +67,32 @@ describe("formatHtml", () => {
       expect(html).toContain('src="data:image/png;base64,AAAA"');
     });
 
+    it("shows a difference tab and the share of changed pixels", () => {
+      const html = formatHtml([modified], { images: { [key]: { ...ok, diff: "data:image/png;base64,BBBB", changedRatio: 0.0312 } } });
+      expect(html).toContain('data-view="diff"');
+      expect(html).toContain('src="data:image/png;base64,BBBB"');
+      expect(html).toContain("3.1% of pixels differ");
+    });
+
+    it("describes tiny and empty differences sensibly", () => {
+      const at = (ratio: number) => formatHtml([modified], { images: { [key]: { ...ok, diff: "data:image/png;base64,C", changedRatio: ratio } } });
+      expect(at(0)).toContain("0% of pixels differ");
+      expect(at(0.0002)).toContain("&lt;0.1% of pixels differ");
+      expect(at(0.42)).toContain("42% of pixels differ");
+    });
+
+    it("shows a single image for a frame that exists on one side only", () => {
+      const added = formatHtml([modified], { images: { [key]: { after: ok.before } } });
+      expect(added).toContain("only in the new version");
+      expect(added).not.toContain('class="cmp"');
+      const removed = formatHtml([modified], { images: { [key]: { before: ok.before } } });
+      expect(removed).toContain("only in the old version");
+    });
+
+    it("has no difference tab when no difference image is given", () => {
+      expect(formatHtml([modified], { images: { [key]: ok } })).not.toContain('data-view="diff"');
+    });
+
     it("adds no slider without images", () => {
       expect(formatHtml([modified])).not.toContain('class="cmp"');
     });
@@ -76,7 +102,7 @@ describe("formatHtml", () => {
         images: { [key]: { before: "javascript:alert(1)", after: ok.after } },
       });
       expect(html).not.toContain("javascript:");
-      expect(html).not.toContain('class="cmp"');
+      expect(html).not.toContain('class="cmp"'); // the valid side is shown on its own
     });
   });
 });

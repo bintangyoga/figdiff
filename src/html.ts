@@ -2,10 +2,17 @@ import type { Change } from "./diff/types.js";
 import { summarize } from "./diff/summary.js";
 import { formatSummary, formatValue } from "./report.js";
 
-/** Images for one frame, as `data:image/...` URIs or http(s) URLs. */
+/**
+ * Images for one frame, as `data:image/...` URIs or http(s) URLs.
+ * A frame that exists in only one version (added or removed) has only one side.
+ */
 export interface FrameImages {
-  before: string;
-  after: string;
+  before?: string;
+  after?: string;
+  /** Image highlighting the pixels that differ. */
+  diff?: string;
+  /** Share of pixels that differ, from 0 to 1. */
+  changedRatio?: number;
 }
 
 export interface HtmlOptions {
@@ -80,16 +87,40 @@ function row(c: Change, label: string): string {
   );
 }
 
+function percent(ratio: number): string {
+  const p = ratio * 100;
+  if (p === 0) return "0%";
+  return p < 0.1 ? "<0.1%" : `${p < 10 ? p.toFixed(1) : Math.round(p)}%`;
+}
+
 function compare(images: FrameImages | undefined): string {
-  const before = images && safeImageSrc(images.before);
-  const after = images && safeImageSrc(images.after);
-  if (!before || !after) return "";
+  if (!images) return "";
+  const before = images.before && safeImageSrc(images.before);
+  const after = images.after && safeImageSrc(images.after);
+  const diff = images.diff && safeImageSrc(images.diff);
+
+  if (before && after) {
+    const tabs = diff
+      ? `<div class="tabs"><button type="button" data-view="swipe" aria-pressed="true">Swipe</button>` +
+        `<button type="button" data-view="diff" aria-pressed="false">Difference</button>` +
+        (images.changedRatio !== undefined ? `<span class="ratio">${escapeHtml(percent(images.changedRatio))} of pixels differ</span>` : "") +
+        `</div>`
+      : "";
+    return (
+      `<div class="cmp" style="--pos:50%">${tabs}` +
+      `<div class="stack"><img class="b" alt="Before" src="${escapeHtml(before)}">` +
+      `<img class="a" alt="After" src="${escapeHtml(after)}"></div>` +
+      (diff ? `<img class="diffimg" alt="Differences highlighted" src="${escapeHtml(diff)}" hidden>` : "") +
+      `<input type="range" min="0" max="100" value="50" aria-label="Slide between before and after">` +
+      `<div class="cap"><span>Before</span><span>After</span></div></div>`
+    );
+  }
+
+  const only = after ?? before;
+  if (!only) return "";
   return (
-    `<div class="cmp" style="--pos:50%">` +
-    `<div class="stack"><img class="b" alt="Before" src="${escapeHtml(before)}">` +
-    `<img class="a" alt="After" src="${escapeHtml(after)}"></div>` +
-    `<input type="range" min="0" max="100" value="50" aria-label="Slide between before and after">` +
-    `<div class="cap"><span>Before</span><span>After</span></div></div>`
+    `<figure class="single"><img alt="${after ? "After" : "Before"}" src="${escapeHtml(only)}">` +
+    `<figcaption>${after ? "Added: only in the new version" : "Removed: only in the old version"}</figcaption></figure>`
   );
 }
 
@@ -131,6 +162,15 @@ code{font:12.5px ui-monospace,SFMono-Regular,Menlo,monospace}
 .stack img.a{position:absolute;inset:0;clip-path:inset(0 0 0 var(--pos))}
 .cmp input{width:100%;margin:6px 0 0}
 .cap{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}
+.tabs{display:flex;align-items:center;gap:6px;margin:0 0 6px}
+.tabs button{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:6px;padding:2px 10px;cursor:pointer}
+.tabs button[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.tabs .ratio{margin-left:auto;color:var(--muted);font-size:12px}
+.diffimg{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:8px}
+.diffimg[hidden],.cmp.showdiff input,.cmp.showdiff .cap,.cmp.showdiff .stack{display:none}
+figure.single{margin:4px 0 12px}
+figure.single img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+figure.single figcaption{color:var(--muted);font-size:12px;margin-top:4px}
 footer{margin-top:40px;color:var(--muted);font-size:12px}
 `;
 
@@ -146,6 +186,15 @@ document.querySelectorAll('.filters button').forEach(function(btn){
 document.querySelectorAll('.cmp').forEach(function(c){
   var r=c.querySelector('input');
   r.addEventListener('input',function(){c.style.setProperty('--pos',r.value+'%');});
+
+  c.querySelectorAll('.tabs button').forEach(function(t){
+    t.addEventListener('click',function(){
+      var diff=t.getAttribute('data-view')==='diff';
+      c.classList.toggle('showdiff',diff);
+      c.querySelector('.diffimg').hidden=!diff;
+      c.querySelectorAll('.tabs button').forEach(function(o){o.setAttribute('aria-pressed',String(o===t));});
+    });
+  });
 });
 `;
 

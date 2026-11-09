@@ -4,6 +4,10 @@ import { join } from "node:path";
 import { strToU8, zipSync } from "fflate";
 import { beforeAll, describe, expect, it } from "vitest";
 import { run } from "../src/run.js";
+import type { RunDeps } from "../src/run.js";
+import { RendererUnavailableError } from "../src/render/figcraft-cli.js";
+import { encodePng } from "../src/render/png.js";
+import { solid } from "./helpers.js";
 
 type Raw = Record<string, unknown>;
 
@@ -88,6 +92,62 @@ describe("run", () => {
   it("requires a path after --html", () => {
     expect(run([a, b, "--html"]).stderr).toContain("--html needs a file path");
     expect(run([a, b, "--html", "--json"]).code).toBe(2);
+  });
+
+  describe("--images", () => {
+    const red = encodePng(solid(4, 4, [255, 0, 0, 255]));
+    const blue = encodePng(solid(4, 4, [0, 0, 255, 255]));
+    const withRenderer = (renderFrame: (file: string) => Uint8Array | undefined): RunDeps => ({
+      createRenderer: () => ({ renderFrame: (file) => renderFrame(file) }),
+    });
+    const html = join(dir, "out", "images.html");
+
+    it("needs --html", () => {
+      expect(run([a, b, "--images"]).stderr).toContain("--images needs --html");
+    });
+
+    it("only accepts --figcraft-cli together with --images", () => {
+      expect(run([a, b, "--html", html, "--figcraft-cli", "/x"]).stderr).toContain("--figcraft-cli needs --images");
+    });
+
+    it("embeds rendered before/after images and a difference view", () => {
+      const r = run([a, b, "--html", html, "--images"], withRenderer((file) => (file === a ? red : blue)));
+      expect(r.code).toBe(0);
+      const page = r.writes[0]?.content ?? "";
+      expect(page).toContain('class="cmp"');
+      expect(page).toContain("data:image/png;base64,");
+      expect(page).toContain("of pixels differ");
+    });
+
+    it("passes --figcraft-cli through to the renderer lookup", () => {
+      let asked: string | undefined;
+      run([a, b, "--html", html, "--images", "--figcraft-cli", "/opt/fc"], {
+        createRenderer: (path) => { asked = path; return undefined; },
+      });
+      expect(asked).toBe("/opt/fc");
+    });
+
+    it("still writes the report, with a warning, when figcraft-cli is not found", () => {
+      const r = run([a, b, "--html", html, "--images"], { createRenderer: () => undefined });
+      expect(r.code).toBe(0);
+      expect(r.stderr).toContain("figcraft-cli not found");
+      expect(r.writes[0]?.content).not.toContain('class="cmp"');
+    });
+
+    it("still writes the report when running figcraft-cli fails", () => {
+      const r = run([a, b, "--html", html, "--images"], {
+        createRenderer: () => ({ renderFrame: () => { throw new RendererUnavailableError("Cannot run fc"); } }),
+      });
+      expect(r.code).toBe(0);
+      expect(r.stderr).toContain("Cannot run fc");
+      expect(r.writes).toHaveLength(1);
+    });
+
+    it("does not look for figcraft-cli unless asked", () => {
+      let called = false;
+      run([a, b, "--html", html], { createRenderer: () => { called = true; return undefined; } });
+      expect(called).toBe(false);
+    });
   });
 
   it("shows usage for wrong arguments and unknown options", () => {
