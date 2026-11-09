@@ -33,7 +33,20 @@ Nodes are matched by id. A node can be reported as:
 
 Renaming a layer counts as a property change (`name`). Numbers are rounded to four decimals, so floating point noise is ignored. Colors are printed as hex.
 
-Not compared yet: variables, styles, comments, and the contents of `images/`.
+Variables, styles and variable collections are compared too, matched by id (see below). Not compared yet: comments and the contents of `images/`.
+
+## Variables and styles
+
+Variables (per mode, for example Light and Dark), variable collections and styles are listed in their own section after the node changes:
+
+```text
+Variables and styles
+  ~ Variable "color/bg": value Light #F4F6F8 → #FFFFFF
+  + Variable "space/s" (Theme, float)
+  ~ Style "Pine/50": name Pine/50 → Pine/500
+```
+
+They count in the summary as "token changes". In `--json` they are in a separate `tokens` array, and `summary.tokenChanges` appears when there are any.
 
 ## Text output
 
@@ -64,7 +77,9 @@ Symbols: `+` added, `-` removed, `~` modified, `>` moved, `↕` reordered.
 }
 ```
 
-`kind` is one of `added`, `removed`, `moved` (with `fromTrail`), `modified` (with `props`) or `reordered`. The format is not frozen until 1.0.
+Each entry of `tokens` has `kind` (`added`, `removed` or `modified`), `entity` (`variable`, `style` or `collection`), `id`, `name`, and `detail` or `props`.
+
+`kind` of a node change is one of `added`, `removed`, `moved` (with `fromTrail`), `modified` (with `props`) or `reordered`. The format is not frozen until 1.0.
 
 ## Recipes
 

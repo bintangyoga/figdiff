@@ -23,8 +23,9 @@ A `.figcraft` file is a zip archive containing:
 | `nodes` | object | **Flat** map from id (as a string key) to node. |
 | `next_id` | number | Counter for the next new node id. |
 | `current_page` | number | Page that was open when saved. |
-| `variables` | object | Variable collections and modes (for example "Theme": Light/Dark). |
-| `styles`, `document_colors`, `comments`, `imageIndex` | arrays | Not yet diffed. |
+| `variables` | object | `{collections, variables}`: collections with modes (for example "Theme": Light/Dark), and variables with a value per mode. Compared (as tokens). |
+| `styles` | array | Compared (as tokens). |
+| `document_colors`, `comments`, `imageIndex` | arrays | Not yet diffed. |
 
 ## Nodes
 

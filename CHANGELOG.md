@@ -4,6 +4,11 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+### Added
+
+- Variables, variable collections and styles are compared (matched by id; variable values per mode name). They appear in a "Variables and styles" section in the text and HTML output, in a new `tokens` array in `--json`, and as "token changes" in the summary. `--exit-code` counts them.
+- Performance test with a 10,000-node document; guides for the CLI and the Action; compatibility table.
+
 ## [0.1.0-alpha.5] - 2026-11-10
 
 ### Added
