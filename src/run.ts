@@ -33,21 +33,21 @@ export function run(argv: string[]): RunResult {
 
   const unknown = [...flags].filter((f) => !KNOWN_FLAGS.has(f));
   if (unknown.length > 0) {
-    return { code: 2, stdout: "", stderr: `figdiff: unknown option ${unknown.join(", ")}\\n\\n${USAGE}` };
+    return { code: 2, stdout: "", stderr: `figdiff: unknown option ${unknown.join(", ")}\n\n${USAGE}` };
   }
   if (files.length !== 2) {
-    return { code: 2, stdout: "", stderr: `figdiff: expected two files\\n\\n${USAGE}` };
+    return { code: 2, stdout: "", stderr: `figdiff: expected two files\n\n${USAGE}` };
   }
 
   try {
     const [beforePath, afterPath] = files as [string, string];
     const changes = diffTrees(parseFigcraft(beforePath), parseFigcraft(afterPath));
     const stdout = flags.has("--json")
-      ? JSON.stringify({ summary: summarize(changes), changes }, null, 2) + "\\n"
+      ? JSON.stringify({ summary: summarize(changes), changes }, null, 2) + "\n"
       : formatText(changes);
     const code = flags.has("--exit-code") && changes.length > 0 ? 1 : 0;
     return { code, stdout, stderr: "" };
   } catch (err) {
-    return { code: 2, stdout: "", stderr: `figdiff: ${err instanceof Error ? err.message : String(err)}\\n` };
+    return { code: 2, stdout: "", stderr: `figdiff: ${err instanceof Error ? err.message : String(err)}\n` };
   }
 }
