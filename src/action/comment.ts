@@ -19,6 +19,31 @@ export interface FileResult {
   error?: string;
   /** Name of the HTML report written for this file, if any. */
   reportName?: string;
+  /** Hosted images for changed frames. */
+  frames?: FrameLinks[];
+}
+
+export interface FrameLinks {
+  name: string;
+  before?: string;
+  after?: string;
+  diff?: string;
+  changedRatio?: number;
+}
+
+const escapeHtml = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+function img(url: string | undefined, alt: string): string {
+  return url ? `<img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}" width="220">` : "<i>none</i>";
+}
+
+/** One table row per frame: before, after and the highlighted difference. */
+function frameTable(frames: FrameLinks[]): string {
+  const rows = frames.map((f) => {
+    const pct = f.changedRatio === undefined ? "" : f.changedRatio < 0.001 ? "<br><sub>&lt;0.1% changed</sub>" : `<br><sub>${(f.changedRatio * 100).toFixed(1)}% changed</sub>`;
+    return `<tr><td colspan="3"><b>${escapeHtml(f.name)}</b>${pct}</td></tr>\n<tr><td>${img(f.before, "before")}</td><td>${img(f.after, "after")}</td><td>${img(f.diff, "difference")}</td></tr>`;
+  });
+  return `<table>\n<tr><th>Before</th><th>After</th><th>Difference</th></tr>\n${rows.join("\n")}\n</table>`;
 }
 
 export interface CommentContext {
@@ -76,7 +101,8 @@ function section(r: FileResult): string {
   const details = r.text
     ? `\n\n<details><summary>Show changes</summary>\n\n${block(truncate(r.text, MAX_FILE_TEXT))}\n\n</details>`
     : "";
-  return `**${name}**${renamed}: ${formatSummary(r.summary)}${details}`;
+  const images = r.frames && r.frames.length > 0 ? `\n\n${frameTable(r.frames)}` : "";
+  return `**${name}**${renamed}: ${formatSummary(r.summary)}${images}${details}`;
 }
 
 /** The pull request comment for a set of compared files. */

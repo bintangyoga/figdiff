@@ -4,8 +4,10 @@ import { basename, join } from "node:path";
 import type { Change, Summary } from "../diff/types.js";
 import { formatText } from "../report.js";
 import { run as runFigdiff } from "../run.js";
+import { assetUrl, commitFiles, decodePngDataUri, type AssetFile } from "./assets.js";
+import type { FrameImages } from "../html.js";
 import { filterByPatterns, parseNameStatus, type ChangedFile } from "./changed-files.js";
-import { buildComment, buildEmptyComment, isSubstantive, type FileResult } from "./comment.js";
+import { buildComment, buildEmptyComment, isSubstantive, type FileResult, type FrameLinks } from "./comment.js";
 import { parsePatterns } from "./glob.js";
 import { findComment, GitHubError, upsertComment, type GitHubApi } from "./github.js";
 
@@ -42,13 +44,15 @@ function input(env: Env, name: string, fallback: string): string {
   return v !== undefined && v.trim() !== "" ? v.trim() : fallback;
 }
 
+type RawResult = FileResult & { raw?: Record<string, FrameImages> };
+
 interface PullEvent {
   number?: number;
   pull_request?: { number: number; base: { sha: string }; head: { sha: string } };
 }
 
 /** Compare one modified file with its version at the base commit. */
-function compareFile(file: ChangedFile, root: string, base: string, reportDir: string, deps: ActionDeps, log: string[], images = false, scale = ""): FileResult {
+function compareFile(file: ChangedFile, root: string, base: string, reportDir: string, deps: ActionDeps, log: string[], images = false, scale = ""): RawResult {
   const reportName = `${file.path.replace(/[^A-Za-z0-9._-]+/g, "_")}.html`;
   const extra = images ? ["--images", ...(scale ? ["--scale", scale] : [])] : [];
   const result = deps.run([join(root, file.path), "--against", base, "--json", "--html", join(reportDir, reportName), ...extra]);
@@ -62,7 +66,48 @@ function compareFile(file: ChangedFile, root: string, base: string, reportDir: s
     deps.writeText(w.path, w.content);
   }
   const parsed = JSON.parse(result.stdout) as { summary: Summary; changes: Change[] };
-  return { file, summary: parsed.summary, text: formatText(parsed.changes), reportName };
+  return { file, summary: parsed.summary, text: formatText(parsed.changes), reportName, raw: result.frameImages };
+}
+
+/** Upload rendered frame images to a branch of the repository and link them from the comment. */
+async function hostFrameImages(
+  api: GitHubApi,
+  repo: string,
+  pr: NonNullable<PullEvent["pull_request"]>,
+  results: RawResult[],
+  env: Env,
+  log: string[],
+): Promise<void> {
+  const branch = input(env, "assets-branch", "figdiff-assets");
+  const serverUrl = env.GITHUB_SERVER_URL ?? "https://github.com";
+  const dir = `pr-${pr.number}/${pr.head.sha.slice(0, 8)}`;
+  const files: AssetFile[] = [];
+  results.forEach((r, i) => {
+    if (!r.raw) return;
+    const frames: FrameLinks[] = [];
+    Object.entries(r.raw).forEach(([key, img], j) => {
+      const [page, frame] = key.split("\u0000");
+      const link: FrameLinks = { name: `${page ?? ""} › ${frame ?? ""}`, changedRatio: img.changedRatio };
+      for (const kind of ["before", "after", "diff"] as const) {
+        const bytes = decodePngDataUri(img[kind]);
+        if (!bytes) continue;
+        const path = `${dir}/f${i}-${j}-${kind}.png`;
+        files.push({ path, bytes });
+        link[kind] = assetUrl(serverUrl, repo, branch, path);
+      }
+      frames.push(link);
+    });
+    r.frames = frames;
+  });
+  if (files.length === 0) return;
+  try {
+    await commitFiles(api, repo, branch, files, `figdiff images for #${pr.number} at ${pr.head.sha.slice(0, 8)}`);
+    log.push(`figdiff: ${files.length} image(s) saved to branch ${branch}.`);
+  } catch (err) {
+    for (const r of results) r.frames = undefined;
+    const reason = err instanceof GitHubError && err.status === 403 ? "the token cannot write to the repository (needs contents: write)" : err instanceof Error ? err.message : String(err);
+    log.push(`figdiff: images were not added to the comment: ${reason}.`);
+  }
 }
 
 /** The entry point of the GitHub Action. Everything it needs comes in through `env` and `deps`. */
@@ -102,13 +147,15 @@ export async function runAction(env: Env, overrides: Partial<ActionDeps> = {}): 
   const files = filterByPatterns(listed, patterns);
   log.push(`figdiff: ${files.length} design file(s) changed in this pull request.`);
 
-  const results: FileResult[] = [];
+  const results: RawResult[] = [];
   for (const file of files.slice(0, maxFiles)) {
     results.push(file.status === "modified" ? compareFile(file, root, pr.base.sha, reportDir, deps, log, withImages, scale) : { file });
   }
   if (files.length > maxFiles) log.push(`figdiff: only the first ${maxFiles} files were compared (max-files).`);
   const changed = results.filter(isSubstantive);
   for (const r of results) log.push(`figdiff: ${r.file.path}: ${r.error ?? r.summary?.changes ?? r.file.status}`);
+
+  const hostImages = withImages && input(env, "host-images", "false") === "true";
 
   if (!wantComment) return done(0, { comment: "skipped", changed: changed.length });
 
@@ -120,6 +167,7 @@ export async function runAction(env: Env, overrides: Partial<ActionDeps> = {}): 
   }
   const api: GitHubApi = { fetch: deps.fetch, baseUrl: env.GITHUB_API_URL ?? "https://api.github.com", token };
   try {
+    if (hostImages) await hostFrameImages(api, repo, pr, changed, env, log);
     const existing = await findComment(api, repo, pr.number);
     if (changed.length === 0 && existing === undefined) {
       log.push("figdiff: no design changes and no earlier comment; staying quiet.");

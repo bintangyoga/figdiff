@@ -136,11 +136,13 @@ jobs:
 | `upload-reports` | `true` | Upload the HTML reports as the artifact `figdiff-reports` |
 | `images` | `false` | Experimental: download `figcraft-cli` from the latest FigCraft release and add before/after images to the HTML reports (in the artifact, not in the comment) |
 | `scale` | `1` | Render scale for those images, 0.25 to 4 |
+| `host-images` | `false` | With `images`: show the images in the comment too, by saving them to a branch of the same repository. Needs `contents: write`. Anyone who can read the repository can see them |
+| `assets-branch` | `figdiff-assets` | Branch that holds those images |
 | `report-dir` | `figdiff-reports` | Where the reports are written |
 | `version` | `latest` | Version of the `figdiff` npm package to use |
 | `token` | `github.token` | Token used to comment |
 
-Pull requests from forks get a read-only token, so no comment is posted; the changes are printed in the job log instead. Images are not shown in the comment itself yet: GitHub comments need image URLs (see Phase 3).
+Pull requests from forks get a read-only token, so no comment is posted; the changes are printed in the job log instead. Images appear in the comment only with `images: true` and `host-images: true`, which also needs `contents: write` in the workflow permissions. They are saved on the `figdiff-assets` branch, so the repository will hold a copy of every rendered frame. Without it they are only in the HTML report.
 
 ## How it will work
 
@@ -244,7 +246,7 @@ Deliver an automatic comment on every pull request that changes a `.figcraft` fi
 
 - [x] Detect changed `.figcraft` files in a pull request and compare each with its base version
 - [x] Install `figcraft-cli` on the runner (`images: true`; downloaded from the FigCraft release and working in the demo repository; no caching yet)
-- [x] Pull request comment with a summary and per-frame changes (before/after images still to do)
+- [x] Pull request comment with a summary and per-frame changes (before/after images with `host-images`; not yet looked at by a human)
 - [ ] Host images via workflow artifacts or a dedicated branch (GitHub comments need image URLs)
 - [x] Update a single comment on each push instead of posting new ones
 - [x] Configuration options: file patterns, file limit, report folder and render scale (comment language still to do)

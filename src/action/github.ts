@@ -17,7 +17,7 @@ export interface GitHubApi {
   token: string;
 }
 
-async function request<T>(api: GitHubApi, method: string, path: string, body?: unknown): Promise<T> {
+export async function request<T>(api: GitHubApi, method: string, path: string, body?: unknown): Promise<T> {
   const res = await api.fetch(`${api.baseUrl}${path}`, {
     method,
     headers: {

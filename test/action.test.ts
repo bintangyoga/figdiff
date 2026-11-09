@@ -165,6 +165,58 @@ describe("runAction with a real git repository", () => {
     expect(r.log.join("\n")).toContain("figcraft-cli not found");
   });
 
+  it("saves frame images to a branch and links them in the comment", async () => {
+    const png = `data:image/png;base64,${Buffer.from([1, 2, 3]).toString("base64")}`;
+    const fakeRun = ((argv: string[]) => ({
+      code: 0,
+      stdout: JSON.stringify({ summary: { changes: 1, frames: 1, added: 0, removed: 0, moved: 0, reordered: 0, modifiedNodes: 1, propertyChanges: 1 }, changes: [] }),
+      stderr: "",
+      writes: [],
+      frameImages: { "Page\u0000Frame": { before: png, after: png, diff: png, changedRatio: 0.5 } },
+      argv,
+    })) as unknown as typeof import("../src/run.js").run;
+    const calls: { method: string; url: string; body?: string }[] = [];
+    const f = (async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? "GET";
+      calls.push({ method, url, body: init?.body as string | undefined });
+      const json = (v: unknown, status = 200) => new Response(JSON.stringify(v), { status });
+      if (url.includes("/git/ref/")) return json({ message: "Not Found" }, 404);
+      if (method === "GET") return json([]);
+      return json({ sha: "s" }, 201);
+    }) as unknown as typeof fetch;
+    const r = await runAction({ ...env(), INPUT_IMAGES: "true", INPUT_HOST_IMAGES: "true" }, { run: fakeRun, fetch: f });
+    expect(r.code).toBe(0);
+    expect(calls.filter((c) => c.url.endsWith("/git/blobs")).length).toBe(3);
+    const post = calls.find((c) => c.url.endsWith("/issues/7/comments") && c.method === "POST");
+    const body = JSON.parse(post?.body ?? "{}").body as string;
+    expect(body).toContain("/o/r/blob/figdiff-assets/pr-7/");
+    expect(body).toContain("50.0% changed");
+  });
+
+  it("still comments, without images, when the token cannot write to the repository", async () => {
+    const png = `data:image/png;base64,${Buffer.from([1]).toString("base64")}`;
+    const fakeRun = (() => ({
+      code: 0,
+      stdout: JSON.stringify({ summary: { changes: 1, frames: 1, added: 0, removed: 0, moved: 0, reordered: 0, modifiedNodes: 1, propertyChanges: 1 }, changes: [] }),
+      stderr: "",
+      writes: [],
+      frameImages: { "P\u0000F": { before: png } },
+    })) as unknown as typeof import("../src/run.js").run;
+    const posted: string[] = [];
+    const f = (async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? "GET";
+      if (url.includes("/git/ref/")) return new Response(JSON.stringify({ message: "forbidden" }), { status: 403 });
+      if (method === "GET") return new Response("[]");
+      if (url.endsWith("/issues/7/comments")) posted.push(init?.body as string);
+      return new Response(JSON.stringify({ sha: "s" }), { status: 201 });
+    }) as unknown as typeof fetch;
+    const r = await runAction({ ...env(), INPUT_IMAGES: "true", INPUT_HOST_IMAGES: "true" }, { run: fakeRun, fetch: f });
+    expect(r.code).toBe(0);
+    expect(r.log.join("\n")).toContain("contents: write");
+    expect(posted.length).toBe(1);
+    expect(posted[0]).not.toContain("<img");
+  });
+
   it("does not pass image options by default", async () => {
     const seen: string[][] = [];
     const fakeRun = ((argv: string[]) => {

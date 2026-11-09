@@ -27,6 +27,12 @@ inputs:
   scale:
     description: Render scale for the images, from 0.25 to 4.
     default: "1"
+  host-images:
+    description: "With images: also show them in the comment by saving them to a branch of this repository. Needs contents: write permission. Anyone who can read the repository can see the images."
+    default: "false"
+  assets-branch:
+    description: Branch that holds the saved images.
+    default: figdiff-assets
   report-dir:
     description: Folder, relative to the workspace, where the HTML reports are written.
     default: figdiff-reports
@@ -66,6 +72,8 @@ runs:
         INPUT_UPLOAD_REPORTS: ${{ inputs.upload-reports }}
         INPUT_REPORT_DIR: ${{ inputs.report-dir }}
         INPUT_IMAGES: ${{ inputs.images }}
+        INPUT_HOST_IMAGES: ${{ inputs.host-images }}
+        INPUT_ASSETS_BRANCH: ${{ inputs.assets-branch }}
         INPUT_SCALE: ${{ inputs.scale }}
         GITHUB_TOKEN: ${{ inputs.token }}
         FIGDIFF_VERSION: ${{ inputs.version }}

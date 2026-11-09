@@ -43,6 +43,8 @@ export interface RunResult {
   stderr: string;
   /** Files the caller should write (the CLI entry point does this). */
   writes: FileWrite[];
+  /** Rendered images per frame (data URIs), when `--images` produced any. */
+  frameImages?: Record<string, FrameImages>;
 }
 
 /** Things run() needs from the outside world; replaced in tests. */
@@ -138,8 +140,8 @@ export function run(argv: string[], overrides: Partial<RunDeps> = {}): RunResult
 
     const notes: string[] = [];
     const writes: FileWrite[] = [];
+    let images: Record<string, FrameImages> | undefined;
     if (htmlPath) {
-      let images: Record<string, FrameImages> | undefined;
       if (flags.has("--images")) {
         const renderer = deps.createRenderer(values.get("--figcraft-cli"));
         if (!renderer) {
@@ -163,7 +165,7 @@ export function run(argv: string[], overrides: Partial<RunDeps> = {}): RunResult
     }
 
     const code = flags.has("--exit-code") && changes.length > 0 ? 1 : 0;
-    return { code, stdout, stderr: notes.map((n) => `figdiff: ${n}\n`).join(""), writes };
+    return { code, stdout, stderr: notes.map((n) => `figdiff: ${n}\n`).join(""), writes, ...(images ? { frameImages: images } : {}) };
   } catch (err) {
     return fail(err instanceof Error ? err.message : String(err), false);
   } finally {
