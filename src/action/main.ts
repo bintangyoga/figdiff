@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
-import type { Change, Summary } from "../diff/types.js";
+import type { Change, Summary, TokenChange } from "../diff/types.js";
 import { formatText } from "../report.js";
 import { run as runFigdiff } from "../run.js";
 import { assetUrl, commitFiles, decodePngDataUri, type AssetFile } from "./assets.js";
@@ -65,8 +65,8 @@ function compareFile(file: ChangedFile, root: string, base: string, reportDir: s
     deps.mkdirp(reportDir);
     deps.writeText(w.path, w.content);
   }
-  const parsed = JSON.parse(result.stdout) as { summary: Summary; changes: Change[] };
-  return { file, summary: parsed.summary, text: formatText(parsed.changes), reportName, raw: result.frameImages };
+  const parsed = JSON.parse(result.stdout) as { summary: Summary; changes: Change[]; tokens?: TokenChange[] };
+  return { file, summary: parsed.summary, text: formatText(parsed.changes, parsed.tokens ?? []), reportName, raw: result.frameImages };
 }
 
 /** Upload rendered frame images to a branch of the repository and link them from the comment. */

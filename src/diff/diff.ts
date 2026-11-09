@@ -23,7 +23,7 @@ function sameValue(a: unknown, b: unknown): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
-function diffProps(a: Record<string, unknown>, b: Record<string, unknown>): PropChange[] {
+export function diffProps(a: Record<string, unknown>, b: Record<string, unknown>): PropChange[] {
   const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
   const changes: PropChange[] = [];
   for (const prop of [...keys].sort()) {

@@ -1,4 +1,4 @@
-import type { Change, Summary } from "./diff/types.js";
+import type { Change, Summary, TokenChange } from "./diff/types.js";
 import { summarize } from "./diff/summary.js";
 
 type Raw = Record<string, unknown>;
@@ -55,6 +55,7 @@ export function formatSummary(s: Summary): string {
   if (s.moved) parts.push(`${s.moved} moved`);
   if (s.reordered) parts.push(`${s.reordered} reordered`);
   if (s.propertyChanges) parts.push(plural(s.propertyChanges, "property change"));
+  if (s.tokenChanges) parts.push(plural(s.tokenChanges, "token change"));
   const where = s.frames > 0 ? ` in ${plural(s.frames, "frame")}` : "";
   return `${plural(s.changes, "change")}${where} (${parts.join(", ")})`;
 }
@@ -75,8 +76,23 @@ function describe(c: Change, label: string): string[] {
 }
 
 /** Human-readable report, grouped by page and top-level frame. */
-export function formatText(changes: Change[]): string {
-  if (changes.length === 0) return "No changes.\n";
+const ENTITY_LABEL = { variable: "Variable", style: "Style", collection: "Collection" } as const;
+
+/** Text lines for one variable, style or collection change. */
+export function describeToken(c: TokenChange): string[] {
+  const label = `${ENTITY_LABEL[c.entity]} "${c.name}"`;
+  switch (c.kind) {
+    case "added":
+      return [`+ ${label}${c.detail ? ` (${c.detail})` : ""}`];
+    case "removed":
+      return [`- ${label}${c.detail ? ` (${c.detail})` : ""}`];
+    case "modified":
+      return c.props.map((p) => `~ ${label}: ${p.prop} ${formatValue(p.from)} → ${formatValue(p.to)}`);
+  }
+}
+
+export function formatText(changes: Change[], tokens: TokenChange[] = []): string {
+  if (changes.length === 0 && tokens.length === 0) return "No changes.\n";
 
   // page -> frame ("" for changes on the page itself) -> changes, in first-seen order
   const pages = new Map<string, Map<string, Change[]>>();
@@ -103,6 +119,11 @@ export function formatText(changes: Change[]): string {
       }
     }
   }
-  lines.push("", formatSummary(summarize(changes)));
+  if (tokens.length > 0) {
+    if (lines.length > 0) lines.push("");
+    lines.push("Variables and styles");
+    for (const t of tokens) lines.push(...describeToken(t).map((l) => `  ${l}`));
+  }
+  lines.push("", formatSummary(summarize(changes, tokens)));
   return lines.join("\n") + "\n";
 }

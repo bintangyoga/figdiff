@@ -50,4 +50,26 @@ export interface Summary {
   modifiedNodes: number;
   /** Number of changed properties across all nodes. */
   propertyChanges: number;
+  /** Added, removed or changed variables, styles and variable collections. Present only when there are some. */
+  tokenChanges?: number;
 }
+
+/** A variable, a style or a variable collection: the shared values a design is built from. */
+export interface Token {
+  /** For example "VariableID:1" or "S:3". */
+  id: string;
+  entity: "variable" | "style" | "collection";
+  name: string;
+  /** Everything else that can change, flattened (for example "value Light"). */
+  props: Record<string, unknown>;
+}
+
+export type TokenChange = {
+  entity: Token["entity"];
+  id: string;
+  /** The name after the change (or before, for a removed token). */
+  name: string;
+} & (
+  | { kind: "added" | "removed"; detail: string }
+  | { kind: "modified"; props: PropChange[] }
+);

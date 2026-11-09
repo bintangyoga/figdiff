@@ -8,7 +8,7 @@ const STRUCTURAL_KEYS = new Set(["id", "name", "type", "children", "parent"]);
 /** Number of decimals kept when comparing numbers (absorbs float noise like 8.000000000000002). */
 const PRECISION = 10_000;
 
-function normalize(value: unknown): unknown {
+export function normalize(value: unknown): unknown {
   if (typeof value === "number") return Math.round(value * PRECISION) / PRECISION;
   if (Array.isArray(value)) return value.map(normalize);
   if (value !== null && typeof value === "object") {

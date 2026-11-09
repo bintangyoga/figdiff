@@ -1,9 +1,10 @@
 export { diffTrees } from "./diff/diff.js";
 export { summarize } from "./diff/summary.js";
-export { parseFigcraft, readDocumentJson, documentToTree } from "./parser/index.js";
-export { formatText, formatSummary, formatValue } from "./report.js";
+export { parseFigcraft, parseFigcraftFull, readDocumentJson, documentToTree, documentToTokens } from "./parser/index.js";
+export { diffTokens } from "./diff/tokens.js";
+export { formatText, formatSummary, formatValue, describeToken } from "./report.js";
 export { run } from "./run.js";
-export type { Change, DesignNode, PropChange, Summary } from "./diff/types.js";
+export type { Change, DesignNode, PropChange, Summary, Token, TokenChange } from "./diff/types.js";
 export { formatHtml, frameKey, escapeHtml } from "./html.js";
 export type { FrameImages, HtmlOptions } from "./html.js";
 export { decodePng, encodePng } from "./render/png.js";

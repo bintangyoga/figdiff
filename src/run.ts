@@ -1,6 +1,7 @@
 import { basename } from "node:path";
-import { parseFigcraft } from "./parser/index.js";
+import { parseFigcraftFull } from "./parser/index.js";
 import { diffTrees } from "./diff/diff.js";
+import { diffTokens } from "./diff/tokens.js";
 import { summarize } from "./diff/summary.js";
 import { formatText } from "./report.js";
 import { formatHtml } from "./html.js";
@@ -133,10 +134,13 @@ export function run(argv: string[], overrides: Partial<RunDeps> = {}): RunResult
       [beforePath, afterPath] = files as [string, string];
       beforeName = basename(beforePath);
     }
-    const changes = diffTrees(parseFigcraft(beforePath), parseFigcraft(afterPath));
+    const beforeDoc = parseFigcraftFull(beforePath);
+    const afterDoc = parseFigcraftFull(afterPath);
+    const changes = diffTrees(beforeDoc.tree, afterDoc.tree);
+    const tokens = diffTokens(beforeDoc.tokens, afterDoc.tokens);
     const stdout = flags.has("--json")
-      ? JSON.stringify({ summary: summarize(changes), changes }, null, 2) + "\n"
-      : formatText(changes);
+      ? JSON.stringify({ summary: summarize(changes, tokens), changes, tokens }, null, 2) + "\n"
+      : formatText(changes, tokens);
 
     const notes: string[] = [];
     const writes: FileWrite[] = [];
@@ -159,12 +163,12 @@ export function run(argv: string[], overrides: Partial<RunDeps> = {}): RunResult
       }
       writes.push({
         path: htmlPath,
-        content: formatHtml(changes, { beforeName, afterName: basename(afterPath), images }),
+        content: formatHtml(changes, { beforeName, afterName: basename(afterPath), images, tokens }),
       });
       notes.push(`wrote ${htmlPath}`);
     }
 
-    const code = flags.has("--exit-code") && changes.length > 0 ? 1 : 0;
+    const code = flags.has("--exit-code") && changes.length + tokens.length > 0 ? 1 : 0;
     return { code, stdout, stderr: notes.map((n) => `figdiff: ${n}\n`).join(""), writes, ...(images ? { frameImages: images } : {}) };
   } catch (err) {
     return fail(err instanceof Error ? err.message : String(err), false);

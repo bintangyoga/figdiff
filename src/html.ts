@@ -1,6 +1,6 @@
-import type { Change } from "./diff/types.js";
+import type { Change, TokenChange } from "./diff/types.js";
 import { summarize } from "./diff/summary.js";
-import { formatSummary, formatValue } from "./report.js";
+import { describeToken, formatSummary, formatValue } from "./report.js";
 
 /**
  * Images for one frame, as `data:image/...` URIs or http(s) URLs.
@@ -21,6 +21,8 @@ export interface HtmlOptions {
   afterName?: string;
   /** Optional rendered images per frame; see `frameKey`. */
   images?: Record<string, FrameImages>;
+  /** Changed variables and styles. */
+  tokens?: TokenChange[];
 }
 
 /** Key used in `HtmlOptions.images` for a top-level frame. */
@@ -145,6 +147,7 @@ summary{cursor:pointer;padding:10px 14px;font-weight:600;display:flex;justify-co
 summary .count{color:var(--muted);font-weight:400;white-space:nowrap}
 .body{padding:0 14px 12px}
 ul.list{list-style:none;margin:0;padding:0}
+ul.tokens li{font:13px ui-monospace,monospace;padding:2px 0}
 .chg{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
 .chg[hidden]{display:none}
 .badge{flex:none;width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font:600 13px/1 ui-monospace,monospace;color:var(--bg)}
@@ -208,7 +211,8 @@ document.querySelectorAll('.cmp').forEach(function(c){
 /** A single self-contained HTML page describing the changes. No network access needed to view it. */
 export function formatHtml(changes: Change[], options: HtmlOptions = {}): string {
   const title = options.title ?? "figdiff report";
-  const summary = summarize(changes);
+  const tokens = options.tokens ?? [];
+  const summary = summarize(changes, tokens);
 
   const pages = new Map<string, Map<string, Change[]>>();
   for (const c of changes) {
@@ -242,13 +246,21 @@ export function formatHtml(changes: Change[], options: HtmlOptions = {}): string
     }
   }
 
+  if (tokens.length > 0) {
+    const lines = tokens.flatMap((t) => describeToken(t).map((l) => `<li>${escapeHtml(l)}</li>`)).join("");
+    sections +=
+      `<h2>Variables and styles</h2><details open><summary><span>Variables and styles</span>` +
+      `<span class="count">${tokens.length} ${tokens.length === 1 ? "change" : "changes"}</span></summary>` +
+      `<div class="body"><ul class="list tokens">${lines}</ul></div></details>`;
+  }
+
   const files =
     options.beforeName || options.afterName
       ? `<p class="files"><code>${escapeHtml(options.beforeName ?? "before")}</code> → <code>${escapeHtml(options.afterName ?? "after")}</code></p>`
       : "";
 
   const body =
-    changes.length === 0
+    changes.length === 0 && tokens.length === 0
       ? `<p class="summary">No changes.</p>`
       : `<p class="summary">${escapeHtml(formatSummary(summary))}</p><div class="filters">${filters}</div>${sections}`;
 

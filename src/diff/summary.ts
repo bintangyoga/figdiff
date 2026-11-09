@@ -1,7 +1,7 @@
-import type { Change, Summary } from "./types.js";
+import type { Change, Summary, TokenChange } from "./types.js";
 
 /** Count what changed. A "frame" is a direct child of a page that contains at least one change. */
-export function summarize(changes: Change[]): Summary {
+export function summarize(changes: Change[], tokens: TokenChange[] = []): Summary {
   const s: Summary = {
     changes: 0,
     frames: 0,
@@ -38,5 +38,9 @@ export function summarize(changes: Change[]): Summary {
 
   s.frames = frames.size;
   s.changes = s.added + s.removed + s.moved + s.reordered + s.propertyChanges;
+  if (tokens.length > 0) {
+    s.tokenChanges = tokens.length;
+    s.changes += tokens.length;
+  }
   return s;
 }
