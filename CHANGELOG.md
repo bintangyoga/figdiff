@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [0.1.0-alpha.6] - 2026-11-10
+
 ### Added
 
 - Variables, variable collections and styles are compared (matched by id; variable values per mode name). They appear in a "Variables and styles" section in the text and HTML output, in a new `tokens` array in `--json`, and as "token changes" in the summary. `--exit-code` counts them.
