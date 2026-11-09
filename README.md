@@ -50,16 +50,18 @@ npx figdiff before.figcraft after.figcraft
 ```
 
 ```text
-Page "Screens"
-  Frame "Login"
-    ~ Button "Sign in": fill #2563EB → #1D4ED8
-    ~ Card: padding 16 → 24
-    + Text "Forgot password?"
-  Frame "Home"
-    - Banner "Promo"
+Page "App"
+  Frame "Components"
+    - Landscape › Time=Day › Sun (ellipse)
+    ~ Chip › Selected=On › Label: characters All trails → All routes
+  Frame "Home — Light"
+    ~ Status bar › Indicators › Signal › Bar 1: fills #0F172A → #E6172A
+    ~ Status bar › Indicators › Signal › Bar 1: width 3 → 15
 
-12 changes in 2 frames
+4 changes in 2 frames (1 removed, 3 property changes)
 ```
+
+Useful flags: `--json` prints the summary and every change as JSON, and `--exit-code` exits with 1 when the files differ, so it can fail a CI step.
 
 **Generate a shareable report**
 
@@ -156,12 +158,14 @@ Confirm that FigCraft's file format and CLI are stable enough to build on, befor
 
 Deliver `figdiff a.figcraft b.figcraft` printing a correct list of changes in the terminal. No images yet.
 
-- [ ] Parser for core properties: type, name, hierarchy, position, size, fills, strokes, corner radius, text, font
+- [x] Parser for core properties: type, name, hierarchy, position, size, fills, strokes, corner radius, text, font
 - [ ] Node matching by id, with fallback to name and hierarchy path
-- [ ] Detect added, removed, reparented, and modified nodes
-- [ ] Group results by page and top-level frame so output is easy to read
-- [ ] Summary line (for example, "12 changes in 3 frames")
-- [ ] `--json` output for use by other tools
+- [x] Detect added, removed, reparented, and modified nodes
+- [x] Group results by page and top-level frame so output is easy to read
+- [x] Summary line (for example, "12 changes in 3 frames")
+- [x] `--json` output for use by other tools
+- [x] `--exit-code` flag and stable exit codes (0 ok, 1 differences, 2 error)
+- [x] Detect changes in layer order
 - [ ] Tests using the sample file pairs from Phase 0
 
 **Release:** `v0.1.0` on npm, usable with `npx figdiff`.

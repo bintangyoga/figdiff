@@ -72,4 +72,25 @@ describe("diffTrees", () => {
     expect(changes).toHaveLength(1);
     expect(changes[0]).toMatchObject({ kind: "modified", id: "2", props: [{ prop: "name", from: "Login", to: "Sign in" }] });
   });
+
+  it("records the trail from the page down, without the document name", () => {
+    const after = documentToTree(
+      doc([page([2]), frame(2, 1, "Login", [3, 4]), rect(3, 2, "Button", 0.9), rect(4, 2, "Promo", 0.5)]),
+    );
+    expect(diffTrees(before, after)[0]?.trail).toEqual(["Screens", "Login", "Button"]);
+  });
+
+  it("detects a change in layer order", () => {
+    const after = documentToTree(
+      doc([page([2]), frame(2, 1, "Login", [4, 3]), rect(3, 2, "Button", 0.2), rect(4, 2, "Promo", 0.5)]),
+    );
+    const changes = diffTrees(before, after);
+    expect(changes).toHaveLength(1);
+    expect(changes[0]).toMatchObject({ kind: "reordered", id: "2" });
+  });
+
+  it("does not report a reorder just because a child was removed", () => {
+    const after = documentToTree(doc([page([2]), frame(2, 1, "Login", [4]), rect(4, 2, "Promo", 0.5)]));
+    expect(diffTrees(before, after).map((c) => c.kind)).toEqual(["removed"]);
+  });
 });

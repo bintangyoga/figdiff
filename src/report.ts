@@ -1,4 +1,5 @@
-import type { Change } from "./diff/types.js";
+import type { Change, Summary } from "./diff/types.js";
+import { summarize } from "./diff/summary.js";
 
 type Raw = Record<string, unknown>;
 
@@ -43,27 +44,65 @@ export function formatValue(value: unknown): string {
   return JSON.stringify(value);
 }
 
+const SEP = " › ";
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+
+/** One line, for example "12 changes in 3 frames (2 added, 1 removed, 9 property changes)". */
+export function formatSummary(s: Summary): string {
+  const parts: string[] = [];
+  if (s.added) parts.push(`${s.added} added`);
+  if (s.removed) parts.push(`${s.removed} removed`);
+  if (s.moved) parts.push(`${s.moved} moved`);
+  if (s.reordered) parts.push(`${s.reordered} reordered`);
+  if (s.propertyChanges) parts.push(plural(s.propertyChanges, "property change"));
+  const where = s.frames > 0 ? ` in ${plural(s.frames, "frame")}` : "";
+  return `${plural(s.changes, "change")}${where} (${parts.join(", ")})`;
+}
+
+function describe(c: Change, label: string): string[] {
+  switch (c.kind) {
+    case "added":
+      return [`+ ${label} (${c.type})`];
+    case "removed":
+      return [`- ${label} (${c.type})`];
+    case "moved":
+      return [`> ${label}: moved from ${c.fromTrail.join(SEP) || "(root)"}`];
+    case "reordered":
+      return [`~ ${label}: layer order changed`];
+    case "modified":
+      return c.props.map((p) => `~ ${label}: ${p.prop} ${formatValue(p.from)} → ${formatValue(p.to)}`);
+  }
+}
+
+/** Human-readable report, grouped by page and top-level frame. */
 export function formatText(changes: Change[]): string {
   if (changes.length === 0) return "No changes.\n";
-  const lines: string[] = [];
+
+  // page -> frame ("" for changes on the page itself) -> changes, in first-seen order
+  const pages = new Map<string, Map<string, Change[]>>();
   for (const c of changes) {
-    switch (c.kind) {
-      case "added":
-        lines.push(`+ ${c.path} (${c.type})`);
-        break;
-      case "removed":
-        lines.push(`- ${c.path} (${c.type})`);
-        break;
-      case "moved":
-        lines.push(`> ${c.to} (moved from ${c.from})`);
-        break;
-      case "modified":
-        for (const p of c.props) {
-          lines.push(`~ ${c.path}: ${p.prop} ${formatValue(p.from)} → ${formatValue(p.to)}`);
-        }
-        break;
+    const page = c.trail[0] ?? "(document)";
+    const frame = c.trail[1] ?? "";
+    const frames = pages.get(page) ?? new Map<string, Change[]>();
+    frames.set(frame, [...(frames.get(frame) ?? []), c]);
+    pages.set(page, frames);
+  }
+
+  const lines: string[] = [];
+  for (const [page, frames] of pages) {
+    lines.push(`Page "${page}"`);
+    for (const [frame, group] of frames) {
+      if (frame === "") {
+        for (const c of group) lines.push(...describe(c, "(page)").map((l) => `  ${l}`));
+        continue;
+      }
+      lines.push(`  Frame "${frame}"`);
+      for (const c of group) {
+        const label = c.trail.length > 2 ? c.trail.slice(2).join(SEP) : "(frame itself)";
+        lines.push(...describe(c, label).map((l) => `    ${l}`));
+      }
     }
   }
-  lines.push("", `${changes.length} changed node${changes.length === 1 ? "" : "s"}`);
+  lines.push("", formatSummary(summarize(changes)));
   return lines.join("\n") + "\n";
 }
