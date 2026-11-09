@@ -2,7 +2,7 @@
 
 All notable changes are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/), and the project uses [Semantic Versioning](https://semver.org/). Before 1.0, anything may change between releases.
 
-## [0.1.0-alpha.0] - Unreleased
+## [0.1.0-alpha.0] - 2026-11-09
 
 First pre-alpha release.
 

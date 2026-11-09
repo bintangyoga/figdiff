@@ -4,7 +4,7 @@
 
 `figdiff` compares two versions of a [FigCraft](https://github.com/storytold/figcraft) design file (`.figcraft`) and explains what changed, both as a readable list of changes and as before/after images.
 
-> **Status: early development (pre-alpha).** Phase 0 is in progress. The parser and a basic text diff exist (build with `npm run build`, then run `node dist/cli.js a.figcraft b.figcraft`); the HTML report, visual diff and GitHub Action are still planned. Commands in the usage section below are the intended interface and may change. Feedback is very welcome: please open an issue.
+> **Status: early development (pre-alpha).** Phase 0 is in progress. The parser and a basic text diff exist and are published as a pre-alpha on npm (see [Try it](#try-it)); the HTML report, visual diff and GitHub Action are still planned. Commands in the usage section below are the intended interface and may change. Feedback is very welcome: please open an issue.
 
 > **Not affiliated.** figdiff is an independent community project. It is not made by, endorsed by, or connected to the FigCraft / ArtCraft authors. FigCraft is a trademark of its respective owners.
 
@@ -12,6 +12,7 @@
 
 ## Table of contents
 
+- [Try it](#try-it)
 - [The problem](#the-problem)
 - [The idea](#the-idea)
 - [Planned usage](#planned-usage)
@@ -21,6 +22,20 @@
 - [Risks and open questions](#risks-and-open-questions)
 - [Contributing](#contributing)
 - [License](#license)
+
+---
+
+## Try it
+
+The first pre-alpha is on npm under the `alpha` tag. It needs Node.js 20 or newer.
+
+```sh
+npx figdiff@alpha before.figcraft after.figcraft
+```
+
+To install it globally instead: `npm install -g figdiff@alpha`.
+
+Today it compares two files and prints a grouped list of changes (`--json` and `--exit-code` are available). The HTML report, visual diff and GitHub Action are on the roadmap below. Matching of nodes relies on ids staying stable between saves in FigCraft, which is not yet verified, so treat results as preliminary.
 
 ---
 
