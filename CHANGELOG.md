@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [0.1.0-alpha.3] - 2026-11-09
+
 ### Added
 
 - `--scale <number>` (with `--images`): render scale for the images.
