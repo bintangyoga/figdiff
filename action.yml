@@ -50,8 +50,13 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
         FIGDIFF_VERSION: ${{ inputs.version }}
       run: |
+        ENTRY="$RUNNER_TEMP/figdiff/node_modules/figdiff/dist/action.js"
+        if [ ! -f "$ENTRY" ]; then
+          echo "::error::figdiff@$FIGDIFF_VERSION does not include the GitHub Action. Use a version of 0.1.0-alpha.2 or later (input 'version')."
+          exit 1
+        fi
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
-        node "$RUNNER_TEMP/figdiff/node_modules/figdiff/dist/action.js"
+        node "$ENTRY"
     - name: Upload reports
       if: ${{ inputs.upload-reports != 'false' && hashFiles(format('{0}/*.html', inputs.report-dir)) != '' }}
       uses: actions/upload-artifact@v4
