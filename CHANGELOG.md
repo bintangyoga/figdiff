@@ -2,6 +2,13 @@
 
 All notable changes are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/), and the project uses [Semantic Versioning](https://semver.org/). Before 1.0, anything may change between releases.
 
+## [Unreleased]
+
+### Added
+
+- `--html <file>`: writes a self-contained HTML report of the changes, with filters by kind, color swatches, and light and dark mode.
+- Before/after swipe slider in the report for frames that have rendered images (images themselves are not produced yet).
+
 ## [0.1.0-alpha.0] - 2026-11-09
 
 First pre-alpha release.

@@ -74,6 +74,22 @@ describe("run", () => {
     expect(run([a, join(dir, "nope.figcraft")]).code).toBe(2);
   });
 
+  it("returns an HTML report to write when --html is given", () => {
+    const r = run([a, b, "--html", join(dir, "out", "report.html")]);
+    expect(r.code).toBe(0);
+    expect(r.stdout).toContain('Page "Screens"');
+    expect(r.writes).toHaveLength(1);
+    expect(r.writes[0]?.path).toBe(join(dir, "out", "report.html"));
+    expect(r.writes[0]?.content).toContain("<!doctype html>");
+    expect(r.writes[0]?.content).toContain("a.figcraft");
+    expect(run([a, b]).writes).toEqual([]);
+  });
+
+  it("requires a path after --html", () => {
+    expect(run([a, b, "--html"]).stderr).toContain("--html needs a file path");
+    expect(run([a, b, "--html", "--json"]).code).toBe(2);
+  });
+
   it("shows usage for wrong arguments and unknown options", () => {
     expect(run([a]).code).toBe(2);
     expect(run([a, b, "--nope"]).stderr).toContain("unknown option");
