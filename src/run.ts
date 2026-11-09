@@ -23,6 +23,7 @@ Options:
   --html <file>          Also write a self-contained HTML report to <file>
   --images               Add rendered before/after images to the HTML report
                          (needs --html and FigCraft's figcraft-cli)
+  --scale <number>       Render images at this scale, 0.25 to 4 (default 1; needs --images)
   --figcraft-cli <path>  Path to figcraft-cli (default: $FIGCRAFT_CLI, then PATH)
   --json                 Print summary and changes as JSON instead of text
   --exit-code            Exit with 1 when the files differ (0 when identical)
@@ -61,11 +62,12 @@ const defaultDeps: RunDeps = {
 };
 
 const BOOLEAN_FLAGS = new Set(["--json", "--exit-code", "--images", "--help"]);
-const VALUE_FLAGS = new Set(["--html", "--figcraft-cli", "--against"]);
+const VALUE_FLAGS = new Set(["--html", "--figcraft-cli", "--against", "--scale"]);
 const MISSING_VALUE: Record<string, string> = {
   "--html": "--html needs a file path",
   "--figcraft-cli": "--figcraft-cli needs a file path",
   "--against": "--against needs a git revision",
+  "--scale": "--scale needs a number",
 };
 
 const fail = (message: string, withUsage = true): RunResult => ({
@@ -108,6 +110,13 @@ export function run(argv: string[], overrides: Partial<RunDeps> = {}): RunResult
   if (flags.has("--images") && !htmlPath) return fail("--images needs --html");
   if (values.has("--figcraft-cli") && !flags.has("--images")) return fail("--figcraft-cli needs --images");
 
+  let scale = 1;
+  if (values.has("--scale")) {
+    if (!flags.has("--images")) return fail("--scale needs --images");
+    scale = Number(values.get("--scale"));
+    if (!Number.isFinite(scale) || scale < 0.25 || scale > 4) return fail("--scale must be a number from 0.25 to 4");
+  }
+
   let copy: GitCopy | undefined;
   try {
     let beforePath: string;
@@ -137,7 +146,7 @@ export function run(argv: string[], overrides: Partial<RunDeps> = {}): RunResult
           notes.push("figcraft-cli not found; writing the report without images. Use --figcraft-cli <path> or set FIGCRAFT_CLI.");
         } else {
           try {
-            const rendered = renderChangedFrames(changes, beforePath, afterPath, renderer);
+            const rendered = renderChangedFrames(changes, beforePath, afterPath, renderer, { scale });
             images = rendered.images;
             notes.push(...rendered.warnings);
           } catch (err) {

@@ -21,6 +21,12 @@ inputs:
   upload-reports:
     description: Upload the HTML reports as a workflow artifact named figdiff-reports.
     default: "true"
+  images:
+    description: "Render before/after images into the HTML reports. Experimental: downloads figcraft-cli from the latest FigCraft release."
+    default: "false"
+  scale:
+    description: Render scale for the images, from 0.25 to 4.
+    default: "1"
   report-dir:
     description: Folder, relative to the workspace, where the HTML reports are written.
     default: figdiff-reports
@@ -39,6 +45,18 @@ runs:
       env:
         FIGDIFF_VERSION: ${{ inputs.version }}
       run: npm install --prefix "$RUNNER_TEMP/figdiff" --no-audit --no-fund "figdiff@$FIGDIFF_VERSION"
+    - name: Install figcraft-cli
+      if: ${{ inputs.images == 'true' }}
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        mkdir -p "$RUNNER_TEMP/figcraft"
+        gh release download --repo storytold/figcraft --pattern '*linux-x86_64.tar.gz' --dir "$RUNNER_TEMP/figcraft" \
+          || echo "::warning::Could not download FigCraft; the reports will have no images."
+        for f in "$RUNNER_TEMP"/figcraft/*.tar.gz; do [ -f "$f" ] && tar -xzf "$f" -C "$RUNNER_TEMP/figcraft"; done
+        CLI=$(find "$RUNNER_TEMP/figcraft" -type f -name figcraft-cli | head -n 1)
+        if [ -n "$CLI" ]; then chmod +x "$CLI"; echo "FIGCRAFT_CLI=$CLI" >> "$GITHUB_ENV"; else echo "::warning::figcraft-cli was not found in the FigCraft release."; fi
     - name: Compare design files
       shell: bash
       env:
@@ -47,6 +65,8 @@ runs:
         INPUT_MAX_FILES: ${{ inputs.max-files }}
         INPUT_UPLOAD_REPORTS: ${{ inputs.upload-reports }}
         INPUT_REPORT_DIR: ${{ inputs.report-dir }}
+        INPUT_IMAGES: ${{ inputs.images }}
+        INPUT_SCALE: ${{ inputs.scale }}
         GITHUB_TOKEN: ${{ inputs.token }}
         FIGDIFF_VERSION: ${{ inputs.version }}
       run: |

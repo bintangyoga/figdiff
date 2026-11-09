@@ -152,6 +152,30 @@ describe("runAction with a real git repository", () => {
     expect(r.log.join("\n")).toContain("403");
   });
 
+  it("asks for images and a scale when enabled, and logs the renderer's warnings", async () => {
+    const seen: string[][] = [];
+    const fakeRun = ((argv: string[]) => {
+      seen.push(argv);
+      return { code: 0, stdout: JSON.stringify({ summary: { changes: 0, frames: 0, added: 0, removed: 0, moved: 0, reordered: 0, modifiedNodes: 0, propertyChanges: 0 }, changes: [] }), stderr: "figdiff: figcraft-cli not found; writing the report without images.\n", writes: [] };
+    }) as unknown as typeof import("../src/run.js").run;
+    const r = await runAction({ ...env(), INPUT_IMAGES: "true", INPUT_SCALE: "2", INPUT_COMMENT: "false" }, { run: fakeRun });
+    const argv = seen.find((a) => a[0]?.endsWith("app.figcraft")) ?? [];
+    expect(argv).toContain("--images");
+    expect(argv.slice(argv.indexOf("--scale"), argv.indexOf("--scale") + 2)).toEqual(["--scale", "2"]);
+    expect(r.log.join("\n")).toContain("figcraft-cli not found");
+  });
+
+  it("does not pass image options by default", async () => {
+    const seen: string[][] = [];
+    const fakeRun = ((argv: string[]) => {
+      seen.push(argv);
+      return { code: 2, stdout: "", stderr: "figdiff: boom\n", writes: [] };
+    }) as unknown as typeof import("../src/run.js").run;
+    await runAction({ ...env(), INPUT_COMMENT: "false" }, { run: fakeRun });
+    expect(seen.length).toBeGreaterThan(0);
+    expect(seen.every((a) => !a.includes("--images") && !a.includes("--scale"))).toBe(true);
+  });
+
   it("ignores events that are not pull requests", async () => {
     const p = join(repo, "..", `push-${Date.now()}.json`);
     writeFileSync(p, "{}");

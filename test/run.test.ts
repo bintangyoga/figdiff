@@ -138,6 +138,13 @@ describe("run", () => {
       expect(run([a, b, "--images"]).stderr).toContain("--images needs --html");
     });
 
+    it("validates --scale", () => {
+      expect(run([a, b, "--html", html, "--scale", "2"]).stderr).toContain("--scale needs --images");
+      expect(run([a, b, "--html", html, "--images", "--scale", "9"]).stderr).toContain("from 0.25 to 4");
+      expect(run([a, b, "--html", html, "--images", "--scale", "abc"]).stderr).toContain("from 0.25 to 4");
+      expect(run([a, b, "--html", html, "--images", "--scale", "2"], { createRenderer: () => undefined }).code).toBe(0);
+    });
+
     it("only accepts --figcraft-cli together with --images", () => {
       expect(run([a, b, "--html", html, "--figcraft-cli", "/x"]).stderr).toContain("--figcraft-cli needs --images");
     });

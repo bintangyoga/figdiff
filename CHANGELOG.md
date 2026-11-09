@@ -4,6 +4,11 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+### Added
+
+- `--scale <number>` (with `--images`): render scale for the images.
+- Action inputs `images` (experimental: downloads `figcraft-cli` from the latest FigCraft release and puts before/after images in the HTML reports) and `scale`. Renderer warnings appear in the job log.
+
 ## [0.1.0-alpha.2] - 2026-11-09
 
 ### Added

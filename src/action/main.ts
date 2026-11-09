@@ -48,13 +48,15 @@ interface PullEvent {
 }
 
 /** Compare one modified file with its version at the base commit. */
-function compareFile(file: ChangedFile, root: string, base: string, reportDir: string, deps: ActionDeps): FileResult {
+function compareFile(file: ChangedFile, root: string, base: string, reportDir: string, deps: ActionDeps, log: string[], images = false, scale = ""): FileResult {
   const reportName = `${file.path.replace(/[^A-Za-z0-9._-]+/g, "_")}.html`;
-  const result = deps.run([join(root, file.path), "--against", base, "--json", "--html", join(reportDir, reportName)]);
+  const extra = images ? ["--images", ...(scale ? ["--scale", scale] : [])] : [];
+  const result = deps.run([join(root, file.path), "--against", base, "--json", "--html", join(reportDir, reportName), ...extra]);
   if (result.code !== 0) {
     const message = result.stderr.replace(/^figdiff:\s*/gm, "").trim().split("\n")[0] ?? "unknown error";
     return { file, error: message };
   }
+  for (const line of result.stderr.split("\n")) if (line.trim() && !line.startsWith("figdiff: wrote ")) log.push(`${file.path}: ${line.replace(/^figdiff:\s*/, "")}`);
   for (const w of result.writes) {
     deps.mkdirp(reportDir);
     deps.writeText(w.path, w.content);
@@ -84,6 +86,8 @@ export async function runAction(env: Env, overrides: Partial<ActionDeps> = {}): 
   const patterns = parsePatterns(input(env, "files", "**/*.figcraft"));
   const reportDir = input(env, "report-dir", "figdiff-reports");
   const wantComment = input(env, "comment", "true") !== "false";
+  const withImages = input(env, "images", "false") === "true";
+  const scale = input(env, "scale", "");
   const maxFiles = Math.max(1, Number.parseInt(input(env, "max-files", "20"), 10) || 20);
 
   let listed: ChangedFile[];
@@ -100,7 +104,7 @@ export async function runAction(env: Env, overrides: Partial<ActionDeps> = {}): 
 
   const results: FileResult[] = [];
   for (const file of files.slice(0, maxFiles)) {
-    results.push(file.status === "modified" ? compareFile(file, root, pr.base.sha, reportDir, deps) : { file });
+    results.push(file.status === "modified" ? compareFile(file, root, pr.base.sha, reportDir, deps, log, withImages, scale) : { file });
   }
   if (files.length > maxFiles) log.push(`figdiff: only the first ${maxFiles} files were compared (max-files).`);
   const changed = results.filter(isSubstantive);
