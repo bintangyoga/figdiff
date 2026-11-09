@@ -1,0 +1,20 @@
+# Copy this file to .github/workflows/figdiff.yml in your design repository.
+name: Design changes
+
+on:
+  pull_request:
+    paths:
+      - "**/*.figcraft"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  figdiff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # figdiff needs the base commit to compare with
+      - uses: bintangyoga/figdiff@main

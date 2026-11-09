@@ -103,22 +103,42 @@ git difftool -y -t figdiff main -- design/app.figcraft
 
 **Run on every pull request**
 
+The GitHub Action (`action.yml`, currently in alpha) posts one comment per pull request with what changed in each `.figcraft` file, and keeps that comment up to date on every push. Full HTML reports are attached to the workflow run.
+
 ```yaml
-# .github/workflows/design-diff.yml
-name: Design diff
-on: pull_request
+# .github/workflows/figdiff.yml  (also in examples/figdiff.yml)
+name: Design changes
+on:
+  pull_request:
+    paths: ["**/*.figcraft"]
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
-  diff:
+  figdiff:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-      - uses: bintangyoga/figdiff@v1
+          fetch-depth: 0 # needed to read the base commit
+      - uses: bintangyoga/figdiff@main
         with:
           files: "design/**/*.figcraft"
 ```
+
+| Input | Default | Meaning |
+| --- | --- | --- |
+| `files` | `**/*.figcraft` | Glob patterns (commas or new lines) of the design files to look at |
+| `comment` | `true` | `false` writes the reports without commenting |
+| `max-files` | `20` | Compare at most this many files per pull request |
+| `upload-reports` | `true` | Upload the HTML reports as the artifact `figdiff-reports` |
+| `report-dir` | `figdiff-reports` | Where the reports are written |
+| `version` | `latest` | Version of the `figdiff` npm package to use |
+| `token` | `github.token` | Token used to comment |
+
+Pull requests from forks get a read-only token, so no comment is posted; the changes are printed in the job log instead. Images in the comment are not included yet (see Phase 3).
 
 ## How it will work
 
@@ -220,12 +240,12 @@ Deliver a self-contained HTML report that anyone can open, including designers w
 
 Deliver an automatic comment on every pull request that changes a `.figcraft` file, set up with one workflow file.
 
-- [ ] Detect changed `.figcraft` files in a pull request and check out both the base and head versions
+- [x] Detect changed `.figcraft` files in a pull request and compare each with its base version
 - [ ] Install `figcraft-cli` on the runner, with caching
-- [ ] Pull request comment with a summary, per-frame changes, and before/after images
+- [x] Pull request comment with a summary and per-frame changes (before/after images still to do)
 - [ ] Host images via workflow artifacts or a dedicated branch (GitHub comments need image URLs)
-- [ ] Update a single comment on each push instead of posting new ones
-- [ ] Configuration options: file patterns, render scale, frame limit, comment language
+- [x] Update a single comment on each push instead of posting new ones
+- [x] Configuration options: file patterns, file limit, report folder (render scale and comment language still to do)
 - [ ] Public example repository that uses the Action as a live demo
 
 **Release:** `v0.3.0` and a listing on GitHub Marketplace.

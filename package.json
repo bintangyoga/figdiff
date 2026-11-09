@@ -6,7 +6,8 @@
   "license": "MIT",
   "type": "module",
   "bin": {
-    "figdiff": "dist/cli.js"
+    "figdiff": "dist/cli.js",
+    "figdiff-action": "dist/action.js"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

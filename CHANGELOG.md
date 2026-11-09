@@ -4,6 +4,12 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+### Added
+
+- GitHub Action (`action.yml`): on pull requests, compares every changed `.figcraft` file with its base version and posts a single comment that is updated on each push. HTML reports are uploaded as the `figdiff-reports` artifact. Inputs: `files`, `comment`, `max-files`, `upload-reports`, `report-dir`, `version`, `token`. Example workflow in `examples/figdiff.yml`.
+- `figdiff-action` binary used by the Action.
+- Images in the comment are not included yet.
+
 ## [0.1.0-alpha.1] - 2026-11-09
 
 ### Added

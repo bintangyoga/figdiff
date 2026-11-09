@@ -1,0 +1,60 @@
+name: figdiff
+description: Comment on pull requests with what changed in your FigCraft (.figcraft) design files.
+author: bintangyoga
+branding:
+  icon: git-pull-request
+  color: purple
+
+inputs:
+  files:
+    description: Which design files to look at. Glob patterns separated by commas or new lines.
+    default: "**/*.figcraft"
+  token:
+    description: Token used to post the comment. The default needs `pull-requests: write` permission.
+    default: ${{ github.token }}
+  comment:
+    description: Set to "false" to skip the comment and only write the reports.
+    default: "true"
+  max-files:
+    description: Compare at most this many files per pull request.
+    default: "20"
+  upload-reports:
+    description: Upload the HTML reports as a workflow artifact named figdiff-reports.
+    default: "true"
+  report-dir:
+    description: Folder, relative to the workspace, where the HTML reports are written.
+    default: figdiff-reports
+  version:
+    description: Version of the figdiff npm package to use.
+    default: latest
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+    - name: Install figdiff
+      shell: bash
+      env:
+        FIGDIFF_VERSION: ${{ inputs.version }}
+      run: npm install --prefix "$RUNNER_TEMP/figdiff" --no-audit --no-fund "figdiff@$FIGDIFF_VERSION"
+    - name: Compare design files
+      shell: bash
+      env:
+        INPUT_FILES: ${{ inputs.files }}
+        INPUT_COMMENT: ${{ inputs.comment }}
+        INPUT_MAX_FILES: ${{ inputs.max-files }}
+        INPUT_UPLOAD_REPORTS: ${{ inputs.upload-reports }}
+        INPUT_REPORT_DIR: ${{ inputs.report-dir }}
+        GITHUB_TOKEN: ${{ inputs.token }}
+        FIGDIFF_VERSION: ${{ inputs.version }}
+      run: |
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        node "$RUNNER_TEMP/figdiff/node_modules/figdiff/dist/action.js"
+    - name: Upload reports
+      if: ${{ inputs.upload-reports != 'false' && hashFiles(format('{0}/*.html', inputs.report-dir)) != '' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: figdiff-reports
+        path: ${{ inputs.report-dir }}
