@@ -50,6 +50,10 @@ jobs:
 
       - name: Create GitHub release
         run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME already exists; leaving it as is."
+            exit 0
+          fi
           FLAGS=""
           case "$GITHUB_REF_NAME" in *-*) FLAGS="--prerelease" ;; esac
           gh release create "$GITHUB_REF_NAME" --generate-notes $FLAGS
