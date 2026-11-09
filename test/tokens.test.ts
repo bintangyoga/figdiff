@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { diffTokens } from "../src/diff/tokens.js";
 import { summarize } from "../src/diff/summary.js";
@@ -94,5 +95,27 @@ describe("reporting tokens", () => {
     expect(html).toContain("&lt;b&gt;x&lt;/b&gt;");
     expect(html).not.toContain("<b>x</b>");
     expect(html).not.toContain("No changes.");
+  });
+});
+
+describe("real FigCraft data", () => {
+  const real = JSON.parse(readFileSync(new URL("./fixtures/ridgeline-tokens.json", import.meta.url), "utf8")) as ReturnType<typeof doc>;
+
+  it("parses every collection, variable and style", () => {
+    const tokens = documentToTokens(real);
+    expect(tokens.filter((t) => t.entity === "collection")).toHaveLength(2);
+    expect(tokens.filter((t) => t.entity === "variable")).toHaveLength(17);
+    expect(tokens.filter((t) => t.entity === "style")).toHaveLength(3);
+    expect(diffTokens(tokens, documentToTokens(real))).toEqual([]);
+  });
+
+  it("reports one changed variable value", () => {
+    const edited = structuredClone(real);
+    const v = edited.variables.variables[0] as unknown as { values: Record<string, { value: { r: number } }> };
+    const firstMode = Object.keys(v.values)[0] as string;
+    (v.values[firstMode] as { value: { r: number } }).value.r = 0.123;
+    const changes = diffTokens(documentToTokens(real), documentToTokens(edited));
+    expect(changes).toHaveLength(1);
+    expect(changes[0]).toMatchObject({ kind: "modified", entity: "variable" });
   });
 });
