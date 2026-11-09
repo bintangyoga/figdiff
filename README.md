@@ -4,7 +4,7 @@
 
 `figdiff` compares two versions of a [FigCraft](https://github.com/storytold/figcraft) design file (`.figcraft`) and explains what changed, both as a readable list of changes and as before/after images.
 
-> **Status: planning (pre-alpha).** Nothing is implemented yet. This README describes the problem, the planned design, and the roadmap. Commands shown below are the intended interface, not working software. Feedback on the plan is very welcome: please open an issue.
+> **Status: early development (pre-alpha).** Phase 0 is in progress. The parser and a basic text diff exist (build with `npm run build`, then run `node dist/cli.js a.figcraft b.figcraft`); the HTML report, visual diff and GitHub Action are still planned. Commands in the usage section below are the intended interface and may change. Feedback is very welcome: please open an issue.
 
 > **Not affiliated.** figdiff is an independent community project. It is not made by, endorsed by, or connected to the FigCraft / ArtCraft authors. FigCraft is a trademark of its respective owners.
 
@@ -139,13 +139,14 @@ Estimated timeline: about 18 weeks to v1.0, assuming one maintainer at roughly 1
 
 Confirm that FigCraft's file format and CLI are stable enough to build on, before writing product code.
 
-- [ ] Download sample files from FigCraft's `examples/` folder, unzip them, and study the structure of `document.json`
-- [ ] Document the node schema: id, type, name, parent, position, size, fills, strokes, text, auto layout, components, variables
+- [x] Download sample files from FigCraft's `examples/` folder, unzip them, and study the structure of `document.json`
+- [x] Document the node schema: id, type, name, parent, position, size, fills, strokes, text, auto layout, components, variables
 - [ ] Verify that node ids stay stable when a file is saved again (critical for matching nodes between versions)
 - [ ] Test `figcraft-cli render`, `export --node`, and `convert` on headless Linux
 - [ ] Check whether `figcraft-cli` is available as a prebuilt binary or must be built with Cargo
 - [ ] Check name availability on npm and GitHub; choose a fallback name if needed
-- [ ] Set up the repository: TypeScript, linting, tests, CI
+- [x] Set up the repository: TypeScript, tests, CI
+- [ ] Add linting and formatting (ESLint, Prettier)
 
 **Deliverables:** format notes (`docs/format-notes.md`), 5–10 before/after sample file pairs, a working project skeleton.
 
