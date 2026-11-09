@@ -4,6 +4,12 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [0.1.0-alpha.4] - 2026-11-09
+
+### Changed
+
+- When `figcraft-cli` fails to render a frame, the warning now includes what it printed (first line of stderr).
+
 ## [0.1.0-alpha.3] - 2026-11-09
 
 ### Added
