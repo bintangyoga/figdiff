@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [0.1.0-alpha.5] - 2026-11-10
+
 ### Added
 
 - Action inputs `host-images` and `assets-branch`: with `images`, the comment shows before, after and difference images per changed frame. They are committed to a branch (default `figdiff-assets`) through the GitHub API and need `contents: write`. If the token cannot write, the comment is posted without images.

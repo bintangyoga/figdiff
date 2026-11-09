@@ -247,10 +247,10 @@ Deliver an automatic comment on every pull request that changes a `.figcraft` fi
 - [x] Detect changed `.figcraft` files in a pull request and compare each with its base version
 - [x] Install `figcraft-cli` on the runner (`images: true`; downloaded from the FigCraft release and working in the demo repository; no caching yet)
 - [x] Pull request comment with a summary and per-frame changes (before/after images with `host-images`; not yet looked at by a human)
-- [ ] Host images via workflow artifacts or a dedicated branch (GitHub comments need image URLs)
+- [x] Host images on a dedicated branch (`host-images`; needs `contents: write`)
 - [x] Update a single comment on each push instead of posting new ones
 - [x] Configuration options: file patterns, file limit, report folder and render scale (comment language still to do)
-- [ ] Public example repository that uses the Action as a live demo
+- [x] Public example repository that uses the Action as a live demo ([figdiff-demo](https://github.com/bintangyoga/figdiff-demo))
 
 **Release:** `v0.3.0` and a listing on GitHub Marketplace.
 
