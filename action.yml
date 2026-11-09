@@ -10,7 +10,7 @@ inputs:
     description: Which design files to look at. Glob patterns separated by commas or new lines.
     default: "**/*.figcraft"
   token:
-    description: Token used to post the comment. The default needs `pull-requests: write` permission.
+    description: "Token used to post the comment. The default needs the pull-requests: write permission."
     default: ${{ github.token }}
   comment:
     description: Set to "false" to skip the comment and only write the reports.
