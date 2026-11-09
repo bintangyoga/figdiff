@@ -84,7 +84,7 @@ Useful flags: `--html report.html` also writes a self-contained HTML report (add
 npx figdiff before.figcraft after.figcraft --html report.html
 ```
 
-One self-contained HTML file with the list of changes, filters, and light and dark mode. No server needed, so it can be sent by email or chat to a developer or client. With `--images` (and FigCraft's `figcraft-cli` installed) it also embeds before/after images with a swipe slider and a difference view. This part is experimental: it has been tested with a stand-in for `figcraft-cli` but not yet with the real one.
+One self-contained HTML file with the list of changes, filters, and light and dark mode. No server needed, so it can be sent by email or chat to a developer or client. With `--images` (and FigCraft's `figcraft-cli` installed) it also embeds before/after images with a swipe slider and a difference view. This part is experimental: it ran once against the real `figcraft-cli` 0.17.0 in CI on one example file (no warnings, and a report about ten times larger than a text-only one), but nobody has looked at the images yet.
 
 **Compare against another Git branch**
 
@@ -228,7 +228,7 @@ Deliver a self-contained HTML report that anyone can open, including designers w
 - [x] A single `report.html` with embedded images and no server
 - [x] Graceful fallback when `figcraft-cli` is unavailable: the report is still written, with a warning
 - [x] Frames that exist in only one version (added or removed) are shown on their own
-- [ ] Verify rendering against a real `figcraft-cli` (implemented from its documentation and tested with a stand-in; the exact `--node` and `--page` behavior is unconfirmed)
+- [x] Verify rendering against a real `figcraft-cli` (ran in CI on a FigCraft example without errors; the images themselves still need a human look)
 - [ ] Render at 2x as well as 1x
 - [x] Side-by-side view next to the swipe slider
 - [ ] Semantic change list next to the images; clicking a change highlights its location
@@ -243,7 +243,7 @@ Deliver a self-contained HTML report that anyone can open, including designers w
 Deliver an automatic comment on every pull request that changes a `.figcraft` file, set up with one workflow file.
 
 - [x] Detect changed `.figcraft` files in a pull request and compare each with its base version
-- [x] Install `figcraft-cli` on the runner (`images: true`; downloaded from the FigCraft release, untested against the real binary, no caching yet)
+- [x] Install `figcraft-cli` on the runner (`images: true`; downloaded from the FigCraft release and working in the demo repository; no caching yet)
 - [x] Pull request comment with a summary and per-frame changes (before/after images still to do)
 - [ ] Host images via workflow artifacts or a dedicated branch (GitHub comments need image URLs)
 - [x] Update a single comment on each push instead of posting new ones
