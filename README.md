@@ -264,7 +264,7 @@ Deliver a project that other people can use and contribute to, then announce it.
 - [x] Performance testing on large files (a 10,000-node test runs in CI; see `test/performance.test.ts`)
 - [x] Compatibility table of tested FigCraft versions ([docs/compatibility.md](docs/compatibility.md)); still to update with each FigCraft release
 - [x] Documentation: [CLI guide](docs/cli.md), [Action guide](docs/action.md), [contributor guide](CONTRIBUTING.md)
-- [ ] `good first issue` labels to welcome contributors
+- [x] `good first issue` labels to welcome contributors (8 issues open)
 - [ ] Announcement: FigCraft community, Show HN, Reddit, and design communities
 
 **Release:** `v1.0.0`, with a stable CLI and JSON output format.
