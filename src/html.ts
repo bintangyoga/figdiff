@@ -100,14 +100,16 @@ function compare(images: FrameImages | undefined): string {
   const diff = images.diff && safeImageSrc(images.diff);
 
   if (before && after) {
-    const tabs = diff
-      ? `<div class="tabs"><button type="button" data-view="swipe" aria-pressed="true">Swipe</button>` +
-        `<button type="button" data-view="diff" aria-pressed="false">Difference</button>` +
-        (images.changedRatio !== undefined ? `<span class="ratio">${escapeHtml(percent(images.changedRatio))} of pixels differ</span>` : "") +
-        `</div>`
-      : "";
+    const tabs =
+      `<div class="tabs"><button type="button" data-view="swipe" aria-pressed="true">Swipe</button>` +
+      `<button type="button" data-view="side" aria-pressed="false">Side by side</button>` +
+      (diff ? `<button type="button" data-view="diff" aria-pressed="false">Difference</button>` : "") +
+      (diff && images.changedRatio !== undefined
+        ? `<span class="ratio">${escapeHtml(percent(images.changedRatio))} of pixels differ</span>`
+        : "") +
+      `</div>`;
     return (
-      `<div class="cmp" style="--pos:50%">${tabs}` +
+      `<div class="cmp" data-view="swipe" style="--pos:50%">${tabs}` +
       `<div class="stack"><img class="b" alt="Before" src="${escapeHtml(before)}">` +
       `<img class="a" alt="After" src="${escapeHtml(after)}"></div>` +
       (diff ? `<img class="diffimg" alt="Differences highlighted" src="${escapeHtml(diff)}" hidden>` : "") +
@@ -167,7 +169,11 @@ code{font:12.5px ui-monospace,SFMono-Regular,Menlo,monospace}
 .tabs button[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
 .tabs .ratio{margin-left:auto;color:var(--muted);font-size:12px}
 .diffimg{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:8px}
-.diffimg[hidden],.cmp.showdiff input,.cmp.showdiff .cap,.cmp.showdiff .stack{display:none}
+.diffimg[hidden]{display:none}
+.cmp[data-view=diff] input,.cmp[data-view=diff] .cap,.cmp[data-view=diff] .stack,.cmp[data-view=side] input{display:none}
+.cmp[data-view=side] .stack{display:grid;grid-template-columns:1fr 1fr;gap:8px;border:0;border-radius:0;overflow:visible;background:none}
+.cmp[data-view=side] .stack img{border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.cmp[data-view=side] .stack img.a{position:static;clip-path:none}
 figure.single{margin:4px 0 12px}
 figure.single img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
 figure.single figcaption{color:var(--muted);font-size:12px;margin-top:4px}
@@ -189,9 +195,10 @@ document.querySelectorAll('.cmp').forEach(function(c){
 
   c.querySelectorAll('.tabs button').forEach(function(t){
     t.addEventListener('click',function(){
-      var diff=t.getAttribute('data-view')==='diff';
-      c.classList.toggle('showdiff',diff);
-      c.querySelector('.diffimg').hidden=!diff;
+      var view=t.getAttribute('data-view');
+      c.setAttribute('data-view',view);
+      var d=c.querySelector('.diffimg');
+      if(d)d.hidden=view!=='diff';
       c.querySelectorAll('.tabs button').forEach(function(o){o.setAttribute('aria-pressed',String(o===t));});
     });
   });

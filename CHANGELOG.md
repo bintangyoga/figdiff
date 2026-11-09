@@ -9,6 +9,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - `--html <file>`: writes a self-contained HTML report of the changes, with filters by kind, color swatches, and light and dark mode.
 - `--images` (with `--html`): renders every changed frame in both files through FigCraft's `figcraft-cli`, compares them pixel by pixel, and embeds a before/after swipe slider, a difference view and the share of changed pixels. Experimental: not yet verified against the real `figcraft-cli`. Use `--figcraft-cli <path>` or `FIGCRAFT_CLI` to point to it.
 - Frames that exist in only one version are shown on their own. If `figcraft-cli` is missing, the report is still written without images.
+- `--against <revision>`: compare one file with its version at a git revision (branch, tag or commit).
+- "Side by side" view in the HTML report, next to the swipe slider and the difference view.
 - Dependency-free PNG decoder and encoder, checked pixel for pixel against real FigCraft thumbnails.
 
 ## [0.1.0-alpha.0] - 2026-11-09

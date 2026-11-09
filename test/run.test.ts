@@ -94,6 +94,38 @@ describe("run", () => {
     expect(run([a, b, "--html", "--json"]).code).toBe(2);
   });
 
+  describe("--against", () => {
+    it("compares the file with the copy returned for the revision, then cleans up", () => {
+      let cleaned = false;
+      let asked: [string, string] | undefined;
+      const r = run([b, "--against", "main"], {
+        fromGit: (ref, file) => { asked = [ref, file]; return { path: a, cleanup: () => { cleaned = true; } }; },
+      });
+      expect(asked).toEqual(["main", b]);
+      expect(r.stdout).toContain("+ Hint (text)");
+      expect(cleaned).toBe(true);
+    });
+
+    it("cleans up even when the comparison fails", () => {
+      let cleaned = false;
+      const r = run([b, "--against", "main"], { fromGit: () => ({ path: notZip, cleanup: () => { cleaned = true; } }) });
+      expect(r.code).toBe(2);
+      expect(cleaned).toBe(true);
+    });
+
+    it("needs a revision and exactly one file", () => {
+      expect(run([b, "--against"]).stderr).toContain("--against needs a git revision");
+      expect(run([a, b, "--against", "main"]).stderr).toContain("expected one file with --against");
+      expect(run(["--against", "main"]).stderr).toContain("expected one file with --against");
+    });
+
+    it("passes git errors through", () => {
+      const r = run([b, "--against", "nope"], { fromGit: () => { throw new Error('Cannot read b.figcraft at "nope"'); } });
+      expect(r.code).toBe(2);
+      expect(r.stderr).toContain('Cannot read b.figcraft at "nope"');
+    });
+  });
+
   describe("--images", () => {
     const red = encodePng(solid(4, 4, [255, 0, 0, 255]));
     const blue = encodePng(solid(4, 4, [0, 0, 255, 255]));

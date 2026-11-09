@@ -14,3 +14,5 @@ export { createCliRenderer, findFigcraftCli, RendererUnavailableError } from "./
 export type { Renderer, Exec } from "./render/figcraft-cli.js";
 export { renderChangedFrames } from "./render/frames.js";
 export type { RenderOptions, RenderedFrames } from "./render/frames.js";
+export { extractFromGit } from "./git.js";
+export type { GitCopy, GitRun } from "./git.js";

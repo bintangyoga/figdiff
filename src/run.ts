@@ -8,13 +8,18 @@ import type { FrameImages } from "./html.js";
 import { createCliRenderer, findFigcraftCli, RendererUnavailableError } from "./render/figcraft-cli.js";
 import type { Renderer } from "./render/figcraft-cli.js";
 import { renderChangedFrames } from "./render/frames.js";
+import { extractFromGit } from "./git.js";
+import type { GitCopy } from "./git.js";
 
 export const USAGE = `figdiff (pre-alpha)
 
 Usage:
   figdiff <before.figcraft> <after.figcraft> [options]
+  figdiff <file.figcraft> --against <git-revision> [options]
 
 Options:
+  --against <revision>   Compare the file with its version at a git revision
+                         (a branch, tag or commit, for example main or HEAD~1)
   --html <file>          Also write a self-contained HTML report to <file>
   --images               Add rendered before/after images to the HTML report
                          (needs --html and FigCraft's figcraft-cli)
@@ -43,6 +48,8 @@ export interface RunResult {
 export interface RunDeps {
   /** Returns a renderer, or undefined when figcraft-cli cannot be found. */
   createRenderer(explicitPath?: string): Renderer | undefined;
+  /** Saves the version of a file at a git revision to a temporary file. */
+  fromGit(ref: string, file: string): GitCopy;
 }
 
 const defaultDeps: RunDeps = {
@@ -50,10 +57,16 @@ const defaultDeps: RunDeps = {
     const bin = findFigcraftCli(explicitPath);
     return bin ? createCliRenderer(bin) : undefined;
   },
+  fromGit: (ref, file) => extractFromGit(ref, file),
 };
 
 const BOOLEAN_FLAGS = new Set(["--json", "--exit-code", "--images", "--help"]);
-const VALUE_FLAGS = new Set(["--html", "--figcraft-cli"]);
+const VALUE_FLAGS = new Set(["--html", "--figcraft-cli", "--against"]);
+const MISSING_VALUE: Record<string, string> = {
+  "--html": "--html needs a file path",
+  "--figcraft-cli": "--figcraft-cli needs a file path",
+  "--against": "--against needs a git revision",
+};
 
 const fail = (message: string, withUsage = true): RunResult => ({
   code: 2,
@@ -63,7 +76,8 @@ const fail = (message: string, withUsage = true): RunResult => ({
 });
 
 /** Run the CLI. Free of side effects on the file system and process, so it can be tested. */
-export function run(argv: string[], deps: RunDeps = defaultDeps): RunResult {
+export function run(argv: string[], overrides: Partial<RunDeps> = {}): RunResult {
+  const deps: RunDeps = { ...defaultDeps, ...overrides };
   const files: string[] = [];
   const flags = new Set<string>();
   const values = new Map<string, string>();
@@ -72,7 +86,7 @@ export function run(argv: string[], deps: RunDeps = defaultDeps): RunResult {
     const arg = argv[i] as string;
     if (VALUE_FLAGS.has(arg)) {
       const value = argv[++i];
-      if (value === undefined || value.startsWith("--")) return fail(`${arg} needs a file path`);
+      if (value === undefined || value.startsWith("--")) return fail(MISSING_VALUE[arg] as string);
       values.set(arg, value);
     } else if (arg.startsWith("--")) {
       if (!BOOLEAN_FLAGS.has(arg)) return fail(`unknown option ${arg}`);
@@ -83,14 +97,31 @@ export function run(argv: string[], deps: RunDeps = defaultDeps): RunResult {
   }
 
   if (flags.has("--help")) return { code: 0, stdout: USAGE, stderr: "", writes: [] };
-  if (files.length !== 2) return fail("expected two files");
+  const against = values.get("--against");
+  if (against !== undefined) {
+    if (files.length !== 1) return fail("expected one file with --against");
+  } else if (files.length !== 2) {
+    return fail("expected two files");
+  }
 
   const htmlPath = values.get("--html");
   if (flags.has("--images") && !htmlPath) return fail("--images needs --html");
   if (values.has("--figcraft-cli") && !flags.has("--images")) return fail("--figcraft-cli needs --images");
 
+  let copy: GitCopy | undefined;
   try {
-    const [beforePath, afterPath] = files as [string, string];
+    let beforePath: string;
+    let afterPath: string;
+    let beforeName: string;
+    if (against !== undefined) {
+      afterPath = files[0] as string;
+      copy = deps.fromGit(against, afterPath);
+      beforePath = copy.path;
+      beforeName = `${basename(afterPath)} @ ${against}`;
+    } else {
+      [beforePath, afterPath] = files as [string, string];
+      beforeName = basename(beforePath);
+    }
     const changes = diffTrees(parseFigcraft(beforePath), parseFigcraft(afterPath));
     const stdout = flags.has("--json")
       ? JSON.stringify({ summary: summarize(changes), changes }, null, 2) + "\n"
@@ -117,7 +148,7 @@ export function run(argv: string[], deps: RunDeps = defaultDeps): RunResult {
       }
       writes.push({
         path: htmlPath,
-        content: formatHtml(changes, { beforeName: basename(beforePath), afterName: basename(afterPath), images }),
+        content: formatHtml(changes, { beforeName, afterName: basename(afterPath), images }),
       });
       notes.push(`wrote ${htmlPath}`);
     }
@@ -126,5 +157,7 @@ export function run(argv: string[], deps: RunDeps = defaultDeps): RunResult {
     return { code, stdout, stderr: notes.map((n) => `figdiff: ${n}\n`).join(""), writes };
   } catch (err) {
     return fail(err instanceof Error ? err.message : String(err), false);
+  } finally {
+    copy?.cleanup();
   }
 }

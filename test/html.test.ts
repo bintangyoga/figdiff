@@ -89,6 +89,12 @@ describe("formatHtml", () => {
       expect(removed).toContain("only in the old version");
     });
 
+    it("offers a side-by-side view without duplicating the image data", () => {
+      const html = formatHtml([modified], { images: { [key]: ok } });
+      expect(html).toContain('data-view="side"');
+      expect(html.split("data:image/png;base64,AAAA").length - 1).toBe(1);
+    });
+
     it("has no difference tab when no difference image is given", () => {
       expect(formatHtml([modified], { images: { [key]: ok } })).not.toContain('data-view="diff"');
     });

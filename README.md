@@ -92,6 +92,15 @@ One self-contained HTML file with the list of changes, filters, and light and da
 npx figdiff design/app.figcraft --against main
 ```
 
+`--against` accepts any git revision (a branch, tag, or commit such as `HEAD~1`). The file is compared with its committed version, so it also works for uncommitted edits: `--against HEAD` shows what you changed since the last commit.
+
+**Use it as a `git difftool`**
+
+```sh
+git config difftool.figdiff.cmd 'figdiff "$LOCAL" "$REMOTE"'
+git difftool -y -t figdiff main -- design/app.figcraft
+```
+
 **Run on every pull request**
 
 ```yaml
@@ -199,9 +208,9 @@ Deliver a self-contained HTML report that anyone can open, including designers w
 - [x] Frames that exist in only one version (added or removed) are shown on their own
 - [ ] Verify rendering against a real `figcraft-cli` (implemented from its documentation and tested with a stand-in; the exact `--node` and `--page` behavior is unconfirmed)
 - [ ] Render at 2x as well as 1x
-- [ ] Side-by-side view next to the swipe slider
+- [x] Side-by-side view next to the swipe slider
 - [ ] Semantic change list next to the images; clicking a change highlights its location
-- [ ] `git difftool` integration and `--against <branch>` support
+- [x] `--against <revision>` (compare a file with its version on a branch, tag or commit) and `git difftool` usage
 
 **Release:** `v0.2.0`, with the first demo GIF in this README.
 
