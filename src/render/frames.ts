@@ -50,10 +50,12 @@ export function renderChangedFrames(
     }
     rendered++;
 
+    renderer.lastError = undefined;
     const before = renderer.renderFrame(beforePath, page, frame, scale);
     const after = renderer.renderFrame(afterPath, page, frame, scale);
     if (!before && !after) {
-      warnings.push(`Could not render frame "${frame}" in either file.`);
+      const why = renderer.lastError ? ` figcraft-cli said: ${renderer.lastError}` : "";
+      warnings.push(`Could not render frame "${frame}" in either file.${why}`);
       continue;
     }
 

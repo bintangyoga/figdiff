@@ -2,7 +2,7 @@ import { chmodSync, existsSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createCliRenderer, defaultExec, findFigcraftCli, RendererUnavailableError } from "../src/render/figcraft-cli.js";
+import { createCliRenderer, defaultExec, errorDetail, findFigcraftCli, RendererUnavailableError } from "../src/render/figcraft-cli.js";
 import type { Exec, Renderer } from "../src/render/figcraft-cli.js";
 import { renderChangedFrames } from "../src/render/frames.js";
 import { frameKey } from "../src/html.js";
@@ -147,5 +147,19 @@ describe("renderChangedFrames", () => {
     expect(img?.before).toBeDefined();
     expect(img?.diff).toBeUndefined();
     expect(r.warnings[0]).toContain("Could not compare");
+  });
+});
+
+describe("failure details", () => {
+  it("takes the first line of stderr", () => {
+    expect(errorDetail(Object.assign(new Error("exit 1"), { stderr: Buffer.from("\n  error: cannot open file\nmore\n") }))).toBe("error: cannot open file");
+    expect(errorDetail(new Error("plain"))).toBe("plain");
+  });
+
+  it("keeps the renderer's reason in the warning", () => {
+    const exec: Exec = () => { throw Object.assign(new Error("exit 1"), { stderr: "error: unsupported file version\n" }); };
+    const renderer = createCliRenderer("fc", exec);
+    const r = renderChangedFrames([{ kind: "removed", id: 1, trail: ["S", "Login"], path: "S/Login" } as never], "old", "new", renderer);
+    expect(r.warnings[0]).toContain("figcraft-cli said: error: unsupported file version");
   });
 });

@@ -7,13 +7,23 @@ import { join } from "node:path";
 export type Exec = (command: string, args: string[]) => void;
 
 export const defaultExec: Exec = (command, args) => {
-  execFileSync(command, args, { stdio: "ignore", timeout: 120_000 });
+  execFileSync(command, args, { stdio: ["ignore", "ignore", "pipe"], timeout: 120_000 });
 };
+
+/** The first useful line of what a failed program wrote to stderr, shortened. */
+export function errorDetail(err: unknown): string {
+  const e = err as { stderr?: Uint8Array | string; message?: string } | null;
+  const text = e?.stderr ? String(e.stderr) : (e?.message ?? "");
+  const line = text.split("\n").map((l) => l.trim()).find((l) => l.length > 0) ?? "";
+  return line.length > 200 ? `${line.slice(0, 200)}…` : line;
+}
 
 /** Renders one top-level frame of a design file to a PNG. */
 export interface Renderer {
   /** Returns the PNG bytes, or undefined when the frame does not exist in that file. */
   renderFrame(file: string, page: string, frame: string, scale: number): Uint8Array | undefined;
+  /** Why the most recent render failed, when the program said. */
+  lastError?: string;
 }
 
 /** Thrown when figcraft-cli itself cannot be run, as opposed to a frame that is missing. */
@@ -49,7 +59,7 @@ export function findFigcraftCli(
  * is also passed and the CLI rejects that combination, it retries with the name alone.
  */
 export function createCliRenderer(bin: string, exec: Exec = defaultExec): Renderer {
-  return {
+  const renderer: Renderer = {
     renderFrame(file, page, frame, scale) {
       const dir = mkdtempSync(join(tmpdir(), "figdiff-render-"));
       const out = join(dir, "frame.png");
@@ -62,6 +72,7 @@ export function createCliRenderer(bin: string, exec: Exec = defaultExec): Render
           } catch (err) {
             if (isNotFound(err)) throw new RendererUnavailableError(`Cannot run ${bin}`);
             // Otherwise: this selector did not work, or the frame is not in this file.
+            renderer.lastError = errorDetail(err);
           }
         }
         return undefined;
@@ -70,4 +81,5 @@ export function createCliRenderer(bin: string, exec: Exec = defaultExec): Render
       }
     },
   };
+  return renderer;
 }
