@@ -17,3 +17,6 @@ export { renderChangedFrames } from "./render/frames.js";
 export type { RenderOptions, RenderedFrames } from "./render/frames.js";
 export { extractFromGit } from "./git.js";
 export type { GitCopy, GitRun } from "./git.js";
+export { compareFigcraft } from "./browser.js";
+export type { CompareOptions, CompareResult } from "./browser.js";
+export { parseFigcraftBytes } from "./parser/bytes.js";

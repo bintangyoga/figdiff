@@ -1,11 +1,12 @@
 import { readFileSync } from "node:fs";
-import { unzipSync, strFromU8 } from "fflate";
 import type { DesignNode, Token } from "../diff/types.js";
 import { documentToTree } from "./document.js";
 import { documentToTokens } from "./tokens.js";
+import { readDocumentJsonFromBytes } from "./bytes.js";
 
 export { documentToTree } from "./document.js";
 export { documentToTokens } from "./tokens.js";
+export { readDocumentJsonFromBytes, parseFigcraftBytes } from "./bytes.js";
 
 /**
  * Read a .figcraft archive and return its parsed `document.json`.
@@ -14,10 +15,7 @@ export { documentToTokens } from "./tokens.js";
  * `thumbnail.png`, `images/`, `versions/`, `branches/` and `library/`.
  */
 export function readDocumentJson(path: string): unknown {
-  const files = unzipSync(new Uint8Array(readFileSync(path)));
-  const entry = files["document.json"];
-  if (!entry) throw new Error(`${path}: no document.json found. Is this a .figcraft file?`);
-  return JSON.parse(strFromU8(entry));
+  return readDocumentJsonFromBytes(new Uint8Array(readFileSync(path)), path);
 }
 
 export function parseFigcraft(path: string): DesignNode {
