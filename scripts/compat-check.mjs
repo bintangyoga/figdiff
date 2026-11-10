@@ -41,6 +41,7 @@ let version = "unknown";
 try { version = sh(cli, ["--version"]).trim(); } catch { /* older builds */ }
 
 const rows = [];
+const details = [];
 let failed = 0;
 for (const file of readdirSync(examplesDir).filter((f) => f.endsWith(".figcraft")).sort()) {
   const src = join(examplesDir, file);
@@ -55,8 +56,13 @@ for (const file of readdirSync(examplesDir).filter((f) => f.endsWith(".figcraft"
     if (n === 0) row.resave = "no changes";
     else {
       failed++;
-      const first = r.changes.slice(0, 2).map((c) => `${c.kind} ${c.id}${c.props ? ` (${c.props.map((p) => p.prop).join(", ")})` : ""}`).join("; ");
-      row.resave = `**${n} changes**: ${first}`;
+      const kinds = {};
+      for (const c of r.changes) for (const p of c.props ?? [{ prop: `(${c.kind})` }]) kinds[p.prop] = (kinds[p.prop] ?? 0) + 1;
+      const counts = Object.entries(kinds).map(([k, v]) => `${k} ×${v}`).join(", ");
+      const short = (v) => { const t = JSON.stringify(v) ?? "undefined"; return t.length > 90 ? `${t.slice(0, 90)}…` : t; };
+      const sample = r.changes.flatMap((c) => (c.props ?? []).map((p) => `node ${c.id} ${p.prop}: ${short(p.from)} → ${short(p.to)}`)).slice(0, 3);
+      row.resave = `**${n} changes** (${counts})`;
+      details.push(`### ${file}\n\n${sample.map((l) => `- \`${l.replace(/`/g, "'")}\``).join("\n")}`);
     }
   } catch (e) {
     failed++;
@@ -96,6 +102,7 @@ const md = [
   ...rows.map((r) => `| ${basename(r.file)} | ${r.resave} | ${r.edit} |`),
   ``,
   failed === 0 ? `All ${rows.length} files passed.` : `${failed} check(s) failed.`,
+  ...(details.length ? [``, `### Examples of what changed on re-save`, ``, ...details] : []),
 ].join("\n");
 console.log(md);
 if (reportPath) writeFileSync(reportPath, md + "\n");
