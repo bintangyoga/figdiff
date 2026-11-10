@@ -27,6 +27,9 @@ inputs:
   scale:
     description: Render scale for the images, from 0.25 to 4.
     default: "1"
+  tolerance:
+    description: "Ignore number changes up to this size in design nodes (for example 0.5), so sub-pixel changes from re-measured text do not show up. Empty means exact."
+    default: ""
   host-images:
     description: "With images: also show them in the comment by saving them to a branch of this repository. Needs contents: write permission. Anyone who can read the repository can see the images."
     default: "false"
@@ -75,6 +78,7 @@ runs:
         INPUT_HOST_IMAGES: ${{ inputs.host-images }}
         INPUT_ASSETS_BRANCH: ${{ inputs.assets-branch }}
         INPUT_SCALE: ${{ inputs.scale }}
+        INPUT_TOLERANCE: ${{ inputs.tolerance }}
         GITHUB_TOKEN: ${{ inputs.token }}
         FIGDIFF_VERSION: ${{ inputs.version }}
       run: |

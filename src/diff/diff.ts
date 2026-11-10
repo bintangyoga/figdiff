@@ -19,15 +19,32 @@ function index(root: DesignNode): Map<string, Indexed> {
   return map;
 }
 
-function sameValue(a: unknown, b: unknown): boolean {
+/** Equal, treating numbers that differ by no more than `tolerance` as the same (also inside objects and lists). */
+function sameValue(a: unknown, b: unknown, tolerance: number): boolean {
+  if (typeof a === "number" && typeof b === "number") return Math.abs(a - b) <= tolerance;
+  if (tolerance > 0 && Array.isArray(a) && Array.isArray(b)) {
+    return a.length === b.length && a.every((v, i) => sameValue(v, b[i], tolerance));
+  }
+  if (tolerance > 0 && a !== null && b !== null && typeof a === "object" && typeof b === "object" && !Array.isArray(a) && !Array.isArray(b)) {
+    const x = a as Record<string, unknown>;
+    const y = b as Record<string, unknown>;
+    const keys = new Set([...Object.keys(x), ...Object.keys(y)]);
+    return [...keys].every((k) => sameValue(x[k], y[k], tolerance));
+  }
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
-export function diffProps(a: Record<string, unknown>, b: Record<string, unknown>): PropChange[] {
+export interface DiffOptions {
+  /** Numbers that differ by no more than this are treated as equal. Default 0 (exact). */
+  tolerance?: number;
+}
+
+export function diffProps(a: Record<string, unknown>, b: Record<string, unknown>, options: DiffOptions = {}): PropChange[] {
+  const tolerance = options.tolerance ?? 0;
   const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
   const changes: PropChange[] = [];
   for (const prop of [...keys].sort()) {
-    if (!sameValue(a[prop], b[prop])) changes.push({ prop, from: a[prop], to: b[prop] });
+    if (!sameValue(a[prop], b[prop], tolerance)) changes.push({ prop, from: a[prop], to: b[prop] });
   }
   return changes;
 }
@@ -50,7 +67,7 @@ function childOrderChanged(old: DesignNode, now: DesignNode): boolean {
  * Changes come out in document order of the old tree, followed by added nodes
  * in document order of the new tree.
  */
-export function diffTrees(before: DesignNode, after: DesignNode): Change[] {
+export function diffTrees(before: DesignNode, after: DesignNode, options: DiffOptions = {}): Change[] {
   const a = index(before);
   const b = index(after);
   const changes: Change[] = [];
@@ -68,6 +85,7 @@ export function diffTrees(before: DesignNode, after: DesignNode): Change[] {
     const props = diffProps(
       { name: old.node.name, type: old.node.type, ...old.node.props },
       { name: now.node.name, type: now.node.type, ...now.node.props },
+      options,
     );
     if (props.length > 0) changes.push({ ...base, kind: "modified", props });
     if (childOrderChanged(old.node, now.node)) changes.push({ ...base, kind: "reordered" });

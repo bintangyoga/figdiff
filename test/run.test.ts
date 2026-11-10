@@ -138,6 +138,13 @@ describe("run", () => {
       expect(run([a, b, "--images"]).stderr).toContain("--images needs --html");
     });
 
+    it("validates and applies --tolerance", () => {
+      expect(run([a, b, "--tolerance", "-1"]).stderr).toContain("0 or more");
+      expect(run([a, b, "--tolerance", "abc"]).stderr).toContain("0 or more");
+      expect(run([a, b, "--tolerance"]).stderr).toContain("--tolerance needs a number");
+      expect(run([a, b, "--tolerance", "0.5"]).code).toBe(0);
+    });
+
     it("validates --scale", () => {
       expect(run([a, b, "--html", html, "--scale", "2"]).stderr).toContain("--scale needs --images");
       expect(run([a, b, "--html", html, "--images", "--scale", "9"]).stderr).toContain("from 0.25 to 4");

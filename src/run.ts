@@ -27,6 +27,7 @@ Options:
   --scale <number>       Render images at this scale, 0.25 to 4 (default 1; needs --images)
   --figcraft-cli <path>  Path to figcraft-cli (default: $FIGCRAFT_CLI, then PATH)
   --json                 Print summary and changes as JSON instead of text
+  --tolerance <number>   Ignore number changes up to this size in design nodes, for example 0.5 (default 0)
   --exit-code            Exit with 1 when the files differ (0 when identical)
   --help                 Show this help
 
@@ -65,12 +66,13 @@ const defaultDeps: RunDeps = {
 };
 
 const BOOLEAN_FLAGS = new Set(["--json", "--exit-code", "--images", "--help"]);
-const VALUE_FLAGS = new Set(["--html", "--figcraft-cli", "--against", "--scale"]);
+const VALUE_FLAGS = new Set(["--html", "--figcraft-cli", "--against", "--scale", "--tolerance"]);
 const MISSING_VALUE: Record<string, string> = {
   "--html": "--html needs a file path",
   "--figcraft-cli": "--figcraft-cli needs a file path",
   "--against": "--against needs a git revision",
   "--scale": "--scale needs a number",
+  "--tolerance": "--tolerance needs a number",
 };
 
 const fail = (message: string, withUsage = true): RunResult => ({
@@ -120,6 +122,13 @@ export function run(argv: string[], overrides: Partial<RunDeps> = {}): RunResult
     if (!Number.isFinite(scale) || scale < 0.25 || scale > 4) return fail("--scale must be a number from 0.25 to 4");
   }
 
+  let tolerance = 0;
+  if (values.has("--tolerance")) {
+    const raw = values.get("--tolerance") as string;
+    tolerance = Number(raw);
+    if (raw.trim() === "" || !Number.isFinite(tolerance) || tolerance < 0) return fail("--tolerance must be a number of 0 or more");
+  }
+
   let copy: GitCopy | undefined;
   try {
     let beforePath: string;
@@ -136,7 +145,7 @@ export function run(argv: string[], overrides: Partial<RunDeps> = {}): RunResult
     }
     const beforeDoc = parseFigcraftFull(beforePath);
     const afterDoc = parseFigcraftFull(afterPath);
-    const changes = diffTrees(beforeDoc.tree, afterDoc.tree);
+    const changes = diffTrees(beforeDoc.tree, afterDoc.tree, { tolerance });
     const tokens = diffTokens(beforeDoc.tokens, afterDoc.tokens);
     const stdout = flags.has("--json")
       ? JSON.stringify({ summary: summarize(changes, tokens), changes, tokens }, null, 2) + "\n"

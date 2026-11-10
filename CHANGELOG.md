@@ -4,12 +4,15 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [0.1.0-alpha.7] - 2026-11-10
+
 ### Fixed
 
 - An empty `guides` list and `layout.content_align: "auto"` are ignored. FigCraft adds them when it saves a file again, so every re-saved file used to show many false changes.
 
 ### Added
 
+- `--tolerance <number>` (and the Action input `tolerance`): number changes up to this size in design nodes are treated as equal, so sub-pixel shifts after FigCraft re-measures text are not reported. Off by default; variables and styles are always exact.
 - A compatibility check (`scripts/compat-check.mjs`, workflow "Compatibility") that runs FigCraft's real `figcraft-cli` over its example files to check that node ids stay stable and re-saving adds no noise. Weekly and on demand.
 
 ## [0.1.0-alpha.6] - 2026-11-10

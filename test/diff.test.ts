@@ -94,3 +94,22 @@ describe("diffTrees", () => {
     expect(diffTrees(before, after).map((c) => c.kind)).toEqual(["removed"]);
   });
 });
+
+describe("tolerance", () => {
+  const make = (w: number, color: number) =>
+    documentToTree(doc([page([2]), { ...rect(2, 1, "Box", color), width: w, transform: [1, 0, 0, 1, 10.2, 5] }]));
+
+  it("is exact by default", () => {
+    expect(diffTrees(make(80, 1), make(80.3, 1))).toHaveLength(1);
+  });
+
+  it("ignores small number changes, including inside lists", () => {
+    const changes = diffTrees(make(80, 1), documentToTree(doc([page([2]), { ...rect(2, 1, "Box", 1), width: 80.3, transform: [1, 0, 0, 1, 10.5, 5] }])), { tolerance: 0.5 });
+    expect(changes).toEqual([]);
+  });
+
+  it("still reports larger changes and non-number changes", () => {
+    expect(diffTrees(make(80, 1), make(82, 1), { tolerance: 0.5 })).toHaveLength(1);
+    expect(diffTrees(make(80, 1), make(80, 0.5), { tolerance: 0.5 })).toHaveLength(1);
+  });
+});

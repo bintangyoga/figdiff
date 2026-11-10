@@ -52,9 +52,9 @@ interface PullEvent {
 }
 
 /** Compare one modified file with its version at the base commit. */
-function compareFile(file: ChangedFile, root: string, base: string, reportDir: string, deps: ActionDeps, log: string[], images = false, scale = ""): RawResult {
+function compareFile(file: ChangedFile, root: string, base: string, reportDir: string, deps: ActionDeps, log: string[], images = false, scale = "", tolerance = ""): RawResult {
   const reportName = `${file.path.replace(/[^A-Za-z0-9._-]+/g, "_")}.html`;
-  const extra = images ? ["--images", ...(scale ? ["--scale", scale] : [])] : [];
+  const extra = [...(images ? ["--images", ...(scale ? ["--scale", scale] : [])] : []), ...(tolerance ? ["--tolerance", tolerance] : [])];
   const result = deps.run([join(root, file.path), "--against", base, "--json", "--html", join(reportDir, reportName), ...extra]);
   if (result.code !== 0) {
     const message = result.stderr.replace(/^figdiff:\s*/gm, "").trim().split("\n")[0] ?? "unknown error";
@@ -133,6 +133,7 @@ export async function runAction(env: Env, overrides: Partial<ActionDeps> = {}): 
   const wantComment = input(env, "comment", "true") !== "false";
   const withImages = input(env, "images", "false") === "true";
   const scale = input(env, "scale", "");
+  const tolerance = input(env, "tolerance", "");
   const maxFiles = Math.max(1, Number.parseInt(input(env, "max-files", "20"), 10) || 20);
 
   let listed: ChangedFile[];
@@ -149,7 +150,7 @@ export async function runAction(env: Env, overrides: Partial<ActionDeps> = {}): 
 
   const results: RawResult[] = [];
   for (const file of files.slice(0, maxFiles)) {
-    results.push(file.status === "modified" ? compareFile(file, root, pr.base.sha, reportDir, deps, log, withImages, scale) : { file });
+    results.push(file.status === "modified" ? compareFile(file, root, pr.base.sha, reportDir, deps, log, withImages, scale, tolerance) : { file });
   }
   if (files.length > maxFiles) log.push(`figdiff: only the first ${maxFiles} files were compared (max-files).`);
   const changed = results.filter(isSubstantive);
