@@ -27,7 +27,7 @@ Options:
   --scale <number>       Render images at this scale, 0.25 to 4 (default 1; needs --images)
   --figcraft-cli <path>  Path to figcraft-cli (default: $FIGCRAFT_CLI, then PATH)
   --json                 Print summary and changes as JSON instead of text
-  --tolerance <number>   Ignore number changes up to this size in design nodes, for example 0.5 (default 0)
+  --tolerance <number>   Ignore width, height and position changes up to this size, for example 0.5 (default 0)
   --exit-code            Exit with 1 when the files differ (0 when identical)
   --help                 Show this help
 

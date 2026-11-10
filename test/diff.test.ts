@@ -96,20 +96,32 @@ describe("diffTrees", () => {
 });
 
 describe("tolerance", () => {
-  const make = (w: number, color: number) =>
-    documentToTree(doc([page([2]), { ...rect(2, 1, "Box", color), width: w, transform: [1, 0, 0, 1, 10.2, 5] }]));
+  const node = (extra: Raw): unknown => doc([page([2]), { ...rect(2, 1, "Box", 1), ...extra }]);
+  const diff = (a: Raw, b: Raw, tolerance?: number) => diffTrees(documentToTree(node(a)), documentToTree(node(b)), tolerance === undefined ? {} : { tolerance });
 
   it("is exact by default", () => {
-    expect(diffTrees(make(80, 1), make(80.3, 1))).toHaveLength(1);
+    expect(diff({ width: 80 }, { width: 80.3 })).toHaveLength(1);
   });
 
-  it("ignores small number changes, including inside lists", () => {
-    const changes = diffTrees(make(80, 1), documentToTree(doc([page([2]), { ...rect(2, 1, "Box", 1), width: 80.3, transform: [1, 0, 0, 1, 10.5, 5] }])), { tolerance: 0.5 });
-    expect(changes).toEqual([]);
+  it("ignores small changes to width, height and position", () => {
+    const t = [1, 0, 0, 1, 10.2, 5];
+    expect(diff({ width: 80, height: 14.3, transform: t }, { width: 80.3, height: 14, transform: [1, 0, 0, 1, 10.5, 5.4] }, 0.5)).toEqual([]);
   });
 
-  it("still reports larger changes and non-number changes", () => {
-    expect(diffTrees(make(80, 1), make(82, 1), { tolerance: 0.5 })).toHaveLength(1);
-    expect(diffTrees(make(80, 0), make(80, 1), { tolerance: 0.5 })).toHaveLength(1);
+  it("still reports larger size changes", () => {
+    expect(diff({ width: 80 }, { width: 82 }, 0.5)).toHaveLength(1);
+    expect(diff({ transform: [1, 0, 0, 1, 0, 0] }, { transform: [1, 0, 0, 1, 3, 0] }, 0.5)).toHaveLength(1);
+  });
+
+  it("never hides a change in scale or rotation", () => {
+    expect(diff({ transform: [1, 0, 0, 1, 0, 0] }, { transform: [0.9, 0, 0, 1, 0, 0] }, 1)).toHaveLength(1);
+  });
+
+  it("never hides color, opacity or radius changes, however large the tolerance", () => {
+    // these values are small (0 to 1), so a tolerance meant for pixels must not apply to them
+    const fill = (r: number, opacity = 1) => ({ fills: [{ type: "solid", opacity, color: { r, g: 0, b: 0, a: 1 } }] });
+    expect(diff(fill(0.05), fill(0.93), 1)).toHaveLength(1);
+    expect(diff(fill(0.5, 0.3), fill(0.5, 0.7), 1)).toHaveLength(1);
+    expect(diff({ corners: { radii: [0, 0, 0, 0] } }, { corners: { radii: [8, 8, 8, 8] } }, 100)).toHaveLength(1);
   });
 });

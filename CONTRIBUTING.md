@@ -41,6 +41,10 @@ npm run build
 
 The layout: `src/parser` reads `.figcraft` files, `src/diff` compares trees, `src/report.ts` and `src/html.ts` format the result, `src/render` talks to `figcraft-cli`, and `src/action` is the GitHub Action. CI runs typecheck, tests and build on Node 20 and 22.
 
+## Website
+
+The site lives in `site/` and is built without a bundler. `npm run build:site` compiles the library, copies the browser build, generates the docs pages from `docs/*.md` and writes everything to `site/dist`. `npm run check:site` verifies links, anchors and the sample comparison. `npm run preview:site` serves it locally. To deploy on Cloudflare Pages use the build command `npm install && npm run build:site` and the output directory `site/dist`; set `SITE_URL` to the public address.
+
 ## Conduct
 
 Be kind and respectful. Assume good intent, give constructive feedback, and welcome newcomers. Harassment and personal attacks are not tolerated.

@@ -35,7 +35,7 @@ jobs:
 | `upload-reports` | `true` | Upload the HTML reports as the artifact `figdiff-reports`. |
 | `report-dir` | `figdiff-reports` | Where the reports are written in the workspace. |
 | `images` | `false` | Experimental. Download `figcraft-cli` from the latest FigCraft release and add before/after images to the HTML reports. |
-| `tolerance` | empty | Ignore number changes up to this size in design nodes, for example `0.5`. Empty means exact. |
+| `tolerance` | empty | Ignore width, height and position changes up to this size, for example `0.5`. Empty means exact. |
 | `scale` | `1` | Render scale for the images, 0.25 to 4. |
 | `host-images` | `false` | With `images`: show the images in the comment, by saving them on a branch. Needs `contents: write`. |
 | `assets-branch` | `figdiff-assets` | The branch that holds those images. |

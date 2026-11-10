@@ -4,6 +4,15 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+### Fixed
+
+- `--tolerance` no longer hides colour, opacity or radius changes. It applies only to width, height and position (the translation part of the transform).
+
+### Added
+
+- A browser entry point, `compareFigcraft(before, after)`, that works on bytes with no file system. It powers the in-browser diff on the website.
+- A website with a landing page, an in-browser diff check and these docs. See `site/` and `npm run build:site`.
+
 ## [0.1.0-alpha.7] - 2026-11-10
 
 ### Fixed
@@ -12,7 +21,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ### Added
 
-- `--tolerance <number>` (and the Action input `tolerance`): number changes up to this size in design nodes are treated as equal, so sub-pixel shifts after FigCraft re-measures text are not reported. Off by default; variables and styles are always exact.
+- `--tolerance <number>` (and the Action input `tolerance`): changes of up to this size to a node's width, height and position are ignored, so sub-pixel shifts after FigCraft re-measures text are not reported. Off by default. Colors, opacity, radii, variables and styles are always compared exactly.
 - A compatibility check (`scripts/compat-check.mjs`, workflow "Compatibility") that runs FigCraft's real `figcraft-cli` over its example files to check that node ids stay stable and re-saving adds no noise. Weekly and on demand.
 
 ## [0.1.0-alpha.6] - 2026-11-10

@@ -19,23 +19,28 @@ function index(root: DesignNode): Map<string, Indexed> {
   return map;
 }
 
-/** Equal, treating numbers that differ by no more than `tolerance` as the same (also inside objects and lists). */
-function sameValue(a: unknown, b: unknown, tolerance: number): boolean {
-  if (typeof a === "number" && typeof b === "number") return Math.abs(a - b) <= tolerance;
-  if (tolerance > 0 && Array.isArray(a) && Array.isArray(b)) {
-    return a.length === b.length && a.every((v, i) => sameValue(v, b[i], tolerance));
+const sameValue = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
+
+/**
+ * Properties that --tolerance applies to: size and position. Colors, opacity, radii and the like stay exact,
+ * because their values are small (often 0 to 1) and a tolerance meant for pixels would hide real changes.
+ */
+const within = (a: unknown, b: unknown, tolerance: number): boolean =>
+  typeof a === "number" && typeof b === "number" && Math.abs(a - b) <= tolerance;
+
+function sameWithTolerance(prop: string, a: unknown, b: unknown, tolerance: number): boolean {
+  if (tolerance > 0) {
+    if (prop === "width" || prop === "height") return within(a, b, tolerance) || sameValue(a, b);
+    // transform is [a, b, c, d, x, y]: the first four are scale and rotation and stay exact; x and y get the tolerance
+    if (prop === "transform" && Array.isArray(a) && Array.isArray(b) && a.length === 6 && b.length === 6) {
+      return a.every((v, i) => (i < 4 ? sameValue(v, b[i]) : within(v, b[i], tolerance)));
+    }
   }
-  if (tolerance > 0 && a !== null && b !== null && typeof a === "object" && typeof b === "object" && !Array.isArray(a) && !Array.isArray(b)) {
-    const x = a as Record<string, unknown>;
-    const y = b as Record<string, unknown>;
-    const keys = new Set([...Object.keys(x), ...Object.keys(y)]);
-    return [...keys].every((k) => sameValue(x[k], y[k], tolerance));
-  }
-  return JSON.stringify(a) === JSON.stringify(b);
+  return sameValue(a, b);
 }
 
 export interface DiffOptions {
-  /** Numbers that differ by no more than this are treated as equal. Default 0 (exact). */
+  /** Changes of at most this many units to width, height and position (x, y) are ignored. Default 0 (exact). */
   tolerance?: number;
 }
 
@@ -44,7 +49,7 @@ export function diffProps(a: Record<string, unknown>, b: Record<string, unknown>
   const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
   const changes: PropChange[] = [];
   for (const prop of [...keys].sort()) {
-    if (!sameValue(a[prop], b[prop], tolerance)) changes.push({ prop, from: a[prop], to: b[prop] });
+    if (!sameWithTolerance(prop, a[prop], b[prop], tolerance)) changes.push({ prop, from: a[prop], to: b[prop] });
   }
   return changes;
 }

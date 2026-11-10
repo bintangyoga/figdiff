@@ -21,7 +21,10 @@
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+    "prepublishOnly": "npm run typecheck && npm test && npm run build",
+    "build:site": "npm run build && node scripts/build-site.mjs",
+    "check:site": "node scripts/site-smoke.mjs",
+    "preview:site": "npx --yes serve site/dist"
   },
   "publishConfig": {
     "access": "public",

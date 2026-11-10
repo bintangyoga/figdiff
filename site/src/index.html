@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!--include:head-->
+<title>figdiff: review design changes like code</title>
+<meta name="description" content="Semantic and visual diffs for FigCraft design files, in the terminal, in the browser and in pull requests. Open source.">
+<meta property="og:title" content="figdiff: review design changes like code">
+<meta property="og:description" content="See exactly what changed between two versions of a FigCraft design. Open source, runs in your browser.">
+<meta property="og:image" content="{{SITE_URL}}/img/social-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/home.css">
+<script type="importmap">{"imports":{"fflate":"/vendor/fflate.js"}}</script>
+<script type="module" src="/home.js"></script>
+</head>
+<body>
+<!--include:header-->
+<main id="main">
+
+<!-- Hero: spot the difference -->
+<section class="hero" id="top">
+  <div class="hero-glow" aria-hidden="true"></div>
+  <div class="wrap hero-head">
+    <h1 class="h1 serif">Can you spot <span class="accent">what changed?</span></h1>
+    <p class="lead">Same screen, two versions. Three changes are on the surface. Tap where you see one, then let figdiff show you the rest.</p>
+  </div>
+  <div class="wrap">
+    <div class="stage">
+      <div class="stage-dots" aria-hidden="true"></div>
+      <div class="stage-in" id="game">
+        <figure class="fig fig-a">
+          <figcaption>Before · main</figcaption>
+          <div class="phone-frame"><div class="phone">
+            <img class="phone-img" src="/img/f0-before.png" width="393" height="852" alt="Ridgeline welcome screen, before the change">
+            <button type="button" class="spot" data-spot="headline" aria-label="The headline" style="left:6%;top:61.3%;width:88%;height:5%"></button>
+            <button type="button" class="spot" data-spot="button" aria-label="The Get started button" style="left:6.6%;top:77.1%;width:86.5%;height:6.8%"></button>
+            <button type="button" class="spot" data-spot="link" aria-label="The link below the button" style="left:26%;top:84.6%;width:48%;height:4.4%"></button>
+            <div class="ring" data-ring="headline" hidden style="left:6%;top:61.3%;width:88%;height:5%"></div>
+            <div class="ring" data-ring="button" hidden style="left:5.6%;top:76.6%;width:88.5%;height:7.6%"></div>
+            <div class="ring" data-ring="link" hidden style="left:26%;top:84.6%;width:48%;height:4.4%"></div>
+          </div></div>
+        </figure>
+
+        <div class="panel" aria-live="polite">
+          <div id="game-play">
+            <div class="count-row"><span class="count serif" id="count">0</span><span class="count-of serif">/ 3</span></div>
+            <div class="slots" aria-hidden="true"><i></i><i></i><i></i></div>
+            <p class="hint" id="hint" role="status">Look closely at the bottom half.</p>
+            <button type="button" class="btn btn-primary" id="reveal">Show me with figdiff</button>
+          </div>
+          <div id="game-done" hidden>
+            <p class="eyebrow accent" id="result-eyebrow">All 3. Sharp eyes.</p>
+            <h2 class="result-title serif">figdiff found 6.</h2>
+            <p class="result-copy">Three you can see. The other three you can't: two layer renames and a text change on a screen you weren't looking at.</p>
+            <ul class="result-list" id="result-list"></ul>
+            <div class="result-actions">
+              <a class="btn btn-primary" href="#try">Try it on your files</a>
+              <button type="button" class="btn btn-ghost" id="replay">Play again</button>
+            </div>
+          </div>
+        </div>
+
+        <figure class="fig fig-b">
+          <figcaption class="accent">After · this PR</figcaption>
+          <div class="phone-frame"><div class="phone">
+            <img class="phone-img" src="/img/f0-after.png" width="393" height="852" alt="Ridgeline welcome screen, after the change">
+            <button type="button" class="spot" data-spot="headline" aria-label="The headline" style="left:6%;top:61.3%;width:88%;height:5%"></button>
+            <button type="button" class="spot" data-spot="button" aria-label="The Get started button" style="left:6.6%;top:77.1%;width:86.5%;height:6.8%"></button>
+            <button type="button" class="spot" data-spot="link" aria-label="The space below the button" style="left:26%;top:84.6%;width:48%;height:4.4%"></button>
+            <div class="ring" data-ring="headline" hidden style="left:6%;top:61.3%;width:88%;height:5%"><span class="rtag">Text changed</span></div>
+            <div class="ring" data-ring="button" hidden style="left:5.6%;top:76.6%;width:88.5%;height:7.6%"><span class="rtag">Fill #0E7C66 → #ED731A</span></div>
+            <div class="ring" data-ring="link" hidden style="left:26%;top:84.6%;width:48%;height:4.4%"><span class="rtag below">Removed</span></div>
+          </div></div>
+        </figure>
+      </div>
+    </div>
+    <p class="credit">Screens: the Ridgeline example that ships with FigCraft, rendered by figcraft-cli.</p>
+  </div>
+</section>
+
+<!-- Ticker -->
+<section class="ticker" aria-label="What figdiff compares">
+  <div class="mq-row"><div class="mq" aria-hidden="true">
+    <span>+ added layers</span><span class="hl">~ fills</span><span>− removed layers</span><span>~ text</span><span>↳ moved</span><span>⇅ reordered</span><span class="hl">~ auto layout</span><span>~ strokes</span><span>~ effects</span><span>~ variables per mode</span><span class="hl">~ styles</span><span>~ corner radius</span><span>▦ pixels</span>
+    <span>+ added layers</span><span class="hl">~ fills</span><span>− removed layers</span><span>~ text</span><span>↳ moved</span><span>⇅ reordered</span><span class="hl">~ auto layout</span><span>~ strokes</span><span>~ effects</span><span>~ variables per mode</span><span class="hl">~ styles</span><span>~ corner radius</span><span>▦ pixels</span>
+  </div></div>
+  <p class="sr-only">figdiff compares added, removed, moved and reordered layers, fills, text, auto layout, strokes, effects, corner radius, variables per mode, styles and pixels.</p>
+</section>
+
+<!-- Try it -->
+<section id="try" class="block">
+  <div class="wrap">
+    <div class="block-head">
+      <div>
+        <p class="eyebrow">01 · Try it here</p>
+        <h2 class="h2 serif">Drop two files. <span class="muted">Get the whole story.</span></h2>
+      </div>
+      <p class="privacy">
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ED731A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+        <span>Runs in your browser. Your files are never uploaded.</span>
+      </p>
+    </div>
+
+    <div class="try" id="try-app">
+      <div class="try-in">
+        <div class="dropzone" id="dropzone">
+          <label class="file" data-slot="before">
+            <span class="file-badge" aria-hidden="true">A</span>
+            <span class="file-text"><span class="file-label">Before</span><span class="file-name" id="name-before">No file yet</span></span>
+            <span class="file-action">Choose</span>
+            <input type="file" id="file-before" accept=".figcraft" class="sr-only">
+          </label>
+          <label class="file file-after" data-slot="after">
+            <span class="file-badge" aria-hidden="true">B</span>
+            <span class="file-text"><span class="file-label accent">After</span><span class="file-name" id="name-after">No file yet</span></span>
+            <span class="file-action">Choose</span>
+            <input type="file" id="file-after" accept=".figcraft" class="sr-only">
+          </label>
+          <div class="drop-hint">
+            <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+            <span>Drop two <code>.figcraft</code> files here</span>
+            <button type="button" class="btn btn-ghost btn-sm" id="use-sample">Use the Ridgeline sample</button>
+          </div>
+          <label class="tol">
+            <span>Ignore tiny size changes <span class="muted">(--tolerance)</span></span>
+            <select id="tolerance">
+              <option value="0">Off (exact)</option>
+              <option value="0.5">Up to 0.5</option>
+              <option value="1">Up to 1</option>
+            </select>
+          </label>
+        </div>
+        <p class="note">Images need FigCraft's renderer, so the browser shows the list of changes. For before/after images use the command line with <code>--images</code>, or the GitHub Action.</p>
+      </div>
+
+      <div class="report" id="report" aria-live="polite">
+        <div class="report-empty" id="report-empty">
+          <p>Choose two files, or load the sample, to see the changes here.</p>
+        </div>
+        <div id="report-body" hidden>
+          <div class="report-head">
+            <div>
+              <div class="report-title" id="report-title"></div>
+              <div class="report-sub" id="report-sub"></div>
+            </div>
+            <div class="report-tools">
+              <button type="button" class="btn btn-ghost btn-sm" id="copy-json">Copy JSON</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="save-html">Save HTML report</button>
+            </div>
+          </div>
+          <div class="filters" id="filters" role="group" aria-label="Filter changes"></div>
+          <div class="report-rows" id="report-rows"></div>
+        </div>
+        <p class="report-error" id="report-error" role="alert" hidden></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Visual diff -->
+<section id="visual" class="block">
+  <div class="wrap visual">
+    <div class="visual-copy">
+      <p class="eyebrow">02 · Visual diff</p>
+      <h2 class="h2 serif">Read it. <span class="accent">Then see it.</span></h2>
+      <p class="body">With <code>--images</code>, figdiff renders every changed frame with FigCraft's own engine and marks the pixels that moved. Drag the line.</p>
+      <div class="stats">
+        <div><span class="big serif">6.0%</span><span class="stat-l">of pixels changed in “1 Welcome”</span></div>
+        <div><span class="big serif">0.3%</span><span class="stat-l">in “4 All set”: one word</span></div>
+      </div>
+    </div>
+    <div class="visual-demo">
+      <div class="seg" role="tablist" aria-label="Compare mode">
+        <button type="button" role="tab" aria-selected="true" data-mode="swipe">Swipe</button>
+        <button type="button" role="tab" aria-selected="false" data-mode="side">Side by side</button>
+        <button type="button" role="tab" aria-selected="false" data-mode="diff">Difference</button>
+      </div>
+      <div class="vd" data-view="swipe" id="vd-swipe">
+        <div class="swipe" id="swipe">
+          <img src="/img/f0-before.png" width="393" height="852" alt="Before">
+          <img class="swipe-after" id="swipe-after" src="/img/f0-after.png" width="393" height="852" alt="After">
+          <div class="swipe-line" id="swipe-line" aria-hidden="true"><span></span></div>
+          <span class="swipe-tag l">Before</span><span class="swipe-tag r">After</span>
+        </div>
+        <label class="swipe-range"><span>Position of the line</span><input type="range" id="swipe-range" min="0" max="100" value="50" class="range"></label>
+      </div>
+      <div class="vd" data-view="side" id="vd-side" hidden>
+        <div class="sbs"><img src="/img/f0-before.png" width="393" height="852" alt="Before"><img class="accent-border" src="/img/f0-after.png" width="393" height="852" alt="After"></div>
+      </div>
+      <div class="vd" data-view="diff" id="vd-diff" hidden>
+        <div class="swipe diff"><img src="/img/f0-diff.png" width="393" height="852" alt="Changed pixels highlighted"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Four ways in -->
+<section id="how" class="block">
+  <div class="wrap">
+    <p class="eyebrow">03 · Four ways in</p>
+    <h2 class="h2 serif">Start with one command. <span class="muted">Grow into your workflow.</span></h2>
+    <div class="steps">
+      <div class="step"><div><h3>Compare two files</h3><p>A readable list, grouped by page and frame.</p><code>npx figdiff@alpha a.figcraft b.figcraft</code></div><span class="num serif" aria-hidden="true">01</span></div>
+      <div class="step"><div><h3>Against git</h3><p>Compare your working file with any branch or commit.</p><code>figdiff app.figcraft --against main</code></div><span class="num serif" aria-hidden="true">02</span></div>
+      <div class="step"><div><h3>HTML report</h3><p>One file with filters and before/after images. Send it to anyone.</p><code>--html report.html --images</code></div><span class="num serif" aria-hidden="true">03</span></div>
+      <div class="step"><div><h3>Pull request comments</h3><p>The GitHub Action reviews every PR that touches a design.</p><code>uses: bintangyoga/figdiff@main</code></div><span class="num serif" aria-hidden="true">04</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- GitHub Action -->
+<section id="action" class="block">
+  <div class="wrap action">
+    <div class="action-copy">
+      <p class="eyebrow">04 · In your pull requests</p>
+      <h2 class="h2 serif">Design review, <span class="accent">right where code review happens.</span></h2>
+      <ul class="ticks">
+        <li>One comment per pull request, updated on every push.</li>
+        <li>Before, after and difference images inline.</li>
+        <li>Full HTML reports attached to the run.</li>
+        <li>Pull requests from forks still get a report.</li>
+      </ul>
+      <div class="code-card">
+        <div class="code-card-head"><span>.github/workflows/figdiff.yml</span><button type="button" class="btn btn-ghost btn-sm" data-copy-target="yaml">Copy</button></div>
+        <pre id="yaml"><code>name: Design changes
+on:
+  pull_request:
+    paths: ["**/*.figcraft"]
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  figdiff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: bintangyoga/figdiff@main</code></pre>
+      </div>
+    </div>
+
+    <div class="pr">
+      <div class="pr-head">
+        <svg viewBox="40 16 176 224" width="18" height="23" fill="#ED731A" aria-hidden="true"><path d="M106 44H84A44 44 0 0 0 40 88V168A44 44 0 0 0 84 212H106V190H84A22 22 0 0 1 62 168V88A22 22 0 0 1 84 66H106Z"/><path d="M150 44H172A44 44 0 0 1 216 88V168A44 44 0 0 1 172 212H150Z"/><rect x="117" y="16" width="22" height="224" rx="11"/></svg>
+        <span><b>figdiff</b> <span class="muted">commented on pull request #1 · updated after push</span></span>
+      </div>
+      <div class="pr-body">
+        <h3>Design changes</h3>
+        <p><code>design/ridgeline-onboarding.figcraft</code>: 6 changes in 2 frames (1 removed, 5 property changes)</p>
+        <div class="pr-frame">
+          <div class="pr-frame-head"><b>Onboarding › 1 Welcome</b> <span class="muted">· 6.0% changed</span></div>
+          <div class="pr-imgs">
+            <figure><figcaption>Before</figcaption><img src="/img/f0-before.png" width="393" height="852" alt="Before"></figure>
+            <figure><figcaption class="accent">After</figcaption><img src="/img/f0-after.png" width="393" height="852" alt="After"></figure>
+            <figure><figcaption>Difference</figcaption><img src="/img/f0-diff.png" width="393" height="852" alt="Difference"></figure>
+          </div>
+        </div>
+        <button type="button" class="pr-toggle" id="pr-toggle" aria-expanded="false"><span aria-hidden="true">▸</span> Show changes</button>
+        <pre class="pr-pre" id="pr-pre" hidden><code>Page "Onboarding"
+  Frame "1 Welcome"
+    ~ Panel › Find your next trail: characters
+    ~ Panel › Find your next trail: name
+    ~ Panel › Get started: fills #0E7C66 → #ED731A
+    - Panel › I already have an account (text)
+  Frame "4 All set"
+    ~ Copy › You're all set, Alex: characters
+    ~ Copy › You're all set, Alex: name</code></pre>
+        <p class="pr-foot">Generated by figdiff. Changes are matched by node id.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Under the hood -->
+<section class="block">
+  <div class="wrap">
+    <p class="eyebrow">05 · Under the hood</p>
+    <h2 class="h2 serif">It reads the file, <span class="muted">not just the picture.</span></h2>
+    <div class="cards">
+      <div class="card"><span class="glyph" aria-hidden="true">+ − ↳</span><h3>Structure</h3><p>Layers that were added, removed, moved to another parent or reordered.</p></div>
+      <div class="card"><span class="glyph" aria-hidden="true">~</span><h3>Every property</h3><p>Fills, text, auto layout, effects, sizes. Add <code>--tolerance 0.5</code> to skip sub-pixel noise.</p></div>
+      <div class="card"><span class="glyph" aria-hidden="true">{ }</span><h3>Variables and styles</h3><p>Design tokens compared per mode, so a changed brand color shows up once, by name.</p></div>
+      <div class="card"><span class="glyph" aria-hidden="true">▦</span><h3>Pixels</h3><p>Changed frames rendered by figcraft-cli, compared pixel by pixel.</p></div>
+    </div>
+    <p class="after-cards">Layers are matched by id. A weekly check against FigCraft's own CLI confirms ids survive a save. <a class="accent" href="/docs/compatibility/">Compatibility notes →</a></p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="block">
+  <div class="wrap faq">
+    <div class="faq-head">
+      <p class="eyebrow">06 · Questions</p>
+      <h2 class="h2 serif">Good to know</h2>
+    </div>
+    <div class="faq-list">
+      <details open><summary>Are my files uploaded anywhere?</summary><p>No. The comparison on this page runs in your browser. The CLI and the GitHub Action run on your own machine or your own CI runner.</p></details>
+      <details><summary>Do I need FigCraft installed?</summary><p>Not for the change list, the JSON or the HTML report. Before/after images use figcraft-cli, FigCraft's command line renderer; the GitHub Action downloads it for you.</p></details>
+      <details><summary>How are layers matched between versions?</summary><p>By node id. FigCraft keeps ids when it saves a file, and a weekly check against figcraft-cli verifies this on FigCraft's example files.</p></details>
+      <details><summary>Is figdiff part of FigCraft?</summary><p>No. It is an independent, MIT-licensed project that reads the open .figcraft format.</p></details>
+      <details><summary>What does alpha mean here?</summary><p>It works and is tested in CI, but option names and the JSON format may still change before 1.0. Pin a version in CI.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- Closing CTA -->
+<section class="cta">
+  <div class="cta-glow" aria-hidden="true"></div>
+  <div class="wrap cta-in">
+    <h2 class="h1 serif">Review design changes<br><span class="accent">like code.</span></h2>
+    <div class="cmd">
+      <code id="cmd-text"><span class="muted">$</span> npx figdiff@alpha before.figcraft after.figcraft</code>
+      <button type="button" class="btn btn-primary btn-sm" id="cmd-copy">Copy</button>
+    </div>
+    <div class="cta-links">
+      <a class="btn btn-ghost" href="/docs/">Read the docs</a>
+      <a class="btn btn-ghost" href="https://github.com/bintangyoga/figdiff">Star on GitHub</a>
+    </div>
+  </div>
+</section>
+
+</main>
+<!--include:footer-->
+</body>
+</html>

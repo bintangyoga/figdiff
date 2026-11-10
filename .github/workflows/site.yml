@@ -1,0 +1,20 @@
+name: Site
+
+on:
+  push:
+    branches: [main]
+    paths: ["site/**", "docs/**", "scripts/**", "src/**", "CHANGELOG.md", "CONTRIBUTING.md", "package.json", ".github/workflows/site.yml"]
+  pull_request:
+    paths: ["site/**", "docs/**", "scripts/**", "src/**", "CHANGELOG.md", "CONTRIBUTING.md", "package.json", ".github/workflows/site.yml"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run build:site
+      - run: npm run check:site

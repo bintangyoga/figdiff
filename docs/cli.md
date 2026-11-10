@@ -14,7 +14,7 @@ Requires Node.js 20 or later. Run `figdiff --help` for the same summary.
 | `--against <revision>` | Compare one file with its version at a git revision (branch, tag or commit such as `main` or `HEAD~1`). Run it inside the repository. |
 | `--html <file>` | Also write a self-contained HTML report. |
 | `--images` | Add rendered before/after images to the HTML report. Needs `--html` and FigCraft's `figcraft-cli`. Experimental. |
-| `--tolerance <number>` | Treat numbers that differ by no more than this as equal in design nodes (sizes, positions, transforms). For example `0.5` hides sub-pixel shifts after FigCraft re-measures text. Default 0 (exact). Variables and styles are always compared exactly. |
+| `--tolerance <number>` | Ignore changes to a node's `width`, `height` and position (`x`, `y` in `transform`) of up to this size. For example `0.5` hides the sub-pixel shifts that appear after FigCraft re-measures text. Default 0 (exact). Colors, opacity, radii, variables and styles are always compared exactly. |
 | `--scale <number>` | Render scale for the images, 0.25 to 4. Default 1. Needs `--images`. |
 | `--figcraft-cli <path>` | Where to find `figcraft-cli`. Default: the `FIGCRAFT_CLI` environment variable, then `PATH`. |
 | `--json` | Print the summary and every change as JSON. |
