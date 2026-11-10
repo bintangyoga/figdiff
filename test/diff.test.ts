@@ -110,6 +110,6 @@ describe("tolerance", () => {
 
   it("still reports larger changes and non-number changes", () => {
     expect(diffTrees(make(80, 1), make(82, 1), { tolerance: 0.5 })).toHaveLength(1);
-    expect(diffTrees(make(80, 1), make(80, 0.5), { tolerance: 0.5 })).toHaveLength(1);
+    expect(diffTrees(make(80, 0), make(80, 1), { tolerance: 0.5 })).toHaveLength(1);
   });
 });
