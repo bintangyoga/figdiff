@@ -60,7 +60,17 @@ for (const file of readdirSync(examplesDir).filter((f) => f.endsWith(".figcraft"
       for (const c of r.changes) for (const p of c.props ?? [{ prop: `(${c.kind})` }]) kinds[p.prop] = (kinds[p.prop] ?? 0) + 1;
       const counts = Object.entries(kinds).map(([k, v]) => `${k} ×${v}`).join(", ");
       const short = (v) => { const t = JSON.stringify(v) ?? "undefined"; return t.length > 90 ? `${t.slice(0, 90)}…` : t; };
-      const sample = r.changes.flatMap((c) => (c.props ?? []).map((p) => `node ${c.id} ${p.prop}: ${short(p.from)} → ${short(p.to)}`)).slice(0, 3);
+      // For objects, show only the keys that differ.
+      const keyDiff = (a, b) => {
+        if (a && b && typeof a === "object" && typeof b === "object" && !Array.isArray(a)) {
+          const keys = [...new Set([...Object.keys(a), ...Object.keys(b)])].filter((k) => JSON.stringify(a[k]) !== JSON.stringify(b[k]));
+          return keys.map((k) => `${k}: ${short(a[k])} → ${short(b[k])}`).join("; ");
+        }
+        return `${short(a)} → ${short(b)}`;
+      };
+      const seen = new Set();
+      const sample = r.changes.flatMap((c) => (c.props ?? []).map((p) => `node ${c.id} ${p.prop}: ${keyDiff(p.from, p.to)}`))
+        .filter((l) => { const k = l.replace(/^node \d+ /, ""); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 6);
       row.resave = `**${n} changes** (${counts})`;
       details.push(`### ${file}\n\n${sample.map((l) => `- \`${l.replace(/`/g, "'")}\``).join("\n")}`);
     }
