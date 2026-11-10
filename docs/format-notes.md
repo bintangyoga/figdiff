@@ -57,3 +57,14 @@ A `.figcraft` file is a zip archive containing:
 ## How to contribute here
 
 Unzip a small `.figcraft` file, look at `document.json`, and add what you find. Please only share files you have the right to share.
+
+## Values FigCraft adds on save
+
+Found by re-saving FigCraft's examples with `figcraft-cli convert` (FigCraft 0.17.0). figdiff ignores them (`src/parser/defaults.ts`) so that an older file and the same file saved by a newer FigCraft compare as equal:
+
+| Old file | After re-save |
+| --- | --- |
+| page `guides: []` | the key is gone |
+| `layout` without `content_align` | `layout.content_align: "auto"` on every auto layout |
+
+Only values equal to the default are ignored.

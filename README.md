@@ -10,7 +10,7 @@
 
 `figdiff` compares two versions of a [FigCraft](https://github.com/storytold/figcraft) design file (`.figcraft`) and explains what changed: a readable list of changes per frame, before/after images, and a pull request comment that stays up to date.
 
-> **Status: alpha.** The CLI, the HTML report (with images rendered by FigCraft's own `figcraft-cli`) and the GitHub Action all work, and are tested in CI. Node matching relies on ids staying stable when FigCraft saves a file again, which has not been checked on many real files yet. Feedback is very welcome: please open an issue.
+> **Status: alpha.** The CLI, the HTML report (with images rendered by FigCraft's own `figcraft-cli`) and the GitHub Action all work, and are tested in CI. Node matching relies on ids staying stable when FigCraft saves a file again. This holds for FigCraft's example files saved through `figcraft-cli` ([details](docs/compatibility.md)), but not yet checked with the desktop app. Feedback is very welcome: please open an issue.
 
 > **Not affiliated.** figdiff is an independent community project. It is not made by, endorsed by, or connected to the FigCraft / ArtCraft authors. FigCraft is a trademark of its respective owners.
 
