@@ -1,4 +1,5 @@
 import type { DesignNode } from "../diff/types.js";
+import { dropDefaults } from "./defaults.js";
 
 type Raw = Record<string, unknown>;
 
@@ -49,10 +50,11 @@ export function documentToTree(doc: unknown): DesignNode {
     if (seen.has(key)) throw new Error(`Node ${key} appears more than once in the tree`);
     seen.add(key);
 
-    const props: Raw = {};
+    const all: Raw = {};
     for (const [k, v] of Object.entries(raw)) {
-      if (!STRUCTURAL_KEYS.has(k)) props[k] = normalize(v);
+      if (!STRUCTURAL_KEYS.has(k)) all[k] = normalize(v);
     }
+    const props = dropDefaults(all);
     const children = Array.isArray(raw.children) ? raw.children.map(build) : [];
     return {
       id: key,
