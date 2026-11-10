@@ -1,0 +1,40 @@
+name: Compatibility
+
+# Checks figdiff against files saved by the latest FigCraft release (node ids stable? re-save noise?).
+# Runs weekly, on demand, and when this check changes.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 5 * * 1"
+  push:
+    paths:
+      - scripts/compat-check.mjs
+      - .github/workflows/compat.yml
+
+permissions:
+  contents: read
+
+jobs:
+  compat:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npm run build
+      - name: Get figcraft-cli and the example files
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/figcraft"
+          gh release download --repo storytold/figcraft --pattern '*linux-x86_64.tar.gz' --dir "$RUNNER_TEMP/figcraft"
+          for f in "$RUNNER_TEMP"/figcraft/*.tar.gz; do tar -xzf "$f" -C "$RUNNER_TEMP/figcraft"; done
+          CLI=$(find "$RUNNER_TEMP/figcraft" -type f -name figcraft-cli | head -n 1)
+          chmod +x "$CLI"
+          echo "FIGCRAFT_CLI=$CLI" >> "$GITHUB_ENV"
+          git clone --depth 1 https://github.com/storytold/figcraft "$RUNNER_TEMP/figcraft-src"
+          echo "EXAMPLES=$RUNNER_TEMP/figcraft-src/examples" >> "$GITHUB_ENV"
+      - name: Check
+        run: node scripts/compat-check.mjs "$FIGCRAFT_CLI" "$EXAMPLES" "$GITHUB_STEP_SUMMARY"
