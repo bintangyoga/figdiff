@@ -6,6 +6,8 @@
 
 **Review design changes the way you review code.**
 
+[Website and in-browser diff](https://figdiff.pages.dev) · [Docs](https://figdiff.pages.dev/docs/)
+
 ![figdiff in a terminal: the changes in a FigCraft file, then a before/after slider over the rendered frame](docs/images/figdiff-demo.gif)
 
 `figdiff` compares two versions of a [FigCraft](https://github.com/storytold/figcraft) design file (`.figcraft`) and explains what changed: a readable list of changes per frame, before/after images, and a pull request comment that stays up to date.

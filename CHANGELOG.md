@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [0.1.0-alpha.8] - 2026-11-10
+
 ### Fixed
 
 - `--tolerance` no longer hides colour, opacity or radius changes. It applies only to width, height and position (the translation part of the transform).
