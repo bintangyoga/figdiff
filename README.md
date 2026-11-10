@@ -1,10 +1,16 @@
 # figdiff
 
+[![npm](https://img.shields.io/npm/v/figdiff/alpha?label=npm%40alpha)](https://www.npmjs.com/package/figdiff)
+[![CI](https://github.com/bintangyoga/figdiff/actions/workflows/ci.yml/badge.svg)](https://github.com/bintangyoga/figdiff/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 **Review design changes the way you review code.**
 
-`figdiff` compares two versions of a [FigCraft](https://github.com/storytold/figcraft) design file (`.figcraft`) and explains what changed, both as a readable list of changes and as before/after images.
+![figdiff in a terminal: the changes in a FigCraft file, then a before/after slider over the rendered frame](docs/images/figdiff-demo.gif)
 
-> **Status: early development (pre-alpha).** Phase 0 is in progress. The parser and a basic text diff exist and are published as a pre-alpha on npm (see [Try it](#try-it)); the HTML report, visual diff and GitHub Action are still planned. Commands in the usage section below are the intended interface and may change. Feedback is very welcome: please open an issue.
+`figdiff` compares two versions of a [FigCraft](https://github.com/storytold/figcraft) design file (`.figcraft`) and explains what changed: a readable list of changes per frame, before/after images, and a pull request comment that stays up to date.
+
+> **Status: alpha.** The CLI, the HTML report (with images rendered by FigCraft's own `figcraft-cli`) and the GitHub Action all work, and are tested in CI. Node matching relies on ids staying stable when FigCraft saves a file again, which has not been checked on many real files yet. Feedback is very welcome: please open an issue.
 
 > **Not affiliated.** figdiff is an independent community project. It is not made by, endorsed by, or connected to the FigCraft / ArtCraft authors. FigCraft is a trademark of its respective owners.
 
@@ -12,11 +18,11 @@
 
 ## Table of contents
 
-- [Try it](#try-it)
+- [Quick start](#quick-start)
 - [The problem](#the-problem)
 - [The idea](#the-idea)
-- [Planned usage](#planned-usage)
-- [How it will work](#how-it-will-work)
+- [Usage](#usage)
+- [How it works](#how-it-works)
 - [Who is it for](#who-is-it-for)
 - [Roadmap](#roadmap)
 - [Risks and open questions](#risks-and-open-questions)
@@ -25,17 +31,22 @@
 
 ---
 
-## Try it
+## Quick start
 
-The first pre-alpha is on npm under the `alpha` tag. It needs Node.js 20 or newer.
+Needs Node.js 20 or newer.
 
 ```sh
+# What changed between two files?
 npx figdiff@alpha before.figcraft after.figcraft
+
+# What changed since main? (inside a git repository)
+npx figdiff@alpha design/app.figcraft --against main
+
+# A shareable report with a before/after slider (needs figcraft-cli for the images)
+npx figdiff@alpha before.figcraft after.figcraft --html report.html --images
 ```
 
-To install it globally instead: `npm install -g figdiff@alpha`.
-
-Today it compares two files and prints a grouped list of changes (`--json` and `--exit-code` are available). The HTML report, visual diff and GitHub Action are on the roadmap below. Matching of nodes relies on ids staying stable between saves in FigCraft, which is not yet verified, so treat results as preliminary.
+On GitHub, add the Action and every pull request that touches a design file gets one comment with the changes. See it live in the [demo pull request](https://github.com/bintangyoga/figdiff-demo/pull/1), and read the [CLI guide](docs/cli.md) and the [Action guide](docs/action.md) for every option.
 
 ---
 
@@ -54,9 +65,7 @@ figdiff gives design files the same review workflow as code:
 - **Visual diff.** Before, after, and highlighted-difference images for every frame that changed.
 - **Automatic pull request comments.** A GitHub Action that posts both of the above on every pull request that touches a design file.
 
-## Planned usage
-
-> These commands are the intended interface and may change.
+## Usage
 
 **Compare two files locally**
 
@@ -144,7 +153,7 @@ jobs:
 
 Pull requests from forks get a read-only token, so no comment is posted; the changes are printed in the job log instead. Images appear in the comment only with `images: true` and `host-images: true`, which also needs `contents: write` in the workflow permissions. They are saved on the `figdiff-assets` branch, so the repository will hold a copy of every rendered frame. Without it they are only in the HTML report.
 
-## How it will work
+## How it works
 
 ```text
 before.figcraft ─┐                    ┌─ semantic diff (changes as text/JSON)
