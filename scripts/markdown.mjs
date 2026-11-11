@@ -22,6 +22,7 @@ export function inline(text, link = (href) => href) {
   });
   s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   s = s.replace(/(^|[\s(])\*([^*\s][^*]*)\*(?=[\s).,;:!?]|$)/g, "$1<em>$2</em>");
+  // eslint-disable-next-line no-control-regex -- NUL marks the places where code spans were set aside
   return s.replace(/\u0000(\d+)\u0000/g, (_m, i) => codes[Number(i)]);
 }
 

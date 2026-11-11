@@ -180,7 +180,8 @@ const files = [];
 (function walk(d) {
   for (const f of readdirSync(d)) {
     const p = join(d, f);
-    statSync(p).isDirectory() ? walk(p) : files.push(relative(out, p));
+    if (statSync(p).isDirectory()) walk(p);
+    else files.push(relative(out, p));
   }
 })(out);
 console.log(`site: ${files.length} files in ${relative(root, out)} (${pages.length} docs pages, ${seen.size} library modules)`);

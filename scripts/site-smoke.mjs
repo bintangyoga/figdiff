@@ -3,7 +3,7 @@
 // into a docs page exists, and the comparison code in the browser bundle gives the expected answer for the
 // sample files. Run after `npm run build:site`.
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const dist = resolve(process.argv[2] ?? "site/dist");
