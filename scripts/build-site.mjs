@@ -124,6 +124,7 @@ pages.forEach((p, i) => {
     : "";
   const html = fill(template, {
     DOCS_CURRENT: ' aria-current="page"',
+    PAGE_URL: `${SITE_URL}${urlOf(p.slug)}`,
     TITLE: escapeHtml(p.title),
     DESCRIPTION: escapeHtml(p.description),
     SIDEBAR: sidebar(p),

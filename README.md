@@ -87,7 +87,7 @@ Page "App"
 4 changes in 2 frames (1 removed, 3 property changes)
 ```
 
-Useful flags: `--html report.html` also writes a self-contained HTML report (add `--images` for rendered before/after images), `--json` prints the summary and every change as JSON, and `--exit-code` exits with 1 when the files differ, so it can fail a CI step.
+Useful flags: `--html report.html` also writes a self-contained HTML report (add `--images` for rendered before/after images), `--json` prints the summary and every change as JSON, `--markdown` prints it as Markdown for pull requests and CI summaries, `--tolerance 0.5` ignores tiny width, height and position changes, `--strict-ids` turns off the fallback that pairs nodes by name and path when ids change, and `--exit-code` exits with 1 when the files differ, so it can fail a CI step.
 
 **Generate a shareable report**
 
@@ -207,7 +207,7 @@ Confirm that FigCraft's file format and CLI are stable enough to build on, befor
 - [ ] Check whether `figcraft-cli` is available as a prebuilt binary or must be built with Cargo
 - [ ] Check name availability on npm and GitHub; choose a fallback name if needed
 - [x] Set up the repository: TypeScript, tests, CI
-- [ ] Add linting and formatting (ESLint, Prettier)
+- [x] Add linting and formatting (ESLint runs in CI; Prettier is configured but not enforced yet)
 
 **Deliverables:** format notes (`docs/format-notes.md`), 5–10 before/after sample file pairs, a working project skeleton.
 
@@ -218,7 +218,7 @@ Confirm that FigCraft's file format and CLI are stable enough to build on, befor
 Deliver `figdiff a.figcraft b.figcraft` printing a correct list of changes in the terminal. No images yet.
 
 - [x] Parser for core properties: type, name, hierarchy, position, size, fills, strokes, corner radius, text, font
-- [ ] Node matching by id, with fallback to name and hierarchy path
+- [x] Node matching by id, with fallback to name and hierarchy path
 - [x] Detect added, removed, reparented, and modified nodes
 - [x] Group results by page and top-level frame so output is easy to read
 - [x] Summary line (for example, "12 changes in 3 frames")
@@ -277,6 +277,7 @@ Deliver a project that other people can use and contribute to, then announce it.
 - [x] Compatibility table of tested FigCraft versions ([docs/compatibility.md](docs/compatibility.md)); still to update with each FigCraft release
 - [x] Documentation: [CLI guide](docs/cli.md), [Action guide](docs/action.md), [contributor guide](CONTRIBUTING.md)
 - [x] `good first issue` labels to welcome contributors (8 issues open)
+- [x] Website with an in-browser diff and the documentation ([figdiff.bintangyoga.dev](https://figdiff.bintangyoga.dev))
 - [ ] Announcement: FigCraft community, Show HN, Reddit, and design communities
 
 **Release:** `v1.0.0`, with a stable CLI and JSON output format.
