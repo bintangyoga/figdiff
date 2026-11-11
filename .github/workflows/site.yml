@@ -18,5 +18,7 @@ jobs:
       - run: npm install
       - run: npm run build:site
       - run: npm run check:site
-      - run: npx playwright install --with-deps chromium
+      # The runner image already has the libraries Chromium needs; installing them with --with-deps
+      # pulls in many font packages and fails whenever the Ubuntu mirrors are slow.
+      - run: npx playwright install chromium
       - run: npm run test:site
