@@ -15,6 +15,11 @@ export default tseslint.config(
     },
   },
   {
+    // Code passed to page.evaluate runs in the browser.
+    files: ["scripts/site-e2e.mjs"],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+  },
+  {
     files: ["test/**/*.ts"],
     rules: { "@typescript-eslint/no-non-null-assertion": "off", "@typescript-eslint/ban-ts-comment": "off" },
   },

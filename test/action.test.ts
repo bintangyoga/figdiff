@@ -77,12 +77,14 @@ describe("runAction with a real git repository", () => {
     git("config", "commit.gpgsign", "false");
     mkdirSync(join(repo, "design"));
     writeFileSync(join(repo, "design/app.figcraft"), makeFigcraft(1));
-    writeFileSync(join(repo, "design/same.figcraft"), makeFigcraft(1));
+    // The same bytes in both commits: a zip stores a timestamp, so making it twice can differ.
+    const same = makeFigcraft(1);
+    writeFileSync(join(repo, "design/same.figcraft"), same);
     writeFileSync(join(repo, "notes.md"), "a");
     git("add", "."); git("commit", "-q", "-m", "base");
     base = git("rev-parse", "HEAD");
     writeFileSync(join(repo, "design/app.figcraft"), makeFigcraft(0.5, true));
-    writeFileSync(join(repo, "design/same.figcraft"), makeFigcraft(1)); // identical bytes: not listed as changed
+    writeFileSync(join(repo, "design/same.figcraft"), same); // identical bytes: not listed as changed
     writeFileSync(join(repo, "design/new.figcraft"), makeFigcraft(1));
     writeFileSync(join(repo, "notes.md"), "b");
     git("add", "."); git("commit", "-q", "-m", "change");
