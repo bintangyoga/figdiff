@@ -62,6 +62,12 @@ export function renderChangedFrames(
     const entry: FrameImages = {};
     if (before) entry.before = dataUri(before);
     if (after) entry.after = dataUri(after);
+    try {
+      const size = decodePng((after ?? before) as Uint8Array);
+      entry.width = Math.round(size.width / scale);
+    } catch {
+      // the size is only a display hint
+    }
     if (before && after) {
       try {
         const comparison = compareImages(decodePng(before), decodePng(after));

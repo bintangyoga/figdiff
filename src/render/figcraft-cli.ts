@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -9,6 +9,20 @@ export type Exec = (command: string, args: string[]) => void;
 export const defaultExec: Exec = (command, args) => {
   execFileSync(command, args, { stdio: ["ignore", "ignore", "pipe"], timeout: 120_000 });
 };
+
+/** Runs a program and returns what it printed; must throw if it cannot be started or exits with an error. */
+export type ExecOutput = (command: string, args: string[]) => string;
+
+export const defaultExecOutput: ExecOutput = (command, args) =>
+  execFileSync(command, args, { stdio: ["ignore", "pipe", "pipe"], timeout: 120_000, encoding: "utf8", maxBuffer: 32 * 1024 * 1024 });
+
+/** A node's position on the canvas, as figcraft-cli reports it (after auto layout). */
+export interface NodeBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
 
 /** The first useful line of what a failed program wrote to stderr, shortened. */
 export function errorDetail(err: unknown): string {
@@ -22,6 +36,11 @@ export function errorDetail(err: unknown): string {
 export interface Renderer {
   /** Returns the PNG bytes, or undefined when the frame does not exist in that file. */
   renderFrame(file: string, page: string, frame: string, scale: number): Uint8Array | undefined;
+  /**
+   * Where these nodes are on the canvas, computed by FigCraft (so auto layout is applied). Ids the file does
+   * not have must not be passed. Returns an empty map when the positions cannot be read.
+   */
+  bounds?(file: string, ids: string[]): Map<string, NodeBounds>;
   /** Why the most recent render failed, when the program said. */
   lastError?: string;
 }
@@ -58,8 +77,42 @@ export function findFigcraftCli(
  * Renderer backed by `figcraft-cli export`. The frame is selected by name; when the page
  * is also passed and the CLI rejects that combination, it retries with the name alone.
  */
-export function createCliRenderer(bin: string, exec: Exec = defaultExec): Renderer {
+export function createCliRenderer(bin: string, exec: Exec = defaultExec, execOutput: ExecOutput = defaultExecOutput): Renderer {
   const renderer: Renderer = {
+    bounds(file, ids) {
+      const out = new Map<string, NodeBounds>();
+      if (ids.length === 0) return out;
+      const dir = mkdtempSync(join(tmpdir(), "figdiff-bounds-"));
+      const script = join(dir, "bounds.json");
+      try {
+        const steps = ids.map((id) => ({
+          command: "node.get",
+          params: { id: /^\d+$/.test(id) ? Number(id) : id, depth: 0, fields: ["absoluteBounds"] },
+        }));
+        writeFileSync(script, JSON.stringify(steps));
+        const printed = execOutput(bin, ["run", script, "--in", file]);
+        for (const line of printed.split("\n")) {
+          if (!line.trim().startsWith("{")) continue;
+          let step: { step?: unknown; ok?: unknown; result?: { absoluteBounds?: Partial<NodeBounds> } };
+          try {
+            step = JSON.parse(line);
+          } catch {
+            continue;
+          }
+          const id = typeof step.step === "number" ? ids[step.step] : undefined;
+          const b = step.result?.absoluteBounds;
+          if (step.ok !== true || id === undefined || !b) continue;
+          if ([b.x, b.y, b.width, b.height].every((v) => typeof v === "number" && Number.isFinite(v))) {
+            out.set(id, b as NodeBounds);
+          }
+        }
+      } catch (err) {
+        renderer.lastError = errorDetail(err);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+      return out;
+    },
     renderFrame(file, page, frame, scale) {
       const dir = mkdtempSync(join(tmpdir(), "figdiff-render-"));
       const out = join(dir, "frame.png");

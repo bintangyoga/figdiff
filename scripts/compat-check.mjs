@@ -5,12 +5,14 @@
 // For every .figcraft file in <examples-dir> it runs two checks:
 //   1. re-save:  figcraft-cli convert  a.figcraft -> b.figcraft ; figdiff a b must report nothing
 //   2. one edit: figcraft-cli run (rename one node) ; figdiff must report the rename, with nothing added, removed or moved
+//   3. positions: figdiff asks figcraft-cli where that node is, for highlighting changes in HTML reports (informational)
 // It needs `npm run build` first. The exit code is 1 when any check fails.
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
 import { parseFigcraft } from "../dist/index.js";
+import { createCliRenderer } from "../dist/render/figcraft-cli.js";
 
 const [cli, examplesDir, reportPath] = process.argv.slice(2);
 if (!cli || !examplesDir) {
@@ -55,7 +57,7 @@ const details = [];
 let failed = 0;
 for (const file of readdirSync(examplesDir).filter((f) => f.endsWith(".figcraft")).sort()) {
   const src = join(examplesDir, file);
-  const row = { file, resave: "", edit: "" };
+  const row = { file, resave: "", edit: "", bounds: "" };
 
   // 1. a plain re-save must not look like a change
   try {
@@ -111,6 +113,15 @@ for (const file of readdirSync(examplesDir).filter((f) => f.endsWith(".figcraft"
     failed++;
     row.edit = `**error**: ${oneLine(e)}`;
   }
+  // 3. positions, used to highlight changes on the images; not having them is not a failure
+  try {
+    const node = pickNode(parseFigcraft(src));
+    const renderer = createCliRenderer(cli);
+    const b = node ? renderer.bounds(src, [String(node.id)]).get(String(node.id)) : undefined;
+    row.bounds = b ? `ok (${b.width}×${b.height} at ${b.x}, ${b.y})` : `not available${renderer.lastError ? `: ${renderer.lastError}` : ""}`;
+  } catch (e) {
+    row.bounds = `not available: ${oneLine(e)}`;
+  }
   rows.push(row);
 }
 
@@ -119,9 +130,9 @@ const md = [
   ``,
   `figcraft-cli: \`${version}\``,
   ``,
-  `| File | Re-saved by FigCraft | One rename by FigCraft (ids kept) |`,
-  `| --- | --- | --- |`,
-  ...rows.map((r) => `| ${basename(r.file)} | ${r.resave} | ${r.edit} |`),
+  `| File | Re-saved by FigCraft | One rename by FigCraft (ids kept) | Node positions |`,
+  `| --- | --- | --- | --- |`,
+  ...rows.map((r) => `| ${basename(r.file)} | ${r.resave} | ${r.edit} | ${String(r.bounds).replace(/\|/g, "/")} |`),
   ``,
   failed === 0 ? `All ${rows.length} files passed.` : `${failed} check(s) failed.`,
   ...(details.length ? [``, `### Examples of what changed on re-save`, ``, ...details] : []),

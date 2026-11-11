@@ -13,6 +13,16 @@ export interface FrameImages {
   diff?: string;
   /** Share of pixels that differ, from 0 to 1. */
   changedRatio?: number;
+  /** Width of the frame in CSS pixels (the rendered width divided by the scale), so images are not blown up. */
+  width?: number;
+}
+
+/** Where a changed node sits in its frame, as fractions of the frame's size. */
+export interface ChangeBox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
 }
 
 export interface HtmlOptions {
@@ -23,6 +33,8 @@ export interface HtmlOptions {
   images?: Record<string, FrameImages>;
   /** Changed variables and styles. */
   tokens?: TokenChange[];
+  /** Positions of changed nodes, keyed by node id, to highlight them on the images. */
+  boxes?: Record<string, ChangeBox>;
 }
 
 /** Key used in `HtmlOptions.images` for a top-level frame. */
@@ -81,9 +93,10 @@ function rowBody(c: Change): string {
   }
 }
 
-function row(c: Change, label: string): string {
+function row(c: Change, label: string, located = false): string {
+  const hl = located ? ` data-node="${escapeHtml(c.id)}" tabindex="0" title="Show on the image"` : "";
   return (
-    `<li class="chg ${c.kind}" data-kind="${c.kind}">` +
+    `<li class="chg ${c.kind}${located ? " located" : ""}" data-kind="${c.kind}"${hl}>` +
     `<span class="badge" title="${KIND_LABEL[c.kind]}">${KIND_SYMBOL[c.kind]}</span>` +
     `<div class="what"><span class="label">${escapeHtml(label)}</span>${rowBody(c)}` +
     (c.instances ? `<span class="note">in a component used by ${c.instances} instance${c.instances === 1 ? "" : "s"}</span>` : "") +
@@ -97,8 +110,20 @@ function percent(ratio: number): string {
   return p < 0.1 ? "<0.1%" : `${p < 10 ? p.toFixed(1) : Math.round(p)}%`;
 }
 
-function compare(images: FrameImages | undefined): string {
+const pct = (v: number) => `${(Math.max(-1, Math.min(2, v)) * 100).toFixed(2)}%`;
+
+function overlays(boxes: [string, ChangeBox][]): string {
+  return boxes
+    .map(
+      ([id, b]) =>
+        `<span class="hl" data-hl="${escapeHtml(id)}" hidden style="left:${pct(b.x)};top:${pct(b.y)};width:${pct(b.w)};height:${pct(b.h)}"></span>`,
+    )
+    .join("");
+}
+
+function compare(images: FrameImages | undefined, boxes: [string, ChangeBox][] = []): string {
   if (!images) return "";
+  const limit = images.width && images.width > 0 ? ` style="max-width:${Math.round(images.width)}px"` : "";
   const before = images.before && safeImageSrc(images.before);
   const after = images.after && safeImageSrc(images.after);
   const diff = images.diff && safeImageSrc(images.diff);
@@ -113,9 +138,9 @@ function compare(images: FrameImages | undefined): string {
         : "") +
       `</div>`;
     return (
-      `<div class="cmp" data-view="swipe" style="--pos:50%">${tabs}` +
+      `<div class="cmp" data-view="swipe" style="--pos:50%${images.width ? `;--w:${Math.round(images.width)}px` : ""}">${tabs}` +
       `<div class="stack"><img class="b" alt="Before" src="${escapeHtml(before)}">` +
-      `<img class="a" alt="After" src="${escapeHtml(after)}"></div>` +
+      `<img class="a" alt="After" src="${escapeHtml(after)}">${overlays(boxes)}</div>` +
       (diff ? `<img class="diffimg" alt="Differences highlighted" src="${escapeHtml(diff)}" hidden>` : "") +
       `<input type="range" min="0" max="100" value="50" aria-label="Slide between before and after">` +
       `<div class="cap"><span>Before</span><span>After</span></div></div>`
@@ -125,7 +150,7 @@ function compare(images: FrameImages | undefined): string {
   const only = after ?? before;
   if (!only) return "";
   return (
-    `<figure class="single"><img alt="${after ? "After" : "Before"}" src="${escapeHtml(only)}">` +
+    `<figure class="single"${limit}><div class="frame"><img alt="${after ? "After" : "Before"}" src="${escapeHtml(only)}">${overlays(boxes)}</div>` +
     `<figcaption>${after ? "Added: only in the new version" : "Removed: only in the old version"}</figcaption></figure>`
   );
 }
@@ -169,10 +194,12 @@ code{font:12.5px ui-monospace,SFMono-Regular,Menlo,monospace}
 .stack img.a{position:absolute;inset:0;clip-path:inset(0 0 0 var(--pos))}
 .cmp input{width:100%;margin:6px 0 0}
 .cap{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}
-.tabs{display:flex;align-items:center;gap:6px;margin:0 0 6px}
-.tabs button{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:6px;padding:2px 10px;cursor:pointer}
+.tabs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 6px}
+.cmp .stack,.cmp .diffimg,.cmp input,.cmp .cap{max-width:var(--w,100%)}
+.cmp[data-view=side] .stack{max-width:calc(var(--w,50%) * 2 + 8px)}
+.tabs button{white-space:nowrap;font:inherit;font-size:12px;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:6px;padding:2px 10px;cursor:pointer}
 .tabs button[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
-.tabs .ratio{margin-left:auto;color:var(--muted);font-size:12px}
+.tabs .ratio{white-space:nowrap;margin-left:auto;color:var(--muted);font-size:12px}
 .diffimg{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:8px}
 .diffimg[hidden]{display:none}
 .cmp[data-view=diff] input,.cmp[data-view=diff] .cap,.cmp[data-view=diff] .stack,.cmp[data-view=side] input{display:none}
@@ -183,6 +210,14 @@ figure.single{margin:4px 0 12px}
 figure.single img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
 figure.single figcaption{color:var(--muted);font-size:12px;margin-top:4px}
 footer{margin-top:40px;color:var(--muted);font-size:12px}
+figure.single .frame{position:relative}
+.hl{position:absolute;border:2px solid #ff3b30;border-radius:3px;box-shadow:0 0 0 9999px rgba(0,0,0,.28);pointer-events:none;z-index:2}
+.hl[hidden]{display:none}
+.cmp[data-view=side] .hl,.cmp[data-view=diff] .hl{display:none}
+.chg.located{cursor:pointer;border-radius:6px}
+.chg.located:hover,.chg.located:focus-visible,.chg.located.on{background:color-mix(in srgb,var(--fg) 6%,transparent);outline:none}
+.chg.located .label::after{content:"◎";margin-left:6px;color:var(--muted);font-weight:400}
+@media (min-width:1100px){main.wide{max-width:1240px}.body.with-img{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:24px;align-items:start}.body.with-img .media{position:sticky;top:12px}.body.with-img .chg:first-child{border-top:0}}
 `;
 
 const SCRIPT = `
@@ -192,6 +227,21 @@ document.querySelectorAll('.filters button').forEach(function(btn){
     btn.setAttribute('aria-pressed',String(on));
     var kind=btn.getAttribute('data-kind');
     document.querySelectorAll('.chg[data-kind="'+kind+'"]').forEach(function(el){el.hidden=!on;});
+  });
+});
+document.querySelectorAll('details').forEach(function(d){
+  var rows=d.querySelectorAll('.chg[data-node]');
+  function show(id,on){d.querySelectorAll('.hl').forEach(function(h){if(h.getAttribute('data-hl')===id)h.hidden=!on;});}
+  rows.forEach(function(r){
+    var id=r.getAttribute('data-node');
+    function pinned(){return r.classList.contains('on');}
+    r.addEventListener('mouseenter',function(){show(id,true);});
+    r.addEventListener('mouseleave',function(){if(!pinned())show(id,false);});
+    r.addEventListener('focus',function(){show(id,true);});
+    r.addEventListener('blur',function(){if(!pinned())show(id,false);});
+    function toggle(){var on=!pinned();rows.forEach(function(o){if(o!==r&&o.classList.contains('on')){o.classList.remove('on');show(o.getAttribute('data-node'),false);}});r.classList.toggle('on',on);show(id,on);}
+    r.addEventListener('click',toggle);
+    r.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});
   });
 });
 document.querySelectorAll('.cmp').forEach(function(c){
@@ -239,12 +289,23 @@ export function formatHtml(changes: Change[], options: HtmlOptions = {}): string
       const heading = frame === "" ? "Page itself" : `Frame “${escapeHtml(frame)}”`;
       const images = frame === "" ? undefined : options.images?.[frameKey(page, frame)];
       const nodeCount = new Set(group.map((c) => c.id)).size;
+      const boxes: [string, ChangeBox][] = [];
+      if (images && options.boxes) {
+        for (const id of new Set(group.map((c) => c.id))) {
+          const b = Object.hasOwn(options.boxes, id) ? options.boxes[id] : undefined;
+          if (b) boxes.push([id, b]);
+        }
+      }
+      const located = new Set(boxes.map(([id]) => id));
       const items = group
-        .map((c) => row(c, c.trail.length > 2 ? c.trail.slice(2).join(SEP) : frame === "" ? "(page)" : "(frame itself)"))
+        .map((c) => row(c, c.trail.length > 2 ? c.trail.slice(2).join(SEP) : frame === "" ? "(page)" : "(frame itself)", located.has(c.id)))
         .join("");
+      const media = compare(images, boxes);
       sections +=
         `<details open><summary><span>${heading}</span><span class="count">${nodeCount} ${nodeCount === 1 ? "node" : "nodes"}</span></summary>` +
-        `<div class="body">${compare(images)}<ul class="list">${items}</ul></div></details>`;
+        (media
+          ? `<div class="body with-img"><div class="media">${media}</div><ul class="list">${items}</ul></div></details>`
+          : `<div class="body"><ul class="list">${items}</ul></div></details>`);
     }
   }
 
@@ -269,7 +330,7 @@ export function formatHtml(changes: Change[], options: HtmlOptions = {}): string
   return (
     `<!doctype html><html lang="en"><head><meta charset="utf-8">` +
     `<meta name="viewport" content="width=device-width,initial-scale=1">` +
-    `<title>${escapeHtml(title)}</title><style>${CSS}</style></head><body><main>` +
+    `<title>${escapeHtml(title)}</title><style>${CSS}</style></head><body><main${options.images && Object.keys(options.images).length > 0 ? ` class="wide"` : ""}>` +
     `<h1>${escapeHtml(title)}</h1>${files}${body}` +
     `<footer>Generated by figdiff. Changes are matched by node id.</footer>` +
     `</main><script>${SCRIPT}</script></body></html>\n`

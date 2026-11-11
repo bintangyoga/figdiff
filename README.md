@@ -202,10 +202,10 @@ Confirm that FigCraft's file format and CLI are stable enough to build on, befor
 
 - [x] Download sample files from FigCraft's `examples/` folder, unzip them, and study the structure of `document.json`
 - [x] Document the node schema: id, type, name, parent, position, size, fills, strokes, text, auto layout, components, variables
-- [ ] Verify that node ids stay stable when a file is saved again (critical for matching nodes between versions)
-- [ ] Test `figcraft-cli render`, `export --node`, and `convert` on headless Linux
-- [ ] Check whether `figcraft-cli` is available as a prebuilt binary or must be built with Cargo
-- [ ] Check name availability on npm and GitHub; choose a fallback name if needed
+- [x] Verify that node ids stay stable when a file is saved again (critical for matching nodes between versions)
+- [x] Test `figcraft-cli render`, `export --node`, and `convert` on headless Linux
+- [x] Check whether `figcraft-cli` is available as a prebuilt binary or must be built with Cargo
+- [x] Check name availability on npm and GitHub; choose a fallback name if needed
 - [x] Set up the repository: TypeScript, tests, CI
 - [x] Add linting and formatting (ESLint runs in CI; Prettier is configured but not enforced yet)
 
@@ -225,7 +225,7 @@ Deliver `figdiff a.figcraft b.figcraft` printing a correct list of changes in th
 - [x] `--json` output for use by other tools
 - [x] `--exit-code` flag and stable exit codes (0 ok, 1 differences, 2 error)
 - [x] Detect changes in layer order
-- [ ] Tests using the sample file pairs from Phase 0
+- [x] Tests using the sample file pairs from Phase 0
 
 **Release:** `v0.1.0` on npm, usable with `npx figdiff`.
 
@@ -242,9 +242,9 @@ Deliver a self-contained HTML report that anyone can open, including designers w
 - [x] Graceful fallback when `figcraft-cli` is unavailable: the report is still written, with a warning
 - [x] Frames that exist in only one version (added or removed) are shown on their own
 - [x] Verify rendering against a real `figcraft-cli` (ran in CI on a FigCraft example without errors; the images themselves still need a human look)
-- [ ] Render at 2x as well as 1x
+- [x] Render at 2x as well as 1x
 - [x] Side-by-side view next to the swipe slider
-- [ ] Semantic change list next to the images; clicking a change highlights its location
+- [x] Semantic change list next to the images; clicking a change highlights its location
 - [x] `--against <revision>` (compare a file with its version on a branch, tag or commit) and `git difftool` usage
 
 **Release:** `v0.2.0`, with the first demo GIF in this README.
@@ -272,7 +272,8 @@ Deliver an automatic comment on every pull request that changes a `.figcraft` fi
 Deliver a project that other people can use and contribute to, then announce it.
 
 - [x] Variables, variable collections and styles (tokens) are compared
-- [ ] Support for other advanced properties: components and instances as such, variants, prototyping, images (their properties are already diffed generically as node properties)
+- [x] Components, instances and variants: instances are named by their component, variant swaps are labeled, and changes inside a component show how many instances use it
+- [ ] Prototyping and images as such (their properties are already diffed generically as node properties)
 - [x] Performance testing on large files (a 10,000-node test runs in CI; see `test/performance.test.ts`)
 - [x] Compatibility table of tested FigCraft versions ([docs/compatibility.md](docs/compatibility.md)); still to update with each FigCraft release
 - [x] Documentation: [CLI guide](docs/cli.md), [Action guide](docs/action.md), [contributor guide](CONTRIBUTING.md)

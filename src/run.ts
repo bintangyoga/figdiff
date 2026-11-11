@@ -2,11 +2,12 @@ import { basename } from "node:path";
 import { parseFigcraftFull } from "./parser/index.js";
 import { diffTrees } from "./diff/diff.js";
 import { formatMarkdown } from "./markdown.js";
+import { locateChanges } from "./render/boxes.js";
 import { diffTokens } from "./diff/tokens.js";
 import { summarize } from "./diff/summary.js";
 import { formatText } from "./report.js";
 import { formatHtml } from "./html.js";
-import type { FrameImages } from "./html.js";
+import type { ChangeBox, FrameImages } from "./html.js";
 import { createCliRenderer, findFigcraftCli, RendererUnavailableError } from "./render/figcraft-cli.js";
 import type { Renderer } from "./render/figcraft-cli.js";
 import { renderChangedFrames } from "./render/frames.js";
@@ -161,6 +162,7 @@ export function run(argv: string[], overrides: Partial<RunDeps> = {}): RunResult
     const notes: string[] = [];
     const writes: FileWrite[] = [];
     let images: Record<string, FrameImages> | undefined;
+    let boxes: Record<string, ChangeBox> | undefined;
     if (htmlPath) {
       if (flags.has("--images")) {
         const renderer = deps.createRenderer(values.get("--figcraft-cli"));
@@ -171,6 +173,7 @@ export function run(argv: string[], overrides: Partial<RunDeps> = {}): RunResult
             const rendered = renderChangedFrames(changes, beforePath, afterPath, renderer, { scale });
             images = rendered.images;
             notes.push(...rendered.warnings);
+            boxes = locateChanges(beforeDoc.tree, afterDoc.tree, changes, { before: beforePath, after: afterPath }, renderer);
           } catch (err) {
             if (!(err instanceof RendererUnavailableError)) throw err;
             notes.push(`${err.message}; writing the report without images.`);
@@ -179,7 +182,13 @@ export function run(argv: string[], overrides: Partial<RunDeps> = {}): RunResult
       }
       writes.push({
         path: htmlPath,
-        content: formatHtml(changes, { beforeName, afterName: basename(afterPath), images, tokens }),
+        content: formatHtml(changes, {
+          beforeName,
+          afterName: basename(afterPath),
+          images,
+          tokens,
+          boxes,
+        }),
       });
       notes.push(`wrote ${htmlPath}`);
     }

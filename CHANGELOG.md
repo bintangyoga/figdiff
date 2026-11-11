@@ -8,6 +8,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 - Instances are shown with the name of their component, and a swap within a component set is reported as a variant change.
 - A change inside a component says how many instances use it.
+- HTML reports with images list the changes next to the images and outline a change on the image when you click it. Images rendered with `--scale 2` are shown at their real size.
 
 ## [0.1.0-alpha.9] - 2026-11-11
 
