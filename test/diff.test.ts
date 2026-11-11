@@ -125,3 +125,29 @@ describe("tolerance", () => {
     expect(diff({ corners: { radii: [0, 0, 0, 0] } }, { corners: { radii: [8, 8, 8, 8] } }, 100)).toHaveLength(1);
   });
 });
+
+describe("matching when ids change", () => {
+  const withIds = (ids: number[], red = 1) =>
+    documentToTree(
+      doc([page([ids[0]]), frame(ids[0], 1, "Login", [ids[1], ids[2]]), rect(ids[1], ids[0], "Button", red), rect(ids[2], ids[0], "Promo", 0.5)]),
+    );
+
+  it("pairs nodes by type and path when every id is new", () => {
+    const changes = diffTrees(withIds([2, 3, 4]), withIds([12, 13, 14], 0.9));
+    expect(changes).toHaveLength(1);
+    expect(changes[0]).toMatchObject({ kind: "modified", path: "Test › Screens › Login › Button" });
+  });
+
+  it("reports ids as added and removed with matchByName off", () => {
+    const changes = diffTrees(withIds([2, 3, 4]), withIds([12, 13, 14]), { matchByName: false });
+    expect(changes.filter((c) => c.kind === "removed")).toHaveLength(3);
+    expect(changes.filter((c) => c.kind === "added")).toHaveLength(3);
+  });
+
+  it("does not guess when names repeat a different number of times", () => {
+    const two = documentToTree(doc([page([2]), frame(2, 1, "Login", [3, 4]), rect(3, 2, "Dot", 1), rect(4, 2, "Dot", 1)]));
+    const one = documentToTree(doc([page([12]), frame(12, 1, "Login", [13]), rect(13, 12, "Dot", 1)]));
+    const changes = diffTrees(two, one);
+    expect(changes.some((c) => c.kind === "removed")).toBe(true);
+  });
+});

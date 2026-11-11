@@ -18,6 +18,8 @@ Requires Node.js 20 or later. Run `figdiff --help` for the same summary.
 | `--scale <number>` | Render scale for the images, 0.25 to 4. Default 1. Needs `--images`. |
 | `--figcraft-cli <path>` | Where to find `figcraft-cli`. Default: the `FIGCRAFT_CLI` environment variable, then `PATH`. |
 | `--json` | Print the summary and every change as JSON. |
+| `--markdown` | Print the changes as Markdown, ready for a pull request or a CI summary. Layer names are put in code spans. Cannot be combined with `--json`. |
+| `--strict-ids` | Match nodes by id only. By default, nodes that have no id match on either side are paired by type and path of names, so a file whose ids changed on save still gives a readable diff. |
 | `--exit-code` | Exit with 1 when the files differ. |
 | `--help` | Show help. |
 
@@ -25,7 +27,7 @@ Exit codes: `0` success, `1` differences found (only with `--exit-code`), `2` er
 
 ## What is compared
 
-Nodes are matched by id. A node can be reported as:
+Nodes are matched by id. Nodes that have no match on either side are then paired by type and path of names, but only when both versions have the same number of such nodes at that path (use `--strict-ids` to turn this off). A node can be reported as:
 
 - **added** or **removed**, with its type,
 - **moved**, when it now lives under a different parent,

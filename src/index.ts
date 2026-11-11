@@ -3,6 +3,7 @@ export { summarize } from "./diff/summary.js";
 export { parseFigcraft, parseFigcraftFull, readDocumentJson, documentToTree, documentToTokens } from "./parser/index.js";
 export { diffTokens } from "./diff/tokens.js";
 export { formatText, formatSummary, formatValue, describeToken } from "./report.js";
+export { formatMarkdown } from "./markdown.js";
 export { run } from "./run.js";
 export type { Change, DesignNode, PropChange, Summary, Token, TokenChange } from "./diff/types.js";
 export { formatHtml, frameKey, escapeHtml } from "./html.js";

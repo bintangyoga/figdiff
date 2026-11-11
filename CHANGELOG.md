@@ -4,6 +4,12 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+### Added
+
+- Node matching fallback: nodes whose id changed between versions are paired by type and path of names, when the pairing is unambiguous. `--strict-ids` turns it off.
+- `--markdown` prints the report as Markdown (also `markdown` in the browser result and `formatMarkdown` in the library).
+- A variable whose value points at another variable is shown as `alias of <name>`.
+
 ## [0.1.0-alpha.8] - 2026-11-10
 
 ### Fixed

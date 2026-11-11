@@ -1,6 +1,7 @@
 import { basename } from "node:path";
 import { parseFigcraftFull } from "./parser/index.js";
 import { diffTrees } from "./diff/diff.js";
+import { formatMarkdown } from "./markdown.js";
 import { diffTokens } from "./diff/tokens.js";
 import { summarize } from "./diff/summary.js";
 import { formatText } from "./report.js";
@@ -27,6 +28,8 @@ Options:
   --scale <number>       Render images at this scale, 0.25 to 4 (default 1; needs --images)
   --figcraft-cli <path>  Path to figcraft-cli (default: $FIGCRAFT_CLI, then PATH)
   --json                 Print summary and changes as JSON instead of text
+  --markdown             Print the changes as Markdown (for pull requests and CI summaries)
+  --strict-ids           Match nodes by id only (by default, nodes whose id changed are paired by name and path)
   --tolerance <number>   Ignore width, height and position changes up to this size, for example 0.5 (default 0)
   --exit-code            Exit with 1 when the files differ (0 when identical)
   --help                 Show this help
@@ -65,7 +68,7 @@ const defaultDeps: RunDeps = {
   fromGit: (ref, file) => extractFromGit(ref, file),
 };
 
-const BOOLEAN_FLAGS = new Set(["--json", "--exit-code", "--images", "--help"]);
+const BOOLEAN_FLAGS = new Set(["--json", "--markdown", "--strict-ids", "--exit-code", "--images", "--help"]);
 const VALUE_FLAGS = new Set(["--html", "--figcraft-cli", "--against", "--scale", "--tolerance"]);
 const MISSING_VALUE: Record<string, string> = {
   "--html": "--html needs a file path",
@@ -111,6 +114,8 @@ export function run(argv: string[], overrides: Partial<RunDeps> = {}): RunResult
     return fail("expected two files");
   }
 
+  if (flags.has("--json") && flags.has("--markdown")) return fail("use either --json or --markdown, not both");
+
   const htmlPath = values.get("--html");
   if (flags.has("--images") && !htmlPath) return fail("--images needs --html");
   if (values.has("--figcraft-cli") && !flags.has("--images")) return fail("--figcraft-cli needs --images");
@@ -145,11 +150,13 @@ export function run(argv: string[], overrides: Partial<RunDeps> = {}): RunResult
     }
     const beforeDoc = parseFigcraftFull(beforePath);
     const afterDoc = parseFigcraftFull(afterPath);
-    const changes = diffTrees(beforeDoc.tree, afterDoc.tree, { tolerance });
+    const changes = diffTrees(beforeDoc.tree, afterDoc.tree, { tolerance, matchByName: !flags.has("--strict-ids") });
     const tokens = diffTokens(beforeDoc.tokens, afterDoc.tokens);
     const stdout = flags.has("--json")
       ? JSON.stringify({ summary: summarize(changes, tokens), changes, tokens }, null, 2) + "\n"
-      : formatText(changes, tokens);
+      : flags.has("--markdown")
+        ? formatMarkdown(changes, tokens)
+        : formatText(changes, tokens);
 
     const notes: string[] = [];
     const writes: FileWrite[] = [];

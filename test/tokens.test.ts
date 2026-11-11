@@ -119,3 +119,18 @@ describe("real FigCraft data", () => {
     expect(changes[0]).toMatchObject({ kind: "modified", entity: "variable" });
   });
 });
+
+describe("variable aliases", () => {
+  it("shows the name of the variable an alias points to", () => {
+    const tokens = documentToTokens({
+      variables: {
+        collections: [{ id: "c", name: "Brand", modes: [{ id: "m", name: "Light" }] }],
+        variables: [
+          { id: "VariableID:1", name: "color/primary", collection: "c", resolvedType: "COLOR", values: { m: { type: "color", value: { r: 1, g: 0, b: 0 } } } },
+          { id: "VariableID:2", name: "color/button", collection: "c", resolvedType: "COLOR", values: { m: { type: "alias", value: "VariableID:1" } } },
+        ],
+      },
+    });
+    expect(tokens.find((t) => t.id === "VariableID:2")?.props["value Light"]).toBe("alias of color/primary");
+  });
+});

@@ -1,4 +1,5 @@
 import { compareFigcraft, formatValue, formatSummary } from "/lib/browser.js";
+import { initLang, refresh, retext, toEn } from "/i18n.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -27,9 +28,9 @@ async function copyText(text) {
 }
 
 function flash(button, label = "Copied") {
-  const before = button.textContent;
-  button.textContent = label;
-  setTimeout(() => { button.textContent = before; }, 1600);
+  const before = toEn(button.textContent);
+  retext(button, label);
+  setTimeout(() => retext(button, before), 1600);
 }
 
 /* ---------- Hero game ---------- */
@@ -64,6 +65,7 @@ function initGame() {
     $("#game-play").hidden = done;
     $("#game-done").hidden = !done;
     $("#result-eyebrow").textContent = n === 3 ? "All 3. Sharp eyes." : `You found ${n} of 3`;
+    refresh(root);
   }
   const slots = $(".slots", root);
   slots.replaceChildren(el("i"), el("i"), el("i"));
@@ -92,6 +94,7 @@ function initTry() {
     const box = $("#report-error");
     box.textContent = message ?? "";
     box.hidden = !message;
+    refresh(box);
   }
 
   function setFile(slot, name, bytes) {
@@ -183,6 +186,7 @@ function initTry() {
     const visible = rows.filter((r) => state.filter === "all" || r.kind === state.filter);
     if (visible.length === 0) {
       box.append(el("p", "report-empty", rows.length === 0 ? "Nothing changed." : "Nothing in this filter."));
+      refresh($("#report"));
       return;
     }
     const groups = new Map();
@@ -221,6 +225,7 @@ function initTry() {
       wrap.append(list);
       box.append(wrap);
     }
+    refresh($("#report"));
   }
 
   for (const slot of ["before", "after"]) {
@@ -263,9 +268,12 @@ function initTry() {
     }
   });
 
-  $("#copy-json").addEventListener("click", async (e) => {
-    if (state.result && await copyText(state.result.json)) flash(e.currentTarget);
-  });
+  for (const [id, field] of [["#copy-md", "markdown"], ["#copy-json", "json"]]) {
+    const btn = $(id);
+    btn.addEventListener("click", async () => {
+      if (state.result && await copyText(state.result[field])) flash(btn);
+    });
+  }
   $("#save-html").addEventListener("click", () => {
     if (!state.result) return;
     const url = URL.createObjectURL(new Blob([state.result.html], { type: "text/html" }));
@@ -332,3 +340,4 @@ initGame();
 initTry();
 initVisual();
 initMisc();
+initLang();

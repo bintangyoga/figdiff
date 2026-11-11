@@ -13,7 +13,9 @@ const isObject = (v: unknown): v is Raw => typeof v === "object" && v !== null &
  * - `styles[]` has `{id, name, description, type, ...}` (`paints`, `effects`, and so on)
  *
  * A document without any of them gives an empty list. Values are keyed by mode *name*, so a
- * variable that only gets a new mode id is not reported.
+ * variable that only gets a new mode id is not reported. A value that refers to another variable by id
+ * (a string, or an object such as `{type: "alias", id}`) is shown as "alias of <name>". The exact alias
+ * encoding of FigCraft is not confirmed yet, so unknown shapes are left as they are.
  */
 export function documentToTokens(doc: unknown): Token[] {
   if (!isObject(doc)) return [];
@@ -49,6 +51,22 @@ export function documentToTokens(doc: unknown): Token[] {
       }
     }
     tokens.push({ id: String(v.id), entity: "variable", name: String(v.name ?? ""), props });
+  }
+
+  // A value that points at another variable is shown as that variable's name instead of an id.
+  const names = new Map(tokens.filter((t) => t.entity === "variable").map((t) => [t.id, t.name]));
+  const resolve = (value: unknown): unknown => {
+    if (typeof value === "string" && names.has(value)) return `alias of ${names.get(value)}`;
+    if (isObject(value)) {
+      const target = [value.id, value.variableId, value.value].find((x) => typeof x === "string" && names.has(x));
+      const isAlias = /alias/i.test(String(value.type ?? "")) || Object.keys(value).every((k) => k === "id" || k === "variableId");
+      if (target !== undefined && isAlias) return `alias of ${names.get(target as string)}`;
+    }
+    return value;
+  };
+  for (const t of tokens) {
+    if (t.entity !== "variable") continue;
+    for (const k of Object.keys(t.props)) if (k.startsWith("value ")) t.props[k] = resolve(t.props[k]);
   }
 
   for (const st of Array.isArray(doc.styles) ? doc.styles.filter(isObject) : []) {

@@ -49,6 +49,7 @@ code, kbd, pre { font-family: var(--mono); }
 .nav-links a { color: var(--fg-2); transition: color .2s; }
 .nav-links a:hover, .nav-links a[aria-current="page"] { color: var(--fg); }
 .nav-actions { display: flex; align-items: center; gap: 8px; }
+.lang { font-family: var(--mono); letter-spacing: .04em; }
 .nav-gh { display: inline-flex; align-items: center; gap: 8px; }
 
 /* footer */
@@ -66,6 +67,9 @@ code, kbd, pre { font-family: var(--mono); }
   .nav { padding: 12px 12px 0; }
   .nav-pill { padding: 8px 8px 8px 16px; }
   .nav-links, .nav-gh span { display: none; }
+  .nav-actions { gap: 6px; }
+  .nav-actions .btn-sm { padding: 0 12px; }
+  .lang { min-width: 40px; padding: 0 10px; }
   .footer-cols { gap: 36px; }
 }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
