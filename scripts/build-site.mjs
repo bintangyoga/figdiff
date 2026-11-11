@@ -19,7 +19,7 @@ const arg = (name, fallback) => {
 };
 const out = resolve(root, arg("--out", "site/dist"));
 const fflatePath = resolve(root, arg("--fflate", "node_modules/fflate/esm/browser.js"));
-const SITE_URL = (process.env.SITE_URL || "https://figdiff.pages.dev").replace(/\/$/, "");
+const SITE_URL = (process.env.SITE_URL || "https://figdiff.bintangyoga.dev").replace(/\/$/, "");
 const REPO = "https://github.com/bintangyoga/figdiff";
 
 const read = (p) => readFileSync(p, "utf8");

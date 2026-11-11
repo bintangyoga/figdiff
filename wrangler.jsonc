@@ -4,6 +4,7 @@
   // Deploy command: npx wrangler deploy
   "name": "figdiff-landingpage",
   "compatibility_date": "2026-11-01",
+  "routes": [{ "pattern": "figdiff.bintangyoga.dev", "custom_domain": true }],
   "assets": {
     "directory": "./site/dist"
   }
