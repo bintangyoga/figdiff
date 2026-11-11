@@ -87,7 +87,7 @@ export function createCliRenderer(bin: string, exec: Exec = defaultExec, execOut
       try {
         const steps = ids.map((id) => ({
           command: "node.get",
-          params: { id: /^\d+$/.test(id) ? Number(id) : id, depth: 0, fields: ["absoluteBounds"] },
+          params: { id: /^\d+$/.test(id) ? Number(id) : id, fields: ["absoluteBounds"] },
         }));
         writeFileSync(script, JSON.stringify(steps));
         const printed = execOutput(bin, ["run", script, "--in", file]);
