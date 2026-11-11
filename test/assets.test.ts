@@ -14,7 +14,8 @@ function fakeApi(opts: { branchExists: boolean }) {
     const body = init?.body ? (JSON.parse(init.body as string) as Record<string, unknown>) : undefined;
     calls.push({ method, path, body });
     const json = (v: unknown, status = 200) => new Response(JSON.stringify(v), { status });
-    if (method === "GET" && path.includes("/git/ref/")) return opts.branchExists ? json({ object: { sha: "parent1" } }) : json({ message: "Not Found" }, 404);
+    if (method === "GET" && path.includes("/git/ref/"))
+      return opts.branchExists ? json({ object: { sha: "parent1" } }) : json({ message: "Not Found" }, 404);
     if (method === "GET" && path.includes("/git/commits/")) return json({ tree: { sha: "tree0" } });
     return json({ sha: `sha-${calls.length}` }, 201);
   }) as unknown as typeof fetch;
@@ -58,12 +59,18 @@ describe("hosted images", () => {
   it("shows before, after and difference in the comment, with names escaped", () => {
     const summary = { changes: 1, frames: 1, added: 0, removed: 0, moved: 0, reordered: 0, modifiedNodes: 1, propertyChanges: 1 };
     const body = buildComment(
-      [{ file: { status: "modified", path: "a.figcraft" }, summary, frames: [{ name: 'P › <b>"x"', before: "https://u/b.png", after: "https://u/a.png", changedRatio: 0.0123 }] }],
+      [
+        {
+          file: { status: "modified", path: "a.figcraft" },
+          summary,
+          frames: [{ name: 'P › <b>"x"', before: "https://u/b.png", after: "https://u/a.png", changedRatio: 0.0123 }],
+        },
+      ],
       { reportsUploaded: false },
     );
     expect(body).toContain('<img src="https://u/b.png" alt="before" width="220">');
     expect(body).toContain("1.2% changed");
     expect(body).toContain("&lt;b&gt;&quot;x&quot;");
-    expect(body).not.toContain("<b>\"x\"");
+    expect(body).not.toContain('<b>"x"');
   });
 });

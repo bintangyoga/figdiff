@@ -28,7 +28,11 @@ export interface NodeBounds {
 export function errorDetail(err: unknown): string {
   const e = err as { stderr?: Uint8Array | string; message?: string } | null;
   const text = e?.stderr ? String(e.stderr) : (e?.message ?? "");
-  const line = text.split("\n").map((l) => l.trim()).find((l) => l.length > 0) ?? "";
+  const line =
+    text
+      .split("\n")
+      .map((l) => l.trim())
+      .find((l) => l.length > 0) ?? "";
   return line.length > 200 ? `${line.slice(0, 200)}…` : line;
 }
 
@@ -118,7 +122,10 @@ export function createCliRenderer(bin: string, exec: Exec = defaultExec, execOut
       const out = join(dir, "frame.png");
       try {
         const base = ["export", file, "-o", out, "--format", "png", "--scale", String(scale)];
-        for (const selector of [["--page", page, "--node", frame], ["--node", frame]]) {
+        for (const selector of [
+          ["--page", page, "--node", frame],
+          ["--node", frame],
+        ]) {
           try {
             exec(bin, [...base, ...selector]);
             return new Uint8Array(readFileSync(out));

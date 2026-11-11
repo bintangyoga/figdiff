@@ -15,7 +15,9 @@ for (const pre of $$(".prose pre")) {
     } catch {
       b.textContent = "Press Ctrl+C";
     }
-    setTimeout(() => { b.textContent = "Copy"; }, 1600);
+    setTimeout(() => {
+      b.textContent = "Copy";
+    }, 1600);
   });
   pre.append(b);
 }
@@ -24,15 +26,21 @@ for (const pre of $$(".prose pre")) {
 const links = $$(".toc a[href^='#']");
 if (links.length && "IntersectionObserver" in window) {
   const byId = new Map(links.map((a) => [a.getAttribute("href").slice(1), a]));
-  const io = new IntersectionObserver((entries) => {
-    for (const e of entries) {
-      if (e.isIntersecting) {
-        links.forEach((a) => a.classList.remove("on"));
-        byId.get(e.target.id)?.classList.add("on");
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) {
+          links.forEach((a) => a.classList.remove("on"));
+          byId.get(e.target.id)?.classList.add("on");
+        }
       }
-    }
-  }, { rootMargin: "-90px 0px -70% 0px" });
-  for (const id of byId.keys()) { const h = document.getElementById(id); if (h) io.observe(h); }
+    },
+    { rootMargin: "-90px 0px -70% 0px" },
+  );
+  for (const id of byId.keys()) {
+    const h = document.getElementById(id);
+    if (h) io.observe(h);
+  }
 }
 
 /* search */
@@ -41,7 +49,11 @@ const box = $("#results");
 let index = null;
 async function load() {
   if (index) return index;
-  try { index = await (await fetch("/search-index.json")).json(); } catch { index = []; }
+  try {
+    index = await (await fetch("/search-index.json")).json();
+  } catch {
+    index = [];
+  }
   return index;
 }
 function snippet(text, q) {
@@ -53,16 +65,23 @@ function snippet(text, q) {
 async function search() {
   const q = input.value.trim().toLowerCase();
   box.replaceChildren();
-  if (q.length < 2) { box.hidden = true; return; }
+  if (q.length < 2) {
+    box.hidden = true;
+    return;
+  }
   const data = await load();
   const hits = [];
   for (const page of data) {
     if (page.title.toLowerCase().includes(q)) hits.push({ href: page.url, title: page.title, sub: page.description, score: 3 });
-    for (const h of page.headings) if (h.text.toLowerCase().includes(q)) hits.push({ href: `${page.url}#${h.id}`, title: h.text, sub: page.title, score: 2 });
+    for (const h of page.headings)
+      if (h.text.toLowerCase().includes(q)) hits.push({ href: `${page.url}#${h.id}`, title: h.text, sub: page.title, score: 2 });
     if (page.text.toLowerCase().includes(q)) hits.push({ href: page.url, title: page.title, sub: snippet(page.text, q), score: 1 });
   }
   const seen = new Set();
-  const top = hits.sort((a, b) => b.score - a.score).filter((h) => (seen.has(h.href + h.sub) ? false : seen.add(h.href + h.sub))).slice(0, 8);
+  const top = hits
+    .sort((a, b) => b.score - a.score)
+    .filter((h) => (seen.has(h.href + h.sub) ? false : seen.add(h.href + h.sub)))
+    .slice(0, 8);
   if (top.length === 0) {
     const li = document.createElement("li");
     li.className = "none";
@@ -84,9 +103,19 @@ async function search() {
 }
 if (input) {
   input.addEventListener("input", search);
-  input.addEventListener("keydown", (e) => { if (e.key === "Escape") { box.hidden = true; input.blur(); } });
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "/" && !/input|textarea|select/i.test(document.activeElement?.tagName ?? "")) { e.preventDefault(); input.focus(); }
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      box.hidden = true;
+      input.blur();
+    }
   });
-  document.addEventListener("click", (e) => { if (!e.target.closest(".search")) box.hidden = true; });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "/" && !/input|textarea|select/i.test(document.activeElement?.tagName ?? "")) {
+      e.preventDefault();
+      input.focus();
+    }
+  });
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".search")) box.hidden = true;
+  });
 }

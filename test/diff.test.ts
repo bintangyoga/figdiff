@@ -17,16 +17,25 @@ function doc(nodes: Raw[], pages = [1]): unknown {
 
 const page = (children: number[]): Raw => ({ id: 1, name: "Screens", type: "page", children });
 const frame = (id: number, parent: number, name: string, children: number[] = []): Raw => ({
-  id, name, type: "frame", parent, children, width: 100, height: 100,
+  id,
+  name,
+  type: "frame",
+  parent,
+  children,
+  width: 100,
+  height: 100,
 });
 const rect = (id: number, parent: number, name: string, color: number): Raw => ({
-  id, name, type: "rectangle", parent, width: 10, height: 10,
+  id,
+  name,
+  type: "rectangle",
+  parent,
+  width: 10,
+  height: 10,
   fills: [{ type: "solid", color: { r: color, g: 0, b: 0, a: 1 } }],
 });
 
-const before = documentToTree(
-  doc([page([2]), frame(2, 1, "Login", [3, 4]), rect(3, 2, "Button", 0.2), rect(4, 2, "Promo", 0.5)]),
-);
+const before = documentToTree(doc([page([2]), frame(2, 1, "Login", [3, 4]), rect(3, 2, "Button", 0.2), rect(4, 2, "Promo", 0.5)]));
 
 describe("diffTrees", () => {
   it("reports no changes for identical trees", () => {
@@ -34,30 +43,24 @@ describe("diffTrees", () => {
   });
 
   it("detects a modified property", () => {
-    const after = documentToTree(
-      doc([page([2]), frame(2, 1, "Login", [3, 4]), rect(3, 2, "Button", 0.9), rect(4, 2, "Promo", 0.5)]),
-    );
+    const after = documentToTree(doc([page([2]), frame(2, 1, "Login", [3, 4]), rect(3, 2, "Button", 0.9), rect(4, 2, "Promo", 0.5)]));
     const changes = diffTrees(before, after);
     expect(changes).toHaveLength(1);
     expect(changes[0]).toMatchObject({ kind: "modified", id: "3", path: "Test › Screens › Login › Button" });
   });
 
   it("detects added and removed nodes", () => {
-    const after = documentToTree(
-      doc([page([2]), frame(2, 1, "Login", [3, 5]), rect(3, 2, "Button", 0.2), rect(5, 2, "Forgot", 0.1)]),
-    );
-    expect(diffTrees(before, after).map((c) => c.kind).sort()).toEqual(["added", "removed"]);
+    const after = documentToTree(doc([page([2]), frame(2, 1, "Login", [3, 5]), rect(3, 2, "Button", 0.2), rect(5, 2, "Forgot", 0.1)]));
+    expect(
+      diffTrees(before, after)
+        .map((c) => c.kind)
+        .sort(),
+    ).toEqual(["added", "removed"]);
   });
 
   it("detects a node moved to another parent", () => {
     const after = documentToTree(
-      doc([
-        page([2, 6]),
-        frame(2, 1, "Login", [3]),
-        frame(6, 1, "Home", [4]),
-        rect(3, 2, "Button", 0.2),
-        rect(4, 6, "Promo", 0.5),
-      ]),
+      doc([page([2, 6]), frame(2, 1, "Login", [3]), frame(6, 1, "Home", [4]), rect(3, 2, "Button", 0.2), rect(4, 6, "Promo", 0.5)]),
     );
     const kinds = diffTrees(before, after).map((c) => c.kind);
     expect(kinds).toContain("moved");
@@ -65,25 +68,19 @@ describe("diffTrees", () => {
   });
 
   it("reports a rename as a modified name", () => {
-    const after = documentToTree(
-      doc([page([2]), frame(2, 1, "Sign in", [3, 4]), rect(3, 2, "Button", 0.2), rect(4, 2, "Promo", 0.5)]),
-    );
+    const after = documentToTree(doc([page([2]), frame(2, 1, "Sign in", [3, 4]), rect(3, 2, "Button", 0.2), rect(4, 2, "Promo", 0.5)]));
     const changes = diffTrees(before, after);
     expect(changes).toHaveLength(1);
     expect(changes[0]).toMatchObject({ kind: "modified", id: "2", props: [{ prop: "name", from: "Login", to: "Sign in" }] });
   });
 
   it("records the trail from the page down, without the document name", () => {
-    const after = documentToTree(
-      doc([page([2]), frame(2, 1, "Login", [3, 4]), rect(3, 2, "Button", 0.9), rect(4, 2, "Promo", 0.5)]),
-    );
+    const after = documentToTree(doc([page([2]), frame(2, 1, "Login", [3, 4]), rect(3, 2, "Button", 0.9), rect(4, 2, "Promo", 0.5)]));
     expect(diffTrees(before, after)[0]?.trail).toEqual(["Screens", "Login", "Button"]);
   });
 
   it("detects a change in layer order", () => {
-    const after = documentToTree(
-      doc([page([2]), frame(2, 1, "Login", [4, 3]), rect(3, 2, "Button", 0.2), rect(4, 2, "Promo", 0.5)]),
-    );
+    const after = documentToTree(doc([page([2]), frame(2, 1, "Login", [4, 3]), rect(3, 2, "Button", 0.2), rect(4, 2, "Promo", 0.5)]));
     const changes = diffTrees(before, after);
     expect(changes).toHaveLength(1);
     expect(changes[0]).toMatchObject({ kind: "reordered", id: "2" });
@@ -97,7 +94,8 @@ describe("diffTrees", () => {
 
 describe("tolerance", () => {
   const node = (extra: Raw): unknown => doc([page([2]), { ...rect(2, 1, "Box", 1), ...extra }]);
-  const diff = (a: Raw, b: Raw, tolerance?: number) => diffTrees(documentToTree(node(a)), documentToTree(node(b)), tolerance === undefined ? {} : { tolerance });
+  const diff = (a: Raw, b: Raw, tolerance?: number) =>
+    diffTrees(documentToTree(node(a)), documentToTree(node(b)), tolerance === undefined ? {} : { tolerance });
 
   it("is exact by default", () => {
     expect(diff({ width: 80 }, { width: 80.3 })).toHaveLength(1);
@@ -105,7 +103,9 @@ describe("tolerance", () => {
 
   it("ignores small changes to width, height and position", () => {
     const t = [1, 0, 0, 1, 10.2, 5];
-    expect(diff({ width: 80, height: 14.3, transform: t }, { width: 80.3, height: 14, transform: [1, 0, 0, 1, 10.5, 5.4] }, 0.5)).toEqual([]);
+    expect(diff({ width: 80, height: 14.3, transform: t }, { width: 80.3, height: 14, transform: [1, 0, 0, 1, 10.5, 5.4] }, 0.5)).toEqual(
+      [],
+    );
   });
 
   it("still reports larger size changes", () => {
@@ -129,7 +129,12 @@ describe("tolerance", () => {
 describe("matching when ids change", () => {
   const withIds = (ids: number[], red = 1) =>
     documentToTree(
-      doc([page([ids[0]]), frame(ids[0], 1, "Login", [ids[1], ids[2]]), rect(ids[1], ids[0], "Button", red), rect(ids[2], ids[0], "Promo", 0.5)]),
+      doc([
+        page([ids[0]]),
+        frame(ids[0], 1, "Login", [ids[1], ids[2]]),
+        rect(ids[1], ids[0], "Button", red),
+        rect(ids[2], ids[0], "Promo", 0.5),
+      ]),
     );
 
   it("pairs nodes by type and path when every id is new", () => {

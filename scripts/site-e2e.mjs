@@ -11,9 +11,17 @@ import { chromium } from "playwright";
 
 const root = resolve(process.argv[2] ?? "site/dist");
 const types = {
-  ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".css": "text/css", ".json": "application/json",
-  ".png": "image/png", ".svg": "image/svg+xml", ".ico": "image/x-icon", ".woff2": "font/woff2",
-  ".webmanifest": "application/manifest+json", ".xml": "application/xml", ".txt": "text/plain",
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript",
+  ".css": "text/css",
+  ".json": "application/json",
+  ".png": "image/png",
+  ".svg": "image/svg+xml",
+  ".ico": "image/x-icon",
+  ".woff2": "font/woff2",
+  ".webmanifest": "application/manifest+json",
+  ".xml": "application/xml",
+  ".txt": "text/plain",
 };
 // The headers for every path ("/*") from _headers, so the browser enforces the real CSP.
 const headers = {};

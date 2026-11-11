@@ -38,12 +38,23 @@ function unfilter(raw: Buffer, height: number, stride: number, bpp: number): Buf
       const upLeft = y > 0 && x >= bpp ? (out[up + x - bpp] as number) : 0;
       let value: number;
       switch (filter) {
-        case 0: value = cur; break;
-        case 1: value = cur + left; break;
-        case 2: value = cur + above; break;
-        case 3: value = cur + ((left + above) >> 1); break;
-        case 4: value = cur + paeth(left, above, upLeft); break;
-        default: throw new Error(`Invalid PNG filter type ${filter}`);
+        case 0:
+          value = cur;
+          break;
+        case 1:
+          value = cur + left;
+          break;
+        case 2:
+          value = cur + above;
+          break;
+        case 3:
+          value = cur + ((left + above) >> 1);
+          break;
+        case 4:
+          value = cur + paeth(left, above, upLeft);
+          break;
+        default:
+          throw new Error(`Invalid PNG filter type ${filter}`);
       }
       out[dst + x] = value & 0xff;
     }
@@ -59,12 +70,16 @@ export function decodePng(input: Uint8Array): Image {
   const buf = Buffer.from(input.buffer, input.byteOffset, input.byteLength);
   if (buf.length < 8 || !buf.subarray(0, 8).equals(SIGNATURE)) throw new Error("Not a PNG file");
 
-  let width = 0, height = 0, depth = 0, colorType = -1, interlace = 0;
+  let width = 0,
+    height = 0,
+    depth = 0,
+    colorType = -1,
+    interlace = 0;
   let palette: Buffer | undefined;
   let transparency: Buffer | undefined;
   const idat: Buffer[] = [];
 
-  for (let pos = 8; pos + 8 <= buf.length; ) {
+  for (let pos = 8; pos + 8 <= buf.length;) {
     const length = buf.readUInt32BE(pos);
     const type = buf.toString("latin1", pos + 4, pos + 8);
     const data = buf.subarray(pos + 8, pos + 8 + length);
@@ -100,10 +115,19 @@ export function decodePng(input: Uint8Array): Image {
   for (let i = 0; i < width * height; i++) {
     const p = i * bytesPerPixel;
     const sample = (c: number) => rows[p + c * step] as number; // high byte for 16-bit
-    let r: number, g: number, b: number, a = 255;
+    let r: number,
+      g: number,
+      b: number,
+      a = 255;
     switch (colorType) {
-      case 0: r = g = b = sample(0); break;
-      case 2: r = sample(0); g = sample(1); b = sample(2); break;
+      case 0:
+        r = g = b = sample(0);
+        break;
+      case 2:
+        r = sample(0);
+        g = sample(1);
+        b = sample(2);
+        break;
       case 3: {
         const index = rows[p] as number;
         r = palette?.[index * 3] ?? 0;
@@ -112,8 +136,15 @@ export function decodePng(input: Uint8Array): Image {
         a = transparency?.[index] ?? 255;
         break;
       }
-      case 4: r = g = b = sample(0); a = sample(1); break;
-      default: r = sample(0); g = sample(1); b = sample(2); a = sample(3);
+      case 4:
+        r = g = b = sample(0);
+        a = sample(1);
+        break;
+      default:
+        r = sample(0);
+        g = sample(1);
+        b = sample(2);
+        a = sample(3);
     }
     out[i * 4] = r;
     out[i * 4 + 1] = g;

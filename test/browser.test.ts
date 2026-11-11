@@ -23,7 +23,18 @@ describe("compareFigcraft (browser entry)", () => {
 
   it("applies the tolerance to sizes but not to colors", () => {
     const file = (width: number, red: number) => {
-      const nodes = { "1": { id: 1, name: "P", type: "page", children: [2] }, "2": { id: 2, name: "Box", type: "rectangle", parent: 1, width, height: 10, fills: [{ type: "solid", color: { r: red, g: 0, b: 0, a: 1 } }] } };
+      const nodes = {
+        "1": { id: 1, name: "P", type: "page", children: [2] },
+        "2": {
+          id: 2,
+          name: "Box",
+          type: "rectangle",
+          parent: 1,
+          width,
+          height: 10,
+          fills: [{ type: "solid", color: { r: red, g: 0, b: 0, a: 1 } }],
+        },
+      };
       return zipSync({ "document.json": strToU8(JSON.stringify({ format: "figcraft", version: 1, name: "T", pages: [1], nodes })) });
     };
     expect(compareFigcraft(file(80, 0.2), file(80.3, 0.2), { tolerance: 0.5 }).summary.changes).toBe(0);
@@ -37,7 +48,18 @@ describe("compareFigcraft (browser entry)", () => {
 
   it("does not import Node APIs", () => {
     // The browser bundle is served as plain modules; a node: import would break it.
-    const files = ["browser", "parser/bytes", "parser/document", "parser/tokens", "parser/defaults", "report", "html", "diff/diff", "diff/tokens", "diff/summary"];
+    const files = [
+      "browser",
+      "parser/bytes",
+      "parser/document",
+      "parser/tokens",
+      "parser/defaults",
+      "report",
+      "html",
+      "diff/diff",
+      "diff/tokens",
+      "diff/summary",
+    ];
     for (const f of files) {
       expect(readFileSync(new URL(`../src/${f}.ts`, import.meta.url), "utf8"), f).not.toMatch(/from "node:/);
     }

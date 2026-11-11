@@ -74,7 +74,4 @@ export type TokenChange = {
   id: string;
   /** The name after the change (or before, for a removed token). */
   name: string;
-} & (
-  | { kind: "added" | "removed"; detail: string }
-  | { kind: "modified"; props: PropChange[] }
-);
+} & ({ kind: "added" | "removed"; detail: string } | { kind: "modified"; props: PropChange[] });

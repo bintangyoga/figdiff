@@ -14,7 +14,13 @@ describe("formatMarkdown", () => {
 
   it("groups by page and frame and keeps names in code spans", () => {
     const md = formatMarkdown([
-      { kind: "modified", id: "3", path: "App › P › F › *Bold* [x](http://evil)", trail: ["P", "F", "*Bold* [x](http://evil)"], props: [{ prop: "width", from: 10, to: 12 }] },
+      {
+        kind: "modified",
+        id: "3",
+        path: "App › P › F › *Bold* [x](http://evil)",
+        trail: ["P", "F", "*Bold* [x](http://evil)"],
+        props: [{ prop: "width", from: 10, to: 12 }],
+      },
     ]);
     expect(md).toContain("### Page `P`");
     expect(md).toContain("#### Frame `F`");

@@ -41,7 +41,7 @@ npm run build
 
 The layout: `src/parser` reads `.figcraft` files, `src/diff` compares trees, `src/report.ts` and `src/html.ts` format the result, `src/render` talks to `figcraft-cli`, and `src/action` is the GitHub Action. CI runs typecheck, tests and build on Node 20 and 22.
 
-Run `npm run lint` before you open a pull request. `npm run format` applies Prettier to the code; it is not enforced in CI yet.
+Run `npm run lint` and `npm run format` before you open a pull request; CI checks both.
 
 ## Website
 

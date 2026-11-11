@@ -22,7 +22,10 @@ function design(edit: (nodes: Record<string, Raw>) => void = () => {}) {
 
 describe("components and instances", () => {
   it("names a variant swap instead of showing component ids", () => {
-    const changes = diffTrees(design(), design((n) => Object.assign(n["11"], { component: 5, source: 5 })));
+    const changes = diffTrees(
+      design(),
+      design((n) => Object.assign(n["11"], { component: 5, source: 5 })),
+    );
     expect(changes).toHaveLength(1);
     expect(changes[0]).toMatchObject({ kind: "modified", props: [{ prop: "variant", from: "Time=Day", to: "Time=Dusk" }] });
   });
@@ -38,13 +41,19 @@ describe("components and instances", () => {
   });
 
   it("says how many instances a change inside a component reaches", () => {
-    const changes = diffTrees(design(), design((n) => (n["4"].width = 12)));
+    const changes = diffTrees(
+      design(),
+      design((n) => (n["4"].width = 12)),
+    );
     expect(changes[0]?.instances).toBe(2);
     expect(formatText(changes)).toContain("(in a component used by 2 instances)");
   });
 
   it("leaves changes outside components alone", () => {
-    const changes = diffTrees(design(), design((n) => (n["10"].name = "Start")));
+    const changes = diffTrees(
+      design(),
+      design((n) => (n["10"].name = "Start")),
+    );
     expect(changes[0]?.instances).toBeUndefined();
   });
 });

@@ -24,7 +24,10 @@ const work = mkdtempSync(join(tmpdir(), "figdiff-compat-"));
 
 const sh = (cmd, args) => execFileSync(cmd, args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
 const diff = (a, b) => JSON.parse(sh("node", [figdiff, a, b, "--json"]));
-const oneLine = (e) => String(e.stderr || e.message).split("\n").find((l) => l.trim()) ?? "error";
+const oneLine = (e) =>
+  String(e.stderr || e.message)
+    .split("\n")
+    .find((l) => l.trim()) ?? "error";
 
 /** The first node that can be renamed without side effects: a text or rectangle, else any non-page node. */
 function pickNode(tree) {
@@ -39,7 +42,10 @@ function pickNode(tree) {
   return fallback;
 }
 
-const short = (v) => { const t = JSON.stringify(v) ?? "undefined"; return t.length > 90 ? `${t.slice(0, 90)}…` : t; };
+const short = (v) => {
+  const t = JSON.stringify(v) ?? "undefined";
+  return t.length > 90 ? `${t.slice(0, 90)}…` : t;
+};
 // For objects, show only the keys that differ.
 const keyDiff = (a, b) => {
   if (a && b && typeof a === "object" && typeof b === "object" && !Array.isArray(a)) {
@@ -50,12 +56,18 @@ const keyDiff = (a, b) => {
 };
 
 let version = "unknown";
-try { version = sh(cli, ["--version"]).trim(); } catch { /* older builds */ }
+try {
+  version = sh(cli, ["--version"]).trim();
+} catch {
+  /* older builds */
+}
 
 const rows = [];
 const details = [];
 let failed = 0;
-for (const file of readdirSync(examplesDir).filter((f) => f.endsWith(".figcraft")).sort()) {
+for (const file of readdirSync(examplesDir)
+  .filter((f) => f.endsWith(".figcraft"))
+  .sort()) {
   const src = join(examplesDir, file);
   const row = { file, resave: "", edit: "", bounds: "" };
 
@@ -70,10 +82,19 @@ for (const file of readdirSync(examplesDir).filter((f) => f.endsWith(".figcraft"
       failed++;
       const kinds = {};
       for (const c of r.changes) for (const p of c.props ?? [{ prop: `(${c.kind})` }]) kinds[p.prop] = (kinds[p.prop] ?? 0) + 1;
-      const counts = Object.entries(kinds).map(([k, v]) => `${k} ×${v}`).join(", ");
+      const counts = Object.entries(kinds)
+        .map(([k, v]) => `${k} ×${v}`)
+        .join(", ");
       const seen = new Set();
-      const sample = r.changes.flatMap((c) => (c.props ?? []).map((p) => `node ${c.id} ${p.prop}: ${keyDiff(p.from, p.to)}`))
-        .filter((l) => { const k = l.replace(/^node \d+ /, ""); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 6);
+      const sample = r.changes
+        .flatMap((c) => (c.props ?? []).map((p) => `node ${c.id} ${p.prop}: ${keyDiff(p.from, p.to)}`))
+        .filter((l) => {
+          const k = l.replace(/^node \d+ /, "");
+          if (seen.has(k)) return false;
+          seen.add(k);
+          return true;
+        })
+        .slice(0, 6);
       row.resave = `**${n} changes** (${counts})`;
       details.push(`### ${file}\n\n${sample.map((l) => `- \`${l.replace(/`/g, "'")}\``).join("\n")}`);
     }
@@ -88,7 +109,10 @@ for (const file of readdirSync(examplesDir).filter((f) => f.endsWith(".figcraft"
     if (!node) throw new Error("no editable node");
     const script = join(work, `edit-${file}.json`);
     const edited = join(work, `edited-${file}`);
-    writeFileSync(script, JSON.stringify([{ command: "node.set", params: { ids: [Number(node.id)], props: { name: "figdiff-compat-check" } } }]));
+    writeFileSync(
+      script,
+      JSON.stringify([{ command: "node.set", params: { ids: [Number(node.id)], props: { name: "figdiff-compat-check" } } }]),
+    );
     sh(cli, ["run", script, "--in", src, "--out", edited]);
     const r = diff(src, edited);
     // FigCraft re-measures text and auto layout when it applies an edit headlessly (no system fonts),
@@ -96,12 +120,22 @@ for (const file of readdirSync(examplesDir).filter((f) => f.endsWith(".figcraft"
     // nothing is added, removed or moved, and that the rename itself is reported.
     const structural = r.changes.filter((c) => c.kind !== "modified");
     const renamedOk = r.changes.some((c) => String(c.id) === String(node.id) && c.props?.some((p) => p.prop === "name"));
-    const side = r.changes.reduce((n, c) => n + (c.props ?? []).filter((p) => !(String(c.id) === String(node.id) && p.prop === "name")).length, 0);
+    const side = r.changes.reduce(
+      (n, c) => n + (c.props ?? []).filter((p) => !(String(c.id) === String(node.id) && p.prop === "name")).length,
+      0,
+    );
     const only = structural.length === 0 && renamedOk;
     if (side > 0) {
       const lines = r.changes.flatMap((c) => (c.props ?? []).map((p) => `node ${c.id} ${p.prop}: ${keyDiff(p.from, p.to)}`));
       const seenKinds = new Set();
-      const uniq = lines.filter((l) => { const k = l.replace(/^node \d+ /, ""); if (seenKinds.has(k)) return false; seenKinds.add(k); return true; }).slice(0, 4);
+      const uniq = lines
+        .filter((l) => {
+          const k = l.replace(/^node \d+ /, "");
+          if (seenKinds.has(k)) return false;
+          seenKinds.add(k);
+          return true;
+        })
+        .slice(0, 4);
       details.push(`### ${file}: after renaming node ${node.id}\n\n${uniq.map((l) => `- \`${l.replace(/`/g, "'")}\``).join("\n")}`);
     }
     if (only) row.edit = `ok (renamed ${node.type} ${node.id}${side ? `; ${side} relayout side effects, see below` : ""})`;
@@ -118,7 +152,9 @@ for (const file of readdirSync(examplesDir).filter((f) => f.endsWith(".figcraft"
     const node = pickNode(parseFigcraft(src));
     const renderer = createCliRenderer(cli);
     const b = node ? renderer.bounds(src, [String(node.id)]).get(String(node.id)) : undefined;
-    row.bounds = b ? `ok (${b.width}×${b.height} at ${b.x}, ${b.y})` : `not available${renderer.lastError ? `: ${renderer.lastError}` : ""}`;
+    row.bounds = b
+      ? `ok (${b.width}×${b.height} at ${b.x}, ${b.y})`
+      : `not available${renderer.lastError ? `: ${renderer.lastError}` : ""}`;
   } catch (e) {
     row.bounds = `not available: ${oneLine(e)}`;
   }

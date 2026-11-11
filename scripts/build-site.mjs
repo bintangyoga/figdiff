@@ -49,7 +49,8 @@ while (queue.length) {
   for (const m of code.matchAll(/(?:import|export)\s[^"']*?from\s+["']([^"']+)["']/g)) {
     const spec = m[1];
     if (spec.startsWith(".")) queue.push(join(dirname(rel), spec).replace(/\\/g, "/"));
-    else if (spec !== "fflate") throw new Error(`${rel} imports "${spec}", which the browser build cannot serve. Keep browser.ts free of Node APIs.`);
+    else if (spec !== "fflate")
+      throw new Error(`${rel} imports "${spec}", which the browser build cannot serve. Keep browser.ts free of Node APIs.`);
   }
 }
 for (const rel of seen) write(join("lib", rel), read(join(distDir, rel)));
@@ -98,7 +99,12 @@ function rewriteLink(href) {
 const pages = DOCS.map((d) => {
   const md = markdownToHtml(read(join(root, d.file)), { link: rewriteLink });
   const firstPara = (md.html.match(/<p>([\s\S]*?)<\/p>/) ?? [])[1] ?? "";
-  const plain = firstPara.replace(/<[^>]+>/g, "").replace(/&quot;/g, '"').replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+  const plain = firstPara
+    .replace(/<[^>]+>/g, "")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
   return { ...d, ...md, title: d.slug === "" ? "Quick start" : md.title, description: plain.slice(0, 160) };
 });
 
@@ -110,7 +116,10 @@ const sidebar = (current) => {
     g.items.push(p);
   }
   return groups
-    .map((g) => `<div class="group"><span class="group-title">${escapeHtml(g.name)}</span>${g.items.map((p) => `<a href="${urlOf(p.slug)}"${p === current ? ' aria-current="page"' : ""}>${escapeHtml(p.label)}</a>`).join("")}</div>`)
+    .map(
+      (g) =>
+        `<div class="group"><span class="group-title">${escapeHtml(g.name)}</span>${g.items.map((p) => `<a href="${urlOf(p.slug)}"${p === current ? ' aria-current="page"' : ""}>${escapeHtml(p.label)}</a>`).join("")}</div>`,
+    )
     .join("");
 };
 
@@ -144,7 +153,12 @@ write(
       title: p.title,
       description: p.description,
       headings: p.headings,
-      text: p.html.replace(/<[^>]+>/g, " ").replace(/&[a-z]+;/g, " ").replace(/\s+/g, " ").trim().slice(0, 6000),
+      text: p.html
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&[a-z]+;/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 6000),
     })),
   ),
 );

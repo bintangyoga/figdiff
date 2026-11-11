@@ -11,7 +11,10 @@ import { makeFigcraft } from "./helpers.js";
 describe("extractFromGit (with a stand-in git)", () => {
   it("asks git for <ref>:./<name> from the file's own directory", () => {
     let seen: { args: string[]; cwd: string } | undefined;
-    const git: GitRun = (args, cwd) => { seen = { args, cwd }; return new Uint8Array([1, 2, 3]); };
+    const git: GitRun = (args, cwd) => {
+      seen = { args, cwd };
+      return new Uint8Array([1, 2, 3]);
+    };
     const copy = extractFromGit("main", join(tmpdir(), "design", "app.figcraft"), git);
     expect(seen).toEqual({ args: ["show", "main:./app.figcraft"], cwd: join(tmpdir(), "design") });
     expect(Array.from(readFileSync(copy.path))).toEqual([1, 2, 3]);
@@ -24,12 +27,18 @@ describe("extractFromGit (with a stand-in git)", () => {
   });
 
   it("explains when the file does not exist at that revision", () => {
-    const git: GitRun = () => { throw Object.assign(new Error("exit 128"), { stderr: "fatal: path 'a.figcraft' does not exist in 'v9'\nmore" }); };
-    expect(() => extractFromGit("v9", "a.figcraft", git)).toThrow(`Cannot read a.figcraft at "v9": fatal: path 'a.figcraft' does not exist in 'v9'`);
+    const git: GitRun = () => {
+      throw Object.assign(new Error("exit 128"), { stderr: "fatal: path 'a.figcraft' does not exist in 'v9'\nmore" });
+    };
+    expect(() => extractFromGit("v9", "a.figcraft", git)).toThrow(
+      `Cannot read a.figcraft at "v9": fatal: path 'a.figcraft' does not exist in 'v9'`,
+    );
   });
 
   it("explains when git is not installed", () => {
-    const git: GitRun = () => { throw Object.assign(new Error("spawn git ENOENT"), { code: "ENOENT" }); };
+    const git: GitRun = () => {
+      throw Object.assign(new Error("spawn git ENOENT"), { code: "ENOENT" });
+    };
     expect(() => extractFromGit("main", "a.figcraft", git)).toThrow(/git was not found/);
   });
 });

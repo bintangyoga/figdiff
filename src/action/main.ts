@@ -52,15 +52,30 @@ interface PullEvent {
 }
 
 /** Compare one modified file with its version at the base commit. */
-function compareFile(file: ChangedFile, root: string, base: string, reportDir: string, deps: ActionDeps, log: string[], images = false, scale = "", tolerance = ""): RawResult {
+function compareFile(
+  file: ChangedFile,
+  root: string,
+  base: string,
+  reportDir: string,
+  deps: ActionDeps,
+  log: string[],
+  images = false,
+  scale = "",
+  tolerance = "",
+): RawResult {
   const reportName = `${file.path.replace(/[^A-Za-z0-9._-]+/g, "_")}.html`;
   const extra = [...(images ? ["--images", ...(scale ? ["--scale", scale] : [])] : []), ...(tolerance ? ["--tolerance", tolerance] : [])];
   const result = deps.run([join(root, file.path), "--against", base, "--json", "--html", join(reportDir, reportName), ...extra]);
   if (result.code !== 0) {
-    const message = result.stderr.replace(/^figdiff:\s*/gm, "").trim().split("\n")[0] ?? "unknown error";
+    const message =
+      result.stderr
+        .replace(/^figdiff:\s*/gm, "")
+        .trim()
+        .split("\n")[0] ?? "unknown error";
     return { file, error: message };
   }
-  for (const line of result.stderr.split("\n")) if (line.trim() && !line.startsWith("figdiff: wrote ")) log.push(`${file.path}: ${line.replace(/^figdiff:\s*/, "")}`);
+  for (const line of result.stderr.split("\n"))
+    if (line.trim() && !line.startsWith("figdiff: wrote ")) log.push(`${file.path}: ${line.replace(/^figdiff:\s*/, "")}`);
   for (const w of result.writes) {
     deps.mkdirp(reportDir);
     deps.writeText(w.path, w.content);
@@ -105,7 +120,12 @@ async function hostFrameImages(
     log.push(`figdiff: ${files.length} image(s) saved to branch ${branch}.`);
   } catch (err) {
     for (const r of results) r.frames = undefined;
-    const reason = err instanceof GitHubError && err.status === 403 ? "the token cannot write to the repository (needs contents: write)" : err instanceof Error ? err.message : String(err);
+    const reason =
+      err instanceof GitHubError && err.status === 403
+        ? "the token cannot write to the repository (needs contents: write)"
+        : err instanceof Error
+          ? err.message
+          : String(err);
     log.push(`figdiff: images were not added to the comment: ${reason}.`);
   }
 }
@@ -140,9 +160,7 @@ export async function runAction(env: Env, overrides: Partial<ActionDeps> = {}): 
   try {
     listed = parseNameStatus(deps.git(["diff", "--name-status", "-z", "--no-renames", `${pr.base.sha}...${pr.head.sha}`], root));
   } catch {
-    log.push(
-      "figdiff: could not list the changed files. Check out the repository with `fetch-depth: 0` so the base commit is available.",
-    );
+    log.push("figdiff: could not list the changed files. Check out the repository with `fetch-depth: 0` so the base commit is available.");
     return done(2);
   }
   const files = filterByPatterns(listed, patterns);
@@ -150,7 +168,9 @@ export async function runAction(env: Env, overrides: Partial<ActionDeps> = {}): 
 
   const results: RawResult[] = [];
   for (const file of files.slice(0, maxFiles)) {
-    results.push(file.status === "modified" ? compareFile(file, root, pr.base.sha, reportDir, deps, log, withImages, scale, tolerance) : { file });
+    results.push(
+      file.status === "modified" ? compareFile(file, root, pr.base.sha, reportDir, deps, log, withImages, scale, tolerance) : { file },
+    );
   }
   if (files.length > maxFiles) log.push(`figdiff: only the first ${maxFiles} files were compared (max-files).`);
   const changed = results.filter(isSubstantive);
@@ -174,18 +194,25 @@ export async function runAction(env: Env, overrides: Partial<ActionDeps> = {}): 
       log.push("figdiff: no design changes and no earlier comment; staying quiet.");
       return done(0, { comment: "skipped" });
     }
-    const runUrl = env.GITHUB_SERVER_URL && env.GITHUB_RUN_ID ? `${env.GITHUB_SERVER_URL}/${repo}/actions/runs/${env.GITHUB_RUN_ID}` : undefined;
+    const runUrl =
+      env.GITHUB_SERVER_URL && env.GITHUB_RUN_ID ? `${env.GITHUB_SERVER_URL}/${repo}/actions/runs/${env.GITHUB_RUN_ID}` : undefined;
     const body =
       changed.length === 0
         ? buildEmptyComment()
-        : buildComment(changed, { runUrl, reportsUploaded: input(env, "upload-reports", "true") !== "false", version: env.FIGDIFF_VERSION });
+        : buildComment(changed, {
+            runUrl,
+            reportsUploaded: input(env, "upload-reports", "true") !== "false",
+            version: env.FIGDIFF_VERSION,
+          });
     const outcome = await upsertComment(api, repo, pr.number, body, existing);
     log.push(`figdiff: comment ${outcome}.`);
     return done(0, { comment: outcome, changed: changed.length });
   } catch (err) {
     if (err instanceof GitHubError && err.status === 403) {
       // Pull requests from forks get a read-only token: report instead of failing the build.
-      log.push("figdiff: not allowed to comment (403). On pull requests from forks the token is read-only; the changes are in the job log.");
+      log.push(
+        "figdiff: not allowed to comment (403). On pull requests from forks the token is read-only; the changes are in the job log.",
+      );
       for (const r of changed) log.push(`${basename(r.file.path)}:\n${r.text ?? r.error ?? r.file.status}`);
       return done(0, { comment: "skipped", changed: changed.length });
     }

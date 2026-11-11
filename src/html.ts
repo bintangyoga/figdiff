@@ -45,12 +45,7 @@ const KIND_SYMBOL = { added: "+", removed: "−", moved: ">", modified: "~", reo
 const KIND_LABEL = { added: "Added", removed: "Removed", moved: "Moved", modified: "Changed", reordered: "Reordered" } as const;
 
 export function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
 /** Only embedded images and web URLs are accepted, never script-capable schemes. */
@@ -275,9 +270,7 @@ export function formatHtml(changes: Change[], options: HtmlOptions = {}): string
     pages.set(page, frames);
   }
 
-  const kinds = (["added", "removed", "modified", "moved", "reordered"] as const).filter((k) =>
-    changes.some((c) => c.kind === k),
-  );
+  const kinds = (["added", "removed", "modified", "moved", "reordered"] as const).filter((k) => changes.some((c) => c.kind === k));
   const filters = kinds
     .map((k) => `<button type="button" data-kind="${k}" aria-pressed="true">${KIND_SYMBOL[k]} ${KIND_LABEL[k]}</button>`)
     .join("");

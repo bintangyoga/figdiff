@@ -2,4 +2,6 @@ dist
 site/dist
 site/public
 node_modules
+test/fixtures
 *.md
+*.html

@@ -11,17 +11,48 @@ const color = (r: number, g: number, b: number) => ({ type: "color", value: { r,
 function doc(opts: { bg?: [number, number, number]; extraVar?: boolean; renameStyle?: boolean; dropStyle?: boolean } = {}) {
   const variables = [
     {
-      id: "VariableID:1", name: "color/bg", collection: "VariableCollectionId:1", resolvedType: "color", description: "",
+      id: "VariableID:1",
+      name: "color/bg",
+      collection: "VariableCollectionId:1",
+      resolvedType: "color",
+      description: "",
       values: { "VariableCollectionId:1/mode1": color(...(opts.bg ?? [1, 1, 1])), "VariableCollectionId:1/mode2": color(0, 0, 0) },
     },
     ...(opts.extraVar
-      ? [{ id: "VariableID:2", name: "space/s", collection: "VariableCollectionId:1", resolvedType: "float", description: "", values: { "VariableCollectionId:1/mode1": { type: "float", value: 8 } } }]
+      ? [
+          {
+            id: "VariableID:2",
+            name: "space/s",
+            collection: "VariableCollectionId:1",
+            resolvedType: "float",
+            description: "",
+            values: { "VariableCollectionId:1/mode1": { type: "float", value: 8 } },
+          },
+        ]
       : []),
   ];
-  const styles = opts.dropStyle ? [] : [{ id: "S:1", name: opts.renameStyle ? "Pine/500" : "Pine/50", description: "", type: "paint", paints: [] }];
+  const styles = opts.dropStyle
+    ? []
+    : [{ id: "S:1", name: opts.renameStyle ? "Pine/500" : "Pine/50", description: "", type: "paint", paints: [] }];
   return {
-    format: "figcraft", version: 1, name: "T", pages: [], nodes: {},
-    variables: { collections: [{ id: "VariableCollectionId:1", name: "Theme", modes: [{ id: "VariableCollectionId:1/mode1", name: "Light" }, { id: "VariableCollectionId:1/mode2", name: "Dark" }] }], variables },
+    format: "figcraft",
+    version: 1,
+    name: "T",
+    pages: [],
+    nodes: {},
+    variables: {
+      collections: [
+        {
+          id: "VariableCollectionId:1",
+          name: "Theme",
+          modes: [
+            { id: "VariableCollectionId:1/mode1", name: "Light" },
+            { id: "VariableCollectionId:1/mode2", name: "Dark" },
+          ],
+        },
+      ],
+      variables,
+    },
     styles,
   };
 }
@@ -64,7 +95,9 @@ describe("diffTokens", () => {
     expect(removed).toEqual([{ kind: "removed", entity: "style", id: "S:1", name: "Pine/50", detail: "paint" }]);
     const renamed = diffTokens(base, documentToTokens(doc({ renameStyle: true })));
     expect(renamed[0]).toMatchObject({ kind: "modified", name: "Pine/500" });
-    expect((renamed[0] as { props: { prop: string; from: unknown; to: unknown }[] }).props).toEqual([{ prop: "name", from: "Pine/50", to: "Pine/500" }]);
+    expect((renamed[0] as { props: { prop: string; from: unknown; to: unknown }[] }).props).toEqual([
+      { prop: "name", from: "Pine/50", to: "Pine/500" },
+    ]);
   });
 });
 
@@ -126,8 +159,20 @@ describe("variable aliases", () => {
       variables: {
         collections: [{ id: "c", name: "Brand", modes: [{ id: "m", name: "Light" }] }],
         variables: [
-          { id: "VariableID:1", name: "color/primary", collection: "c", resolvedType: "COLOR", values: { m: { type: "color", value: { r: 1, g: 0, b: 0 } } } },
-          { id: "VariableID:2", name: "color/button", collection: "c", resolvedType: "COLOR", values: { m: { type: "alias", value: "VariableID:1" } } },
+          {
+            id: "VariableID:1",
+            name: "color/primary",
+            collection: "c",
+            resolvedType: "COLOR",
+            values: { m: { type: "color", value: { r: 1, g: 0, b: 0 } } },
+          },
+          {
+            id: "VariableID:2",
+            name: "color/button",
+            collection: "c",
+            resolvedType: "COLOR",
+            values: { m: { type: "alias", value: "VariableID:1" } },
+          },
         ],
       },
     });

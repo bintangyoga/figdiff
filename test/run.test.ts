@@ -16,7 +16,12 @@ function figcraft(red: number, extraNode = false): Uint8Array {
     "1": { id: 1, name: "Screens", type: "page", children: [2] },
     "2": { id: 2, name: "Login", type: "frame", parent: 1, children: extraNode ? [3, 4] : [3], width: 100, height: 100 },
     "3": {
-      id: 3, name: "Button", type: "rectangle", parent: 2, width: 10, height: 10,
+      id: 3,
+      name: "Button",
+      type: "rectangle",
+      parent: 2,
+      width: 10,
+      height: 10,
       fills: [{ type: "solid", color: { r: red, g: 0, b: 0, a: 1 } }],
     },
   };
@@ -99,7 +104,15 @@ describe("run", () => {
       let cleaned = false;
       let asked: [string, string] | undefined;
       const r = run([b, "--against", "main"], {
-        fromGit: (ref, file) => { asked = [ref, file]; return { path: a, cleanup: () => { cleaned = true; } }; },
+        fromGit: (ref, file) => {
+          asked = [ref, file];
+          return {
+            path: a,
+            cleanup: () => {
+              cleaned = true;
+            },
+          };
+        },
       });
       expect(asked).toEqual(["main", b]);
       expect(r.stdout).toContain("+ Hint (text)");
@@ -108,7 +121,14 @@ describe("run", () => {
 
     it("cleans up even when the comparison fails", () => {
       let cleaned = false;
-      const r = run([b, "--against", "main"], { fromGit: () => ({ path: notZip, cleanup: () => { cleaned = true; } }) });
+      const r = run([b, "--against", "main"], {
+        fromGit: () => ({
+          path: notZip,
+          cleanup: () => {
+            cleaned = true;
+          },
+        }),
+      });
       expect(r.code).toBe(2);
       expect(cleaned).toBe(true);
     });
@@ -120,7 +140,11 @@ describe("run", () => {
     });
 
     it("passes git errors through", () => {
-      const r = run([b, "--against", "nope"], { fromGit: () => { throw new Error('Cannot read b.figcraft at "nope"'); } });
+      const r = run([b, "--against", "nope"], {
+        fromGit: () => {
+          throw new Error('Cannot read b.figcraft at "nope"');
+        },
+      });
       expect(r.code).toBe(2);
       expect(r.stderr).toContain('Cannot read b.figcraft at "nope"');
     });
@@ -157,7 +181,10 @@ describe("run", () => {
     });
 
     it("embeds rendered before/after images and a difference view", () => {
-      const r = run([a, b, "--html", html, "--images"], withRenderer((file) => (file === a ? red : blue)));
+      const r = run(
+        [a, b, "--html", html, "--images"],
+        withRenderer((file) => (file === a ? red : blue)),
+      );
       expect(r.code).toBe(0);
       const page = r.writes[0]?.content ?? "";
       expect(page).toContain('class="cmp"');
@@ -168,7 +195,10 @@ describe("run", () => {
     it("passes --figcraft-cli through to the renderer lookup", () => {
       let asked: string | undefined;
       run([a, b, "--html", html, "--images", "--figcraft-cli", "/opt/fc"], {
-        createRenderer: (path) => { asked = path; return undefined; },
+        createRenderer: (path) => {
+          asked = path;
+          return undefined;
+        },
       });
       expect(asked).toBe("/opt/fc");
     });
@@ -182,7 +212,11 @@ describe("run", () => {
 
     it("still writes the report when running figcraft-cli fails", () => {
       const r = run([a, b, "--html", html, "--images"], {
-        createRenderer: () => ({ renderFrame: () => { throw new RendererUnavailableError("Cannot run fc"); } }),
+        createRenderer: () => ({
+          renderFrame: () => {
+            throw new RendererUnavailableError("Cannot run fc");
+          },
+        }),
       });
       expect(r.code).toBe(0);
       expect(r.stderr).toContain("Cannot run fc");
@@ -191,7 +225,12 @@ describe("run", () => {
 
     it("does not look for figcraft-cli unless asked", () => {
       let called = false;
-      run([a, b, "--html", html], { createRenderer: () => { called = true; return undefined; } });
+      run([a, b, "--html", html], {
+        createRenderer: () => {
+          called = true;
+          return undefined;
+        },
+      });
       expect(called).toBe(false);
     });
   });

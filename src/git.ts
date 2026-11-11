@@ -31,7 +31,9 @@ export function extractFromGit(ref: string, file: string, git: GitRun = defaultG
   } catch (err) {
     const e = err as { code?: string; stderr?: Uint8Array | string };
     if (e.code === "ENOENT") throw new Error("git was not found. Install git to use --against.");
-    const detail = String(e.stderr ?? "").trim().split("\n")[0];
+    const detail = String(e.stderr ?? "")
+      .trim()
+      .split("\n")[0];
     throw new Error(`Cannot read ${name} at "${ref}"${detail ? `: ${detail}` : ""}`);
   }
 

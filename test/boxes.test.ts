@@ -14,7 +14,17 @@ function design(edit: (n: Record<string, Raw>) => void = () => {}) {
     "2": { id: 2, name: "Login", type: "frame", parent: 1, width: 400, height: 800, transform: at(100, 50), children: [3, 5] },
     "3": { id: 3, name: "Card", type: "frame", parent: 2, width: 200, height: 100, transform: at(20, 40), children: [4] },
     "4": { id: 4, name: "Button", type: "rectangle", parent: 3, width: 100, height: 40, transform: at(10, 20), fills: [] },
-    "5": { id: 5, name: "List", type: "frame", parent: 2, width: 400, height: 200, transform: at(0, 400), layout: { mode: "vertical" }, children: [6] },
+    "5": {
+      id: 5,
+      name: "List",
+      type: "frame",
+      parent: 2,
+      width: 400,
+      height: 200,
+      transform: at(0, 400),
+      layout: { mode: "vertical" },
+      children: [6],
+    },
     "6": { id: 6, name: "Row", type: "rectangle", parent: 5, width: 400, height: 50, fills: [] },
   };
   edit(nodes);
@@ -71,7 +81,11 @@ describe("figcraft-cli bounds", () => {
       JSON.stringify({ step: 1, command: "node.get", ok: true, result: { id: 2 } }),
       "not json",
     ].join("\n");
-    const renderer = createCliRenderer("figcraft-cli", () => {}, (_cmd, a) => ((args = a), out));
+    const renderer = createCliRenderer(
+      "figcraft-cli",
+      () => {},
+      (_cmd, a) => ((args = a), out),
+    );
     const bounds = renderer.bounds?.("file.figcraft", ["6", "2"]);
     expect(args.slice(0, 1)).toEqual(["run"]);
     expect(args.slice(2)).toEqual(["--in", "file.figcraft"]);
@@ -80,9 +94,13 @@ describe("figcraft-cli bounds", () => {
   });
 
   it("returns nothing when the program fails", () => {
-    const renderer = createCliRenderer("figcraft-cli", () => {}, () => {
-      throw Object.assign(new Error("boom"), { stderr: "error: no such node" });
-    });
+    const renderer = createCliRenderer(
+      "figcraft-cli",
+      () => {},
+      () => {
+        throw Object.assign(new Error("boom"), { stderr: "error: no such node" });
+      },
+    );
     expect(renderer.bounds?.("f", ["1"]).size).toBe(0);
     expect(renderer.lastError).toBe("error: no such node");
   });
@@ -93,7 +111,9 @@ describe("highlights in the HTML report", () => {
     const before = design();
     const after = design((n) => (n["4"].width = 120));
     const changes = diffTrees(before, after);
-    const images = { [frameKey("Screens", "Login")]: { before: "data:image/png;base64,AA==", after: "data:image/png;base64,AA==", width: 400 } };
+    const images = {
+      [frameKey("Screens", "Login")]: { before: "data:image/png;base64,AA==", after: "data:image/png;base64,AA==", width: 400 },
+    };
     const html = formatHtml(changes, { images, boxes: changeBoxes(before, after, changes) });
     expect(html).toContain('data-hl="4"');
     expect(html).toContain('data-node="4"');

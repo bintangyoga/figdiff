@@ -21,7 +21,11 @@ async function copyText(text) {
     document.body.append(ta);
     ta.select();
     let ok = false;
-    try { ok = document.execCommand("copy"); } catch { /* ignored */ }
+    try {
+      ok = document.execCommand("copy");
+    } catch {
+      /* ignored */
+    }
     ta.remove();
     return ok;
   }
@@ -51,7 +55,11 @@ function initGame() {
   const list = $("#result-list");
   for (const [sign, text, tag, visible] of lines) {
     const li = el("li");
-    li.append(el("span", sign === "−" ? "sign minus" : "sign", sign), el("span", "txt", text), el("span", visible ? "pill" : "pill hidden", tag));
+    li.append(
+      el("span", sign === "−" ? "sign minus" : "sign", sign),
+      el("span", "txt", text),
+      el("span", visible ? "pill" : "pill hidden", tag),
+    );
     list.append(li);
   }
 
@@ -77,8 +85,15 @@ function initGame() {
       render();
     });
   }
-  $("#reveal").addEventListener("click", () => { revealed = true; render(); });
-  $("#replay").addEventListener("click", () => { revealed = false; found.clear(); render(); });
+  $("#reveal").addEventListener("click", () => {
+    revealed = true;
+    render();
+  });
+  $("#replay").addEventListener("click", () => {
+    revealed = false;
+    found.clear();
+    render();
+  });
   render();
 }
 
@@ -144,26 +159,45 @@ function initTry() {
       else if (c.kind === "removed") rows.push({ ...base, kind: "removed", sign: "−", extra: `(${c.type})` });
       else if (c.kind === "moved") rows.push({ ...base, kind: "moved", sign: "↳", from: c.fromTrail.join(" › "), to: c.trail.join(" › ") });
       else if (c.kind === "reordered") rows.push({ ...base, kind: "moved", sign: "⇅", extra: "layers reordered" });
-      else for (const p of c.props) rows.push({ ...base, kind: "changed", sign: "~", prop: p.prop, from: formatValue(p.from), to: formatValue(p.to) });
+      else
+        for (const p of c.props)
+          rows.push({ ...base, kind: "changed", sign: "~", prop: p.prop, from: formatValue(p.from), to: formatValue(p.to) });
     }
     const ent = { variable: "Variable", style: "Style", collection: "Collection" };
     for (const t of result.tokens) {
       const base = { page: "", frame: "Variables and styles", label: `${ent[t.entity]} “${t.name}”` };
       if (t.kind === "added") rows.push({ ...base, kind: "tokens", sign: "+", extra: t.detail ? `(${t.detail})` : "" });
       else if (t.kind === "removed") rows.push({ ...base, kind: "tokens", sign: "−", extra: t.detail ? `(${t.detail})` : "" });
-      else for (const p of t.props) rows.push({ ...base, kind: "tokens", sign: "~", prop: p.prop, from: formatValue(p.from), to: formatValue(p.to) });
+      else
+        for (const p of t.props)
+          rows.push({ ...base, kind: "tokens", sign: "~", prop: p.prop, from: formatValue(p.from), to: formatValue(p.to) });
     }
     return rows;
   }
 
-  const FILTERS = [["all", "All"], ["changed", "Changed"], ["added", "Added"], ["removed", "Removed"], ["moved", "Moved"], ["tokens", "Variables"]];
+  const FILTERS = [
+    ["all", "All"],
+    ["changed", "Changed"],
+    ["added", "Added"],
+    ["removed", "Removed"],
+    ["moved", "Moved"],
+    ["tokens", "Variables"],
+  ];
 
   function show() {
     const { result } = state;
     $("#report-empty").hidden = true;
     $("#report-body").hidden = false;
-    $("#report-title").textContent = result.summary.changes + (result.summary.tokenChanges ?? 0) === 0 ? "No changes" : formatSummary(result.summary).replace(/ \(.*\)$/, "");
-    $("#report-sub").textContent = result.summary.changes === 0 && !result.summary.tokenChanges ? "These two files describe the same design." : formatSummary(result.summary).replace(/^.*?\(/, "").replace(/\)$/, "");
+    $("#report-title").textContent =
+      result.summary.changes + (result.summary.tokenChanges ?? 0) === 0
+        ? "No changes"
+        : formatSummary(result.summary).replace(/ \(.*\)$/, "");
+    $("#report-sub").textContent =
+      result.summary.changes === 0 && !result.summary.tokenChanges
+        ? "These two files describe the same design."
+        : formatSummary(result.summary)
+            .replace(/^.*?\(/, "")
+            .replace(/\)$/, "");
     const rows = toRows(result);
     const counts = { all: rows.length };
     for (const r of rows) counts[r.kind] = (counts[r.kind] ?? 0) + 1;
@@ -177,7 +211,10 @@ function initTry() {
       b.setAttribute("aria-pressed", String(state.filter === key));
       b.disabled = key !== "all" && n === 0;
       b.append(`${text} `, el("span", "n", String(n)));
-      b.addEventListener("click", () => { state.filter = key; show(); });
+      b.addEventListener("click", () => {
+        state.filter = key;
+        show();
+      });
       bar.append(b);
     }
 
@@ -197,7 +234,10 @@ function initTry() {
     }
     let lastPage = null;
     for (const g of groups.values()) {
-      if (g.page && g.page !== lastPage) { box.append(el("p", "rg-page", `Page “${g.page}”`)); lastPage = g.page; }
+      if (g.page && g.page !== lastPage) {
+        box.append(el("p", "rg-page", `Page “${g.page}”`));
+        lastPage = g.page;
+      }
       const wrap = el("div", "rg");
       if (g.frame) wrap.append(el("h3", "", g.page ? `Frame “${g.frame}”` : g.frame));
       const list = el("div", "rows");
@@ -212,10 +252,19 @@ function initTry() {
         main.append(top);
         if (r.from !== undefined) {
           const vals = el("div", "vals");
-          const swatch = (v) => { const m = /#[0-9a-fA-F]{6,8}/.exec(v); if (!m) return null; const s = el("span", "sw"); s.style.background = m[0]; s.setAttribute("aria-hidden", "true"); return s; };
-          const s1 = swatch(r.from); if (s1) vals.append(s1);
+          const swatch = (v) => {
+            const m = /#[0-9a-fA-F]{6,8}/.exec(v);
+            if (!m) return null;
+            const s = el("span", "sw");
+            s.style.background = m[0];
+            s.setAttribute("aria-hidden", "true");
+            return s;
+          };
+          const s1 = swatch(r.from);
+          if (s1) vals.append(s1);
           vals.append(el("span", "from", r.from), el("span", "arrow", "→"));
-          const s2 = swatch(r.to); if (s2) vals.append(s2);
+          const s2 = swatch(r.to);
+          if (s2) vals.append(s2);
           vals.append(el("span", "to", r.to));
           main.append(vals);
         }
@@ -238,7 +287,10 @@ function initTry() {
   $("#tolerance").addEventListener("change", run);
 
   const zone = $("#dropzone");
-  zone.addEventListener("dragover", (e) => { e.preventDefault(); zone.classList.add("over"); });
+  zone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    zone.classList.add("over");
+  });
   zone.addEventListener("dragleave", () => zone.classList.remove("over"));
   zone.addEventListener("drop", (e) => {
     e.preventDefault();
@@ -254,11 +306,13 @@ function initTry() {
   $("#use-sample").addEventListener("click", async () => {
     setError("");
     try {
-      const [a, b] = await Promise.all(["before", "after"].map(async (s) => {
-        const res = await fetch(`/samples/ridgeline-${s}.figcraft`);
-        if (!res.ok) throw new Error("sample missing");
-        return new Uint8Array(await res.arrayBuffer());
-      }));
+      const [a, b] = await Promise.all(
+        ["before", "after"].map(async (s) => {
+          const res = await fetch(`/samples/ridgeline-${s}.figcraft`);
+          if (!res.ok) throw new Error("sample missing");
+          return new Uint8Array(await res.arrayBuffer());
+        }),
+      );
       state.before = { name: "ridgeline-before.figcraft", bytes: a };
       names.before.textContent = state.before.name;
       names.before.classList.remove("empty");
@@ -268,10 +322,13 @@ function initTry() {
     }
   });
 
-  for (const [id, field] of [["#copy-md", "markdown"], ["#copy-json", "json"]]) {
+  for (const [id, field] of [
+    ["#copy-md", "markdown"],
+    ["#copy-json", "json"],
+  ]) {
     const btn = $(id);
     btn.addEventListener("click", async () => {
-      if (state.result && await copyText(state.result[field])) flash(btn);
+      if (state.result && (await copyText(state.result[field]))) flash(btn);
     });
   }
   $("#save-html").addEventListener("click", () => {
@@ -297,17 +354,30 @@ function initVisual() {
   const swipe = $("#swipe");
   if (!swipe) return;
   const range = $("#swipe-range");
-  const set = (v) => { swipe.style.setProperty("--pos", `${v}%`); range.value = String(v); };
+  const set = (v) => {
+    swipe.style.setProperty("--pos", `${v}%`);
+    range.value = String(v);
+  };
   range.addEventListener("input", () => set(Number(range.value)));
   let dragging = false;
   const move = (e) => {
     const r = swipe.getBoundingClientRect();
     set(Math.round(Math.min(100, Math.max(0, ((e.clientX - r.left) / r.width) * 100))));
   };
-  swipe.addEventListener("pointerdown", (e) => { dragging = true; swipe.setPointerCapture(e.pointerId); move(e); });
-  swipe.addEventListener("pointermove", (e) => { if (dragging) move(e); });
-  swipe.addEventListener("pointerup", () => { dragging = false; });
-  swipe.addEventListener("pointercancel", () => { dragging = false; });
+  swipe.addEventListener("pointerdown", (e) => {
+    dragging = true;
+    swipe.setPointerCapture(e.pointerId);
+    move(e);
+  });
+  swipe.addEventListener("pointermove", (e) => {
+    if (dragging) move(e);
+  });
+  swipe.addEventListener("pointerup", () => {
+    dragging = false;
+  });
+  swipe.addEventListener("pointercancel", () => {
+    dragging = false;
+  });
   swipe.style.touchAction = "pan-y";
 
   const tabs = $$(".seg [role=tab]");
@@ -330,10 +400,15 @@ function initMisc() {
     });
   }
   for (const b of $$("[data-copy-target]")) {
-    b.addEventListener("click", async () => { if (await copyText($(`#${b.dataset.copyTarget}`).textContent)) flash(b); });
+    b.addEventListener("click", async () => {
+      if (await copyText($(`#${b.dataset.copyTarget}`).textContent)) flash(b);
+    });
   }
   const cmd = $("#cmd-copy");
-  if (cmd) cmd.addEventListener("click", async () => { if (await copyText("npx figdiff@alpha before.figcraft after.figcraft")) flash(cmd); });
+  if (cmd)
+    cmd.addEventListener("click", async () => {
+      if (await copyText("npx figdiff@alpha before.figcraft after.figcraft")) flash(cmd);
+    });
 }
 
 initGame();

@@ -44,7 +44,7 @@ describe("comment", () => {
   const summary = { changes: 1, frames: 1, added: 0, removed: 0, moved: 0, reordered: 0, modifiedNodes: 1, propertyChanges: 1 };
   it("includes a marker, details and survives backticks in names", () => {
     const body = buildComment(
-      [{ file: { status: "modified", path: "we`ird.figcraft" }, summary, text: "Page \"X\"\n  ~ `code`\n", reportName: "r.html" }],
+      [{ file: { status: "modified", path: "we`ird.figcraft" }, summary, text: 'Page "X"\n  ~ `code`\n', reportName: "r.html" }],
       { runUrl: "https://example.com/run", reportsUploaded: true },
     );
     expect(body.startsWith(COMMENT_MARKER)).toBe(true);
@@ -81,13 +81,15 @@ describe("runAction with a real git repository", () => {
     const same = makeFigcraft(1);
     writeFileSync(join(repo, "design/same.figcraft"), same);
     writeFileSync(join(repo, "notes.md"), "a");
-    git("add", "."); git("commit", "-q", "-m", "base");
+    git("add", ".");
+    git("commit", "-q", "-m", "base");
     base = git("rev-parse", "HEAD");
     writeFileSync(join(repo, "design/app.figcraft"), makeFigcraft(0.5, true));
     writeFileSync(join(repo, "design/same.figcraft"), same); // identical bytes: not listed as changed
     writeFileSync(join(repo, "design/new.figcraft"), makeFigcraft(1));
     writeFileSync(join(repo, "notes.md"), "b");
-    git("add", "."); git("commit", "-q", "-m", "change");
+    git("add", ".");
+    git("commit", "-q", "-m", "change");
     head = git("rev-parse", "HEAD");
     eventPath = join(repo, "..", `event-${Date.now()}.json`);
     writeFileSync(eventPath, JSON.stringify({ pull_request: { number: 7, base: { sha: base }, head: { sha: head } } }));
@@ -117,7 +119,7 @@ describe("runAction with a real git repository", () => {
   it("posts one comment about the modified file and the new file", async () => {
     const gh = fakeGitHub();
     const reportDir = join(repo, "reports");
-    const r = await (runAction({ ...env(), INPUT_REPORT_DIR: reportDir }, { fetch: gh.f }));
+    const r = await runAction({ ...env(), INPUT_REPORT_DIR: reportDir }, { fetch: gh.f });
     const result = r as Awaited<ReturnType<typeof runAction>>;
     expect(result.code).toBe(0);
     expect(result.comment).toBe("created");
@@ -133,7 +135,7 @@ describe("runAction with a real git repository", () => {
 
   it("updates its earlier comment instead of adding another", async () => {
     const gh = fakeGitHub([{ id: 5, body: `${COMMENT_MARKER} old` }]);
-    const r = (await (runAction({ ...env(), INPUT_REPORT_DIR: join(repo, "r2") }, { fetch: gh.f }))) as Awaited<ReturnType<typeof runAction>>;
+    const r = (await runAction({ ...env(), INPUT_REPORT_DIR: join(repo, "r2") }, { fetch: gh.f })) as Awaited<ReturnType<typeof runAction>>;
     expect(r.comment).toBe("updated");
     expect(gh.calls.some((c) => c.method === "PATCH" && c.url.endsWith("/issues/comments/5"))).toBe(true);
     expect(gh.calls.some((c) => c.method === "POST")).toBe(false);
@@ -141,15 +143,17 @@ describe("runAction with a real git repository", () => {
 
   it("stays quiet when no design file matches", async () => {
     const gh = fakeGitHub();
-    const r = (await (runAction({ ...env(), INPUT_FILES: "nothing/*.figcraft" }, { fetch: gh.f }))) as Awaited<ReturnType<typeof runAction>>;
+    const r = (await runAction({ ...env(), INPUT_FILES: "nothing/*.figcraft" }, { fetch: gh.f })) as Awaited<ReturnType<typeof runAction>>;
     expect(r.comment).toBe("skipped");
     expect(gh.calls.some((c) => c.method !== "GET")).toBe(false);
   });
 
   it("does not fail the build when the token is read-only", async () => {
     const f = (async (_u: string, init?: RequestInit) =>
-      (init?.method ?? "GET") === "GET" ? new Response("[]") : new Response(JSON.stringify({ message: "Resource not accessible" }), { status: 403 })) as unknown as typeof fetch;
-    const r = (await (runAction({ ...env(), INPUT_REPORT_DIR: join(repo, "r3") }, { fetch: f }))) as Awaited<ReturnType<typeof runAction>>;
+      (init?.method ?? "GET") === "GET"
+        ? new Response("[]")
+        : new Response(JSON.stringify({ message: "Resource not accessible" }), { status: 403 })) as unknown as typeof fetch;
+    const r = (await runAction({ ...env(), INPUT_REPORT_DIR: join(repo, "r3") }, { fetch: f })) as Awaited<ReturnType<typeof runAction>>;
     expect(r.code).toBe(0);
     expect(r.log.join("\n")).toContain("403");
   });
@@ -158,7 +162,15 @@ describe("runAction with a real git repository", () => {
     const seen: string[][] = [];
     const fakeRun = ((argv: string[]) => {
       seen.push(argv);
-      return { code: 0, stdout: JSON.stringify({ summary: { changes: 0, frames: 0, added: 0, removed: 0, moved: 0, reordered: 0, modifiedNodes: 0, propertyChanges: 0 }, changes: [] }), stderr: "figdiff: figcraft-cli not found; writing the report without images.\n", writes: [] };
+      return {
+        code: 0,
+        stdout: JSON.stringify({
+          summary: { changes: 0, frames: 0, added: 0, removed: 0, moved: 0, reordered: 0, modifiedNodes: 0, propertyChanges: 0 },
+          changes: [],
+        }),
+        stderr: "figdiff: figcraft-cli not found; writing the report without images.\n",
+        writes: [],
+      };
     }) as unknown as typeof import("../src/run.js").run;
     const r = await runAction({ ...env(), INPUT_IMAGES: "true", INPUT_SCALE: "2", INPUT_COMMENT: "false" }, { run: fakeRun });
     const argv = seen.find((a) => a[0]?.endsWith("app.figcraft")) ?? [];
@@ -171,7 +183,10 @@ describe("runAction with a real git repository", () => {
     const png = `data:image/png;base64,${Buffer.from([1, 2, 3]).toString("base64")}`;
     const fakeRun = ((argv: string[]) => ({
       code: 0,
-      stdout: JSON.stringify({ summary: { changes: 1, frames: 1, added: 0, removed: 0, moved: 0, reordered: 0, modifiedNodes: 1, propertyChanges: 1 }, changes: [] }),
+      stdout: JSON.stringify({
+        summary: { changes: 1, frames: 1, added: 0, removed: 0, moved: 0, reordered: 0, modifiedNodes: 1, propertyChanges: 1 },
+        changes: [],
+      }),
       stderr: "",
       writes: [],
       frameImages: { "Page\u0000Frame": { before: png, after: png, diff: png, changedRatio: 0.5 } },
@@ -199,7 +214,10 @@ describe("runAction with a real git repository", () => {
     const png = `data:image/png;base64,${Buffer.from([1]).toString("base64")}`;
     const fakeRun = (() => ({
       code: 0,
-      stdout: JSON.stringify({ summary: { changes: 1, frames: 1, added: 0, removed: 0, moved: 0, reordered: 0, modifiedNodes: 1, propertyChanges: 1 }, changes: [] }),
+      stdout: JSON.stringify({
+        summary: { changes: 1, frames: 1, added: 0, removed: 0, moved: 0, reordered: 0, modifiedNodes: 1, propertyChanges: 1 },
+        changes: [],
+      }),
       stderr: "",
       writes: [],
       frameImages: { "P\u0000F": { before: png } },
