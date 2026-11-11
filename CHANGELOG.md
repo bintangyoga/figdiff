@@ -4,6 +4,11 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+### Added
+
+- Instances are shown with the name of their component, and a swap within a component set is reported as a variant change.
+- A change inside a component says how many instances use it.
+
 ## [0.1.0-alpha.9] - 2026-11-11
 
 ### Added

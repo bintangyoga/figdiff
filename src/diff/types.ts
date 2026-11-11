@@ -28,6 +28,11 @@ interface ChangeBase {
   trail: string[];
   /** `trail` joined with " › ", prefixed by the document name. */
   path: string;
+  /**
+   * Set when the node is a component or sits inside one: the number of instances of that component in the
+   * newer version (or the older one, for a removed component). A change here shows up in every instance.
+   */
+  instances?: number;
 }
 
 export type Change =

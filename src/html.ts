@@ -85,7 +85,9 @@ function row(c: Change, label: string): string {
   return (
     `<li class="chg ${c.kind}" data-kind="${c.kind}">` +
     `<span class="badge" title="${KIND_LABEL[c.kind]}">${KIND_SYMBOL[c.kind]}</span>` +
-    `<div class="what"><span class="label">${escapeHtml(label)}</span>${rowBody(c)}</div></li>`
+    `<div class="what"><span class="label">${escapeHtml(label)}</span>${rowBody(c)}` +
+    (c.instances ? `<span class="note">in a component used by ${c.instances} instance${c.instances === 1 ? "" : "s"}</span>` : "") +
+    `</div></li>`
   );
 }
 

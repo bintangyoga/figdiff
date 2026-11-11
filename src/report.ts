@@ -60,7 +60,13 @@ export function formatSummary(s: Summary): string {
   return `${plural(s.changes, "change")}${where} (${parts.join(", ")})`;
 }
 
+const usedBy = (c: Change) => (c.instances ? ` (in a component used by ${plural(c.instances, "instance")})` : "");
+
 function describe(c: Change, label: string): string[] {
+  return describeOnly(c, label).map((l) => l + usedBy(c));
+}
+
+function describeOnly(c: Change, label: string): string[] {
   switch (c.kind) {
     case "added":
       return [`+ ${label} (${c.type})`];

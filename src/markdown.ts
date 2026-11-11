@@ -15,6 +15,11 @@ export function code(text: string): string {
 const prop = (p: { prop: string; from: unknown; to: unknown }) => `${p.prop}: ${code(formatValue(p.from))} → ${code(formatValue(p.to))}`;
 
 function line(c: Change, label: string): string[] {
+  const note = c.instances ? ` _(component used by ${c.instances} instance${c.instances === 1 ? "" : "s"})_` : "";
+  return lineOnly(c, label).map((l) => l + note);
+}
+
+function lineOnly(c: Change, label: string): string[] {
   const name = code(label);
   switch (c.kind) {
     case "added":

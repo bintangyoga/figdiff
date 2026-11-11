@@ -91,8 +91,84 @@ function reconcileIds(before: DesignNode, after: DesignNode): DesignNode {
     if (idsA && idsA.length === idsB.length) idsB.forEach((id, i) => remap.set(id, idsA[i] as string));
   }
   if (remap.size === 0) return after;
-  const copy = (n: DesignNode): DesignNode => ({ ...n, id: remap.get(n.id) ?? n.id, children: n.children.map(copy) });
+  const ref = (v: unknown) => {
+    const mapped = v === undefined ? undefined : remap.get(String(v));
+    if (mapped === undefined) return v;
+    return typeof v === "number" ? Number(mapped) : mapped;
+  };
+  const copy = (n: DesignNode): DesignNode => {
+    const props = n.type === "instance" ? { ...n.props, component: ref(n.props.component), source: ref(n.props.source) } : n.props;
+    for (const k of ["component", "source"]) if (props[k] === undefined) delete props[k];
+    return { ...n, id: remap.get(n.id) ?? n.id, props, children: n.children.map(copy) };
+  };
   return copy(after);
+}
+
+interface ComponentInfo {
+  /** Readable name of each component and component set, by id: "Set / Variant" for a variant. */
+  names: Map<string, string>;
+  /** Id of the set a variant belongs to. */
+  setOf: Map<string, string>;
+  /** The variant's own name, without the set. */
+  variant: Map<string, string>;
+  /** Number of instances per component id. */
+  uses: Map<string, number>;
+  /** For every node inside a component (and the component itself), the id of that component. */
+  owner: Map<string, string>;
+}
+
+function componentInfo(root: DesignNode): ComponentInfo {
+  const info: ComponentInfo = { names: new Map(), setOf: new Map(), variant: new Map(), uses: new Map(), owner: new Map() };
+  const walk = (n: DesignNode, parent: DesignNode | null, owner: string | undefined) => {
+    let own = owner;
+    if (n.type === "componentSet") info.names.set(n.id, n.name);
+    if (n.type === "component") {
+      own = n.id;
+      if (parent?.type === "componentSet") {
+        info.names.set(n.id, `${parent.name} / ${n.name}`);
+        info.setOf.set(n.id, parent.id);
+        info.variant.set(n.id, n.name);
+      } else info.names.set(n.id, n.name);
+    }
+    if (n.type === "instance" && n.props.component !== undefined) {
+      const c = String(n.props.component);
+      info.uses.set(c, (info.uses.get(c) ?? 0) + 1);
+    }
+    if (own !== undefined) info.owner.set(n.id, own);
+    for (const c of n.children) walk(c, n, own);
+  };
+  walk(root, null, undefined);
+  return info;
+}
+
+/** Shows component references on instances by name, and labels a swap within one component set as a variant change. */
+function describeComponents(changes: Change[], before: ComponentInfo, after: ComponentInfo): Change[] {
+  return changes.map((c) => {
+    const info = c.kind === "removed" ? before : after;
+    const owner = info.owner.get(c.id);
+    const instances = owner !== undefined ? (info.uses.get(owner) ?? 0) : 0;
+    let out: Change = instances > 0 ? { ...c, instances } : c;
+    if (out.kind !== "modified") return out;
+    const ref = out.props.find((p) => p.prop === "component");
+    const props = out.props
+      .filter((p) => !(p.prop === "source" && ref && JSON.stringify(p.from) === JSON.stringify(ref.from) && JSON.stringify(p.to) === JSON.stringify(ref.to)))
+      .map((p) => {
+        if (p.prop !== "component" && p.prop !== "source") return p;
+        const from = p.from === undefined ? undefined : String(p.from);
+        const to = p.to === undefined ? undefined : String(p.to);
+        const fromName = from !== undefined ? (before.names.get(from) ?? after.names.get(from)) : undefined;
+        const toName = to !== undefined ? (after.names.get(to) ?? before.names.get(to)) : undefined;
+        const fromSet = from !== undefined ? (before.setOf.get(from) ?? after.setOf.get(from)) : undefined;
+        const toSet = to !== undefined ? (after.setOf.get(to) ?? before.setOf.get(to)) : undefined;
+        if (p.prop === "component" && fromSet !== undefined && fromSet === toSet) {
+          const variant = (id: string) => before.variant.get(id) ?? after.variant.get(id) ?? id;
+          return { prop: "variant", from: variant(from as string), to: variant(to as string) };
+        }
+        return { prop: p.prop, from: fromName ?? p.from, to: toName ?? p.to };
+      });
+    out = { ...out, props };
+    return out;
+  });
 }
 
 /**
@@ -135,5 +211,5 @@ export function diffTrees(before: DesignNode, after: DesignNode, options: DiffOp
     }
   }
 
-  return changes;
+  return describeComponents(changes, componentInfo(before), componentInfo(after));
 }

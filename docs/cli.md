@@ -36,6 +36,8 @@ Nodes are matched by id. Nodes that have no match on either side are then paired
 
 Renaming a layer counts as a property change (`name`). Numbers are rounded to four decimals, so floating point noise is ignored. Colors are printed as hex.
 
+Instances are shown with the name of their component: a swap within a component set reads as `variant Time=Day → Time=Dusk`, and a swap to another component as `component Landscape / Time=Day → Badge`. A change inside a component says how many instances use that component, because it shows up in all of them.
+
 Variables, styles and variable collections are compared too, matched by id (see below). Not compared yet: comments and the contents of `images/`.
 
 ## Variables and styles
