@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [0.1.0-alpha.9] - 2026-11-11
+
 ### Added
 
 - Node matching fallback: nodes whose id changed between versions are paired by type and path of names, when the pairing is unambiguous. `--strict-ids` turns it off.
