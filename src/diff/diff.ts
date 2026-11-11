@@ -151,7 +151,15 @@ function describeComponents(changes: Change[], before: ComponentInfo, after: Com
     if (out.kind !== "modified") return out;
     const ref = out.props.find((p) => p.prop === "component");
     const props = out.props
-      .filter((p) => !(p.prop === "source" && ref && JSON.stringify(p.from) === JSON.stringify(ref.from) && JSON.stringify(p.to) === JSON.stringify(ref.to)))
+      .filter(
+        (p) =>
+          !(
+            p.prop === "source" &&
+            ref &&
+            JSON.stringify(p.from) === JSON.stringify(ref.from) &&
+            JSON.stringify(p.to) === JSON.stringify(ref.to)
+          ),
+      )
       .map((p) => {
         if (p.prop !== "component" && p.prop !== "source") return p;
         const from = p.from === undefined ? undefined : String(p.from);

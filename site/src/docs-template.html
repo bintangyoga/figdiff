@@ -1,44 +1,44 @@
 <!doctype html>
 <html lang="en">
-<head>
-<!--include:head-->
-<title>{{TITLE}} · figdiff docs</title>
-<meta name="description" content="{{DESCRIPTION}}">
-<meta property="og:title" content="{{TITLE}} · figdiff docs">
-<meta property="og:description" content="{{DESCRIPTION}}">
-<link rel="canonical" href="{{PAGE_URL}}">
-<meta property="og:url" content="{{PAGE_URL}}">
-<meta name="twitter:card" content="summary_large_image">
-<meta property="og:image" content="{{SITE_URL}}/img/social-card.png">
-<link rel="stylesheet" href="/docs.css">
-<script type="module" src="/docs.js"></script>
-</head>
-<body>
-<!--include:header-->
-<div class="docs">
-  <details class="mnav">
-    <summary><span><span class="muted">Docs /</span> {{TITLE}}</span></summary>
-    <nav aria-label="Docs (menu)">{{SIDEBAR}}</nav>
-  </details>
-  <nav class="side" aria-label="Docs">
-    <div class="search">
-      <label class="sr-only" for="q">Search the docs</label>
-      <input id="q" type="search" placeholder="Search the docs…" autocomplete="off">
-      <ul id="results" hidden></ul>
+  <head>
+    <!--include:head-->
+    <title>{{TITLE}} · figdiff docs</title>
+    <meta name="description" content="{{DESCRIPTION}}" />
+    <meta property="og:title" content="{{TITLE}} · figdiff docs" />
+    <meta property="og:description" content="{{DESCRIPTION}}" />
+    <link rel="canonical" href="{{PAGE_URL}}" />
+    <meta property="og:url" content="{{PAGE_URL}}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta property="og:image" content="{{SITE_URL}}/img/social-card.png" />
+    <link rel="stylesheet" href="/docs.css" />
+    <script type="module" src="/docs.js"></script>
+  </head>
+  <body>
+    <!--include:header-->
+    <div class="docs">
+      <details class="mnav">
+        <summary>
+          <span><span class="muted">Docs /</span> {{TITLE}}</span>
+        </summary>
+        <nav aria-label="Docs (menu)">{{SIDEBAR}}</nav>
+      </details>
+      <nav class="side" aria-label="Docs">
+        <div class="search">
+          <label class="sr-only" for="q">Search the docs</label>
+          <input id="q" type="search" placeholder="Search the docs…" autocomplete="off" />
+          <ul id="results" hidden></ul>
+        </div>
+        {{SIDEBAR}}
+      </nav>
+      <main id="main" class="doc">
+        <p class="crumbs"><a href="/docs/">Docs</a> <span aria-hidden="true">/</span> <span>{{TITLE}}</span></p>
+        <h1 class="serif">{{TITLE}}</h1>
+        <div class="prose">{{CONTENT}}</div>
+        {{PREVNEXT}}
+        <p class="edit"><a href="{{EDIT_URL}}">Edit this page on GitHub</a></p>
+      </main>
+      <aside class="toc" aria-label="On this page">{{TOC}}</aside>
     </div>
-    {{SIDEBAR}}
-  </nav>
-  <main id="main" class="doc">
-    <p class="crumbs"><a href="/docs/">Docs</a> <span aria-hidden="true">/</span> <span>{{TITLE}}</span></p>
-    <h1 class="serif">{{TITLE}}</h1>
-    <div class="prose">
-{{CONTENT}}
-    </div>
-    {{PREVNEXT}}
-    <p class="edit"><a href="{{EDIT_URL}}">Edit this page on GitHub</a></p>
-  </main>
-  <aside class="toc" aria-label="On this page">{{TOC}}</aside>
-</div>
-<!--include:footer-->
-</body>
+    <!--include:footer-->
+  </body>
 </html>

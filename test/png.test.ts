@@ -26,7 +26,8 @@ describe("decodePng", () => {
     expect(img.data).toHaveLength(400 * 170 * 4);
     // A real thumbnail is not a flat color.
     const distinct = new Set<number>();
-    for (let i = 0; i < img.data.length; i += 4) distinct.add((img.data[i] as number) << 16 | (img.data[i + 1] as number) << 8 | (img.data[i + 2] as number));
+    for (let i = 0; i < img.data.length; i += 4)
+      distinct.add(((img.data[i] as number) << 16) | ((img.data[i + 1] as number) << 8) | (img.data[i + 2] as number));
     expect(distinct.size).toBeGreaterThan(10);
   });
 

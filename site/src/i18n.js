@@ -7,14 +7,14 @@ const ID = {
   "Try it": "Coba",
   "Visual diff": "Diff visual",
   "GitHub Action": "GitHub Action",
-  "Docs": "Dokumen",
+  Docs: "Dokumen",
   "Try in browser": "Coba di browser",
-  "Product": "Produk",
+  Product: "Produk",
   "Command line": "Command line",
   "Quick start": "Mulai cepat",
-  "Compatibility": "Kompatibilitas",
-  "Project": "Proyek",
-  "Changelog": "Changelog",
+  Compatibility: "Kompatibilitas",
+  Project: "Proyek",
+  Changelog: "Changelog",
   "Semantic and visual diffs for FigCraft files. MIT licensed. An independent project, not affiliated with FigCraft.":
     "Diff semantik dan visual untuk file FigCraft. Berlisensi MIT. Proyek independen, tidak berafiliasi dengan FigCraft.",
   // hero
@@ -36,11 +36,11 @@ const ID = {
   "Play again": "Main lagi",
   "Text changed": "Teks berubah",
   "Fill #0E7C66 → #ED731A": "Fill #0E7C66 → #ED731A",
-  "Removed": "Dihapus",
+  Removed: "Dihapus",
   "Screens: the Ridgeline example that ships with FigCraft, rendered by figcraft-cli.":
     "Layar: contoh Ridgeline bawaan FigCraft, dirender oleh figcraft-cli.",
   "on screen": "terlihat",
-  "hidden": "tersembunyi",
+  hidden: "tersembunyi",
   "other screen": "layar lain",
   "layer renamed: Find your next trail": "nama layer diubah: Find your next trail",
   "layer renamed: You’re all set, Alex": "nama layer diubah: You’re all set, Alex",
@@ -53,10 +53,10 @@ const ID = {
   "Drop two files.": "Letakkan dua file.",
   "Get the whole story.": "Dapatkan seluruh ceritanya.",
   "Runs in your browser. Your files are never uploaded.": "Berjalan di browser-mu. File-mu tidak pernah diunggah.",
-  "Before": "Sebelum",
-  "After": "Sesudah",
+  Before: "Sebelum",
+  After: "Sesudah",
   "No file yet": "Belum ada file",
-  "Choose": "Pilih",
+  Choose: "Pilih",
   "Drop two": "Letakkan dua file",
   "files here": "di sini",
   "Use the Ridgeline sample": "Pakai contoh Ridgeline",
@@ -64,18 +64,19 @@ const ID = {
   "Off (exact)": "Mati (tepat)",
   "Up to 0.5": "Hingga 0,5",
   "Up to 1": "Hingga 1",
-  "Images need FigCraft's renderer, so the browser shows the list of changes. For before/after images use the command line with": "Gambar butuh renderer FigCraft, jadi browser menampilkan daftar perubahan. Untuk gambar sebelum/sesudah gunakan command line dengan",
+  "Images need FigCraft's renderer, so the browser shows the list of changes. For before/after images use the command line with":
+    "Gambar butuh renderer FigCraft, jadi browser menampilkan daftar perubahan. Untuk gambar sebelum/sesudah gunakan command line dengan",
   ", or the GitHub Action.": ", atau GitHub Action.",
   "Choose two files, or load the sample, to see the changes here.": "Pilih dua file, atau muat contoh, untuk melihat perubahannya di sini.",
   "Copy Markdown": "Salin Markdown",
   "Copy JSON": "Salin JSON",
   "Save HTML report": "Simpan laporan HTML",
-  "Copied": "Tersalin",
-  "All": "Semua",
-  "Changed": "Berubah",
-  "Added": "Ditambah",
-  "Moved": "Dipindah",
-  "Variables": "Variabel",
+  Copied: "Tersalin",
+  All: "Semua",
+  Changed: "Berubah",
+  Added: "Ditambah",
+  Moved: "Dipindah",
+  Variables: "Variabel",
   "Nothing changed.": "Tidak ada yang berubah.",
   "Nothing in this filter.": "Tidak ada di filter ini.",
   "No changes": "Tidak ada perubahan",
@@ -84,14 +85,14 @@ const ID = {
   "02 · Visual diff": "02 · Diff visual",
   "Read it.": "Bacalah.",
   "Then see it.": "Lalu lihatlah.",
-  "With": "Dengan",
+  With: "Dengan",
   ", figdiff renders every changed frame with FigCraft's own engine and marks the pixels that moved. Drag the line.":
     ", figdiff merender setiap frame yang berubah dengan engine FigCraft sendiri dan menandai piksel yang bergeser. Geser garisnya.",
   "of pixels changed in “1 Welcome”": "piksel berubah di “1 Welcome”",
   "in “4 All set”: one word": "di “4 All set”: satu kata",
-  "Swipe": "Geser",
+  Swipe: "Geser",
   "Side by side": "Berdampingan",
-  "Difference": "Selisih",
+  Difference: "Selisih",
   "Position of the line": "Posisi garis",
   // how
   "03 · Four ways in": "03 · Empat cara memulai",
@@ -102,7 +103,8 @@ const ID = {
   "Against git": "Terhadap git",
   "Compare your working file with any branch or commit.": "Bandingkan file kerjamu dengan branch atau commit mana pun.",
   "HTML report": "Laporan HTML",
-  "One file with filters and before/after images. Send it to anyone.": "Satu file dengan filter dan gambar sebelum/sesudah. Kirim ke siapa saja.",
+  "One file with filters and before/after images. Send it to anyone.":
+    "Satu file dengan filter dan gambar sebelum/sesudah. Kirim ke siapa saja.",
   "Pull request comments": "Komentar pull request",
   "The GitHub Action reviews every PR that touches a design.": "GitHub Action meninjau setiap PR yang menyentuh desain.",
   // action
@@ -113,7 +115,7 @@ const ID = {
   "Before, after and difference images inline.": "Gambar sebelum, sesudah dan selisih langsung di komentar.",
   "Full HTML reports attached to the run.": "Laporan HTML lengkap dilampirkan pada run.",
   "Pull requests from forks still get a report.": "Pull request dari fork tetap mendapat laporan.",
-  "Copy": "Salin",
+  Copy: "Salin",
   "commented on pull request #1 · updated after push": "berkomentar di pull request #1 · diperbarui setelah push",
   "Design changes": "Perubahan desain",
   "· 6.0% changed": "· 6,0% berubah",
@@ -123,30 +125,39 @@ const ID = {
   "05 · Under the hood": "05 · Di balik layar",
   "It reads the file,": "Ia membaca file-nya,",
   "not just the picture.": "bukan hanya gambarnya.",
-  "Structure": "Struktur",
-  "Layers that were added, removed, moved to another parent or reordered.": "Layer yang ditambah, dihapus, dipindah ke induk lain, atau diurutkan ulang.",
+  Structure: "Struktur",
+  "Layers that were added, removed, moved to another parent or reordered.":
+    "Layer yang ditambah, dihapus, dipindah ke induk lain, atau diurutkan ulang.",
   "Every property": "Setiap properti",
   "Fills, text, auto layout, effects, sizes. Add": "Fill, teks, auto layout, efek, ukuran. Tambahkan",
   "to skip sub-pixel noise.": "untuk melewati noise sub-piksel.",
   "Variables and styles": "Variabel dan style",
-  "Design tokens compared per mode, so a changed brand color shows up once, by name.": "Design token dibandingkan per mode, jadi warna brand yang berubah muncul satu kali, lengkap dengan namanya.",
-  "Pixels": "Piksel",
-  "Changed frames rendered by figcraft-cli, compared pixel by pixel.": "Frame yang berubah dirender oleh figcraft-cli, dibandingkan piksel demi piksel.",
-  "Layers are matched by id. A weekly check against FigCraft's own CLI confirms ids survive a save.": "Layer dicocokkan lewat id. Pemeriksaan mingguan terhadap CLI FigCraft memastikan id bertahan setelah disimpan.",
+  "Design tokens compared per mode, so a changed brand color shows up once, by name.":
+    "Design token dibandingkan per mode, jadi warna brand yang berubah muncul satu kali, lengkap dengan namanya.",
+  Pixels: "Piksel",
+  "Changed frames rendered by figcraft-cli, compared pixel by pixel.":
+    "Frame yang berubah dirender oleh figcraft-cli, dibandingkan piksel demi piksel.",
+  "Layers are matched by id. A weekly check against FigCraft's own CLI confirms ids survive a save.":
+    "Layer dicocokkan lewat id. Pemeriksaan mingguan terhadap CLI FigCraft memastikan id bertahan setelah disimpan.",
   "Compatibility notes →": "Catatan kompatibilitas →",
   // faq
   "06 · Questions": "06 · Pertanyaan",
   "Good to know": "Perlu diketahui",
   "Are my files uploaded anywhere?": "Apakah file-ku diunggah ke suatu tempat?",
-  "No. The comparison on this page runs in your browser. The CLI and the GitHub Action run on your own machine or your own CI runner.": "Tidak. Perbandingan di halaman ini berjalan di browser-mu. CLI dan GitHub Action berjalan di mesinmu sendiri atau runner CI-mu sendiri.",
+  "No. The comparison on this page runs in your browser. The CLI and the GitHub Action run on your own machine or your own CI runner.":
+    "Tidak. Perbandingan di halaman ini berjalan di browser-mu. CLI dan GitHub Action berjalan di mesinmu sendiri atau runner CI-mu sendiri.",
   "Do I need FigCraft installed?": "Apakah aku perlu memasang FigCraft?",
-  "Not for the change list, the JSON or the HTML report. Before/after images use figcraft-cli, FigCraft's command line renderer; the GitHub Action downloads it for you.": "Tidak untuk daftar perubahan, JSON, atau laporan HTML. Gambar sebelum/sesudah memakai figcraft-cli, renderer command line FigCraft; GitHub Action mengunduhnya untukmu.",
+  "Not for the change list, the JSON or the HTML report. Before/after images use figcraft-cli, FigCraft's command line renderer; the GitHub Action downloads it for you.":
+    "Tidak untuk daftar perubahan, JSON, atau laporan HTML. Gambar sebelum/sesudah memakai figcraft-cli, renderer command line FigCraft; GitHub Action mengunduhnya untukmu.",
   "How are layers matched between versions?": "Bagaimana layer dicocokkan antar versi?",
-  "By node id. FigCraft keeps ids when it saves a file, and a weekly check against figcraft-cli verifies this on FigCraft's example files.": "Lewat id node. FigCraft mempertahankan id saat menyimpan file, dan pemeriksaan mingguan terhadap figcraft-cli memverifikasinya pada file contoh FigCraft.",
+  "By node id. FigCraft keeps ids when it saves a file, and a weekly check against figcraft-cli verifies this on FigCraft's example files.":
+    "Lewat id node. FigCraft mempertahankan id saat menyimpan file, dan pemeriksaan mingguan terhadap figcraft-cli memverifikasinya pada file contoh FigCraft.",
   "Is figdiff part of FigCraft?": "Apakah figdiff bagian dari FigCraft?",
-  "No. It is an independent, MIT-licensed project that reads the open .figcraft format.": "Bukan. Ini proyek independen berlisensi MIT yang membaca format .figcraft yang terbuka.",
+  "No. It is an independent, MIT-licensed project that reads the open .figcraft format.":
+    "Bukan. Ini proyek independen berlisensi MIT yang membaca format .figcraft yang terbuka.",
   "What does alpha mean here?": "Apa arti alpha di sini?",
-  "It works and is tested in CI, but option names and the JSON format may still change before 1.0. Pin a version in CI.": "Sudah berfungsi dan diuji di CI, tetapi nama opsi dan format JSON masih bisa berubah sebelum 1.0. Kunci versinya di CI.",
+  "It works and is tested in CI, but option names and the JSON format may still change before 1.0. Pin a version in CI.":
+    "Sudah berfungsi dan diuji di CI, tetapi nama opsi dan format JSON masih bisa berubah sebelum 1.0. Kunci versinya di CI.",
   // cta
   "Review design changes": "Tinjau perubahan desain",
   "like code.": "seperti kode.",
@@ -206,7 +217,7 @@ export function getLang() {
 
 function translateTextNode(node) {
   let orig = originals.get(node);
-  if (orig === undefined || (node.nodeValue !== orig.shown)) orig = { en: node.nodeValue, shown: node.nodeValue };
+  if (orig === undefined || node.nodeValue !== orig.shown) orig = { en: node.nodeValue, shown: node.nodeValue };
   const lead = /^\s*/.exec(orig.en)[0];
   const trail = /\s*$/.exec(orig.en)[0];
   const out = lang === "id" ? lookup(orig.en) : null;
@@ -238,7 +249,11 @@ export function refresh(root = document.body) {
 
 export function setLang(next) {
   lang = next === "id" ? "id" : "en";
-  try { localStorage.setItem("figdiff-lang", lang); } catch { /* storage may be blocked */ }
+  try {
+    localStorage.setItem("figdiff-lang", lang);
+  } catch {
+    /* storage may be blocked */
+  }
   refresh();
   const btn = document.getElementById("lang-toggle");
   if (btn) {
@@ -250,7 +265,11 @@ export function setLang(next) {
 
 export function initLang() {
   let saved = null;
-  try { saved = localStorage.getItem("figdiff-lang"); } catch { /* ignored */ }
+  try {
+    saved = localStorage.getItem("figdiff-lang");
+  } catch {
+    /* ignored */
+  }
   const start = saved ?? ((navigator.language || "").toLowerCase().startsWith("id") ? "id" : "en");
   const btn = document.getElementById("lang-toggle");
   if (btn) {

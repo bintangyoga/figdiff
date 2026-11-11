@@ -7,17 +7,30 @@ const layout = { mode: "vertical", gap: 8 };
 
 function doc(saved: "old" | "new", gap = 8) {
   return {
-    format: "figcraft", version: 1, name: "D", pages: [1],
+    format: "figcraft",
+    version: 1,
+    name: "D",
+    pages: [1],
     nodes: {
       "1": { id: 1, name: "P", type: "page", children: [2], ...(saved === "old" ? { guides: [] } : {}) },
-      "2": { id: 2, name: "F", type: "frame", parent: 1, children: [], layout: saved === "new" ? { ...layout, gap, content_align: "auto" } : { ...layout, gap } },
+      "2": {
+        id: 2,
+        name: "F",
+        type: "frame",
+        parent: 1,
+        children: [],
+        layout: saved === "new" ? { ...layout, gap, content_align: "auto" } : { ...layout, gap },
+      },
     },
   };
 }
 
 describe("defaults FigCraft adds on save", () => {
   it("drops an empty guides array and layout.content_align 'auto'", () => {
-    expect(dropDefaults({ guides: [], layout: { mode: "vertical", content_align: "auto" }, x: 1 })).toEqual({ layout: { mode: "vertical" }, x: 1 });
+    expect(dropDefaults({ guides: [], layout: { mode: "vertical", content_align: "auto" }, x: 1 })).toEqual({
+      layout: { mode: "vertical" },
+      x: 1,
+    });
   });
 
   it("keeps real values", () => {

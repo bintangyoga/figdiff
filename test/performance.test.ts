@@ -16,8 +16,13 @@ function bigDocument(frames: number, perFrame: number, tweak: (id: number) => bo
       const id = next++;
       kids.push(id);
       nodes[String(id)] = {
-        id, name: `Rect ${f}-${k}`, type: "rectangle", parent: frameId,
-        width: 100 + (tweak(id) ? 5 : 0), height: 40, transform: [1, 0, 0, 1, k * 3, f * 50],
+        id,
+        name: `Rect ${f}-${k}`,
+        type: "rectangle",
+        parent: frameId,
+        width: 100 + (tweak(id) ? 5 : 0),
+        height: 40,
+        transform: [1, 0, 0, 1, k * 3, f * 50],
         fills: [{ type: "solid", color: { r: 0.1, g: 0.2, b: tweak(id) ? 0.9 : 0.3, a: 1 }, opacity: 1 }],
         children: [],
       };
@@ -55,7 +60,15 @@ describe("large files", () => {
     const depth = 500;
     const nodes: Record<string, unknown> = { "1": { id: 1, name: "P", type: "page", children: [2], width: 0, height: 0 } };
     for (let i = 2; i < depth + 2; i++) {
-      nodes[String(i)] = { id: i, name: `n${i}`, type: "frame", parent: i - 1, width: 10, height: 10, children: i < depth + 1 ? [i + 1] : [] };
+      nodes[String(i)] = {
+        id: i,
+        name: `n${i}`,
+        type: "frame",
+        parent: i - 1,
+        width: 10,
+        height: 10,
+        children: i < depth + 1 ? [i + 1] : [],
+      };
     }
     const doc = { format: "figcraft", version: 1, name: "Deep", pages: [1], nodes, next_id: depth + 2 };
     const tree = documentToTree(doc as never);

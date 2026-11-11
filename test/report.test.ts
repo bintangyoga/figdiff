@@ -27,7 +27,10 @@ describe("formatValue", () => {
 describe("formatText", () => {
   const changes: Change[] = [
     {
-      kind: "modified", id: "3", path: "App › Screens › Login › Button", trail: ["Screens", "Login", "Button"],
+      kind: "modified",
+      id: "3",
+      path: "App › Screens › Login › Button",
+      trail: ["Screens", "Login", "Button"],
       props: [{ prop: "width", from: 3, to: 15 }],
     },
     { kind: "added", id: "5", path: "App › Screens › Login › Forgot", trail: ["Screens", "Login", "Forgot"], type: "text" },

@@ -7,7 +7,13 @@ const modified: Change = {
   id: "3",
   path: "App › Screens › Login › Button",
   trail: ["Screens", "Login", "Button"],
-  props: [{ prop: "fills", from: [{ type: "solid", color: { r: 1, g: 0, b: 0, a: 1 } }], to: [{ type: "solid", color: { r: 0, g: 0, b: 1, a: 1 } }] }],
+  props: [
+    {
+      prop: "fills",
+      from: [{ type: "solid", color: { r: 1, g: 0, b: 0, a: 1 } }],
+      to: [{ type: "solid", color: { r: 0, g: 0, b: 1, a: 1 } }],
+    },
+  ],
 };
 const added: Change = { kind: "added", id: "5", path: "p", trail: ["Screens", "Login", "Forgot"], type: "text" };
 
@@ -49,7 +55,13 @@ describe("formatHtml", () => {
   });
 
   it("escapes names coming from the design file", () => {
-    const evil: Change = { kind: "added", id: "9", path: "p", trail: ["<script>alert(1)</script>", `"><img src=x onerror=alert(1)>`, "n"], type: "<b>" };
+    const evil: Change = {
+      kind: "added",
+      id: "9",
+      path: "p",
+      trail: ["<script>alert(1)</script>", `"><img src=x onerror=alert(1)>`, "n"],
+      type: "<b>",
+    };
     const html = formatHtml([evil], { title: "<i>t</i>", beforeName: "<x>" });
     expect(html).not.toContain("<script>alert(1)</script>");
     expect(html).not.toContain("<img src=x");
@@ -75,7 +87,8 @@ describe("formatHtml", () => {
     });
 
     it("describes tiny and empty differences sensibly", () => {
-      const at = (ratio: number) => formatHtml([modified], { images: { [key]: { ...ok, diff: "data:image/png;base64,C", changedRatio: ratio } } });
+      const at = (ratio: number) =>
+        formatHtml([modified], { images: { [key]: { ...ok, diff: "data:image/png;base64,C", changedRatio: ratio } } });
       expect(at(0)).toContain("0% of pixels differ");
       expect(at(0.0002)).toContain("&lt;0.1% of pixels differ");
       expect(at(0.42)).toContain("42% of pixels differ");

@@ -5,7 +5,12 @@
 export const escapeHtml = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 export const slugify = (text) =>
-  text.toLowerCase().replace(/<[^>]+>/g, "").replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-");
+  text
+    .toLowerCase()
+    .replace(/<[^>]+>/g, "")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
 
 /** Inline formatting. `link` rewrites link targets (for example .md to .html). */
 export function inline(text, link = (href) => href) {
@@ -26,7 +31,13 @@ export function inline(text, link = (href) => href) {
   return s.replace(/\u0000(\d+)\u0000/g, (_m, i) => codes[Number(i)]);
 }
 
-const splitRow = (line) => line.trim().replace(/^\|/, "").replace(/\|$/, "").split(/(?<!\\)\|/).map((c) => c.trim().replace(/\\\|/g, "|"));
+const splitRow = (line) =>
+  line
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split(/(?<!\\)\|/)
+    .map((c) => c.trim().replace(/\\\|/g, "|"));
 const isTableSep = (line) => /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(line);
 
 /**
@@ -51,14 +62,18 @@ export function markdownToHtml(source, { link } = {}) {
 
   while (i < lines.length) {
     const line = lines[i];
-    if (line.trim() === "") { i++; continue; }
+    if (line.trim() === "") {
+      i++;
+      continue;
+    }
 
     const fence = line.match(/^(\s*)(`{3,}|~{3,})\s*([\w+-]*)/);
     if (fence) {
       const close = fence[2];
       const body = [];
       i++;
-      while (i < lines.length && !lines[i].trim().startsWith(close)) body.push(lines[i++].replace(new RegExp(`^ {0,${fence[1].length}}`), ""));
+      while (i < lines.length && !lines[i].trim().startsWith(close))
+        body.push(lines[i++].replace(new RegExp(`^ {0,${fence[1].length}}`), ""));
       i++;
       const lang = fence[3] ? ` data-lang="${escapeHtml(fence[3])}"` : "";
       out.push(`<pre${lang}><code>${escapeHtml(body.join("\n"))}</code></pre>`);
@@ -73,7 +88,9 @@ export function markdownToHtml(source, { link } = {}) {
       } else {
         const id = uniqueId(h[2].replace(/`/g, ""));
         if (level === 2) headings.push({ id, text: h[2].replace(/`/g, "") });
-        out.push(`<h${level} id="${id}"><a class="anchor" href="#${id}" aria-label="Link to this section">#</a>${inline(h[2], link)}</h${level}>`);
+        out.push(
+          `<h${level} id="${id}"><a class="anchor" href="#${id}" aria-label="Link to this section">#</a>${inline(h[2], link)}</h${level}>`,
+        );
       }
       i++;
       continue;
@@ -86,7 +103,12 @@ export function markdownToHtml(source, { link } = {}) {
       while (i < lines.length && lines[i].includes("|") && lines[i].trim() !== "") rows.push(splitRow(lines[i++]));
       out.push(
         `<div class="table-wrap"><table><thead><tr>${head.map((c) => `<th>${inline(c, link)}</th>`).join("")}</tr></thead><tbody>` +
-          rows.map((r) => `<tr>${head.map((h, k) => `<td data-label="${escapeHtml(h.replace(/`/g, ""))}">${inline(r[k] ?? "", link)}</td>`).join("")}</tr>`).join("") +
+          rows
+            .map(
+              (r) =>
+                `<tr>${head.map((h, k) => `<td data-label="${escapeHtml(h.replace(/`/g, ""))}">${inline(r[k] ?? "", link)}</td>`).join("")}</tr>`,
+            )
+            .join("") +
           "</tbody></table></div>",
       );
       continue;
@@ -118,10 +140,17 @@ export function markdownToHtml(source, { link } = {}) {
     }
 
     const para = [];
-    while (i < lines.length && lines[i].trim() !== "" && !/^(#{1,6}\s|>|\s*(`{3,}|~{3,})|\s*([-*]|\d+\.)\s)/.test(lines[i]) && !(lines[i].includes("|") && i + 1 < lines.length && isTableSep(lines[i + 1]))) {
+    while (
+      i < lines.length &&
+      lines[i].trim() !== "" &&
+      !/^(#{1,6}\s|>|\s*(`{3,}|~{3,})|\s*([-*]|\d+\.)\s)/.test(lines[i]) &&
+      !(lines[i].includes("|") && i + 1 < lines.length && isTableSep(lines[i + 1]))
+    ) {
       para.push(lines[i++].trim());
     }
-    if (para.length === 0) { para.push(lines[i++].trim()); }
+    if (para.length === 0) {
+      para.push(lines[i++].trim());
+    }
     out.push(`<p>${inline(para.join(" "), link)}</p>`);
   }
 

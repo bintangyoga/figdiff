@@ -15,7 +15,12 @@ export function makeFigcraft(red: number, extraNode = false): Uint8Array {
     "1": { id: 1, name: "Screens", type: "page", children: [2] },
     "2": { id: 2, name: "Login", type: "frame", parent: 1, children: extraNode ? [3, 4] : [3], width: 100, height: 100 },
     "3": {
-      id: 3, name: "Button", type: "rectangle", parent: 2, width: 10, height: 10,
+      id: 3,
+      name: "Button",
+      type: "rectangle",
+      parent: 2,
+      width: 10,
+      height: 10,
       fills: [{ type: "solid", color: { r: red, g: 0, b: 0, a: 1 } }],
     },
   };
