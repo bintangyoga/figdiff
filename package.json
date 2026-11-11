@@ -26,8 +26,8 @@
     "check:site": "node scripts/site-smoke.mjs",
     "preview:site": "npx --yes serve site/dist",
     "lint": "eslint src test scripts",
-    "format": "prettier --write src test scripts site/src docs",
-    "format:check": "prettier --check src test scripts site/src docs",
+    "format": "prettier --write src test scripts \"site/src/**/*.{js,css}\" eslint.config.mjs",
+    "format:check": "prettier --check src test scripts \"site/src/**/*.{js,css}\" eslint.config.mjs",
     "test:site": "node scripts/site-e2e.mjs"
   },
   "publishConfig": {
