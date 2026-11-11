@@ -1,0 +1,10 @@
+{
+  // Cloudflare Workers (static assets) deploy for the figdiff website.
+  // Build command: npm install && npm run build:site
+  // Deploy command: npx wrangler deploy
+  "name": "figdiff-landingpage",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./site/dist"
+  }
+}

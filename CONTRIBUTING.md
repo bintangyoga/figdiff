@@ -43,7 +43,7 @@ The layout: `src/parser` reads `.figcraft` files, `src/diff` compares trees, `sr
 
 ## Website
 
-The site lives in `site/` and is built without a bundler. `npm run build:site` compiles the library, copies the browser build, generates the docs pages from `docs/*.md` and writes everything to `site/dist`. `npm run check:site` verifies links, anchors and the sample comparison. `npm run preview:site` serves it locally. To deploy on Cloudflare Pages use the build command `npm install && npm run build:site` and the output directory `site/dist`; set `SITE_URL` to the public address.
+The site lives in `site/` and is built without a bundler. `npm run build:site` compiles the library, copies the browser build, generates the docs pages from `docs/*.md` and writes everything to `site/dist`. `npm run check:site` verifies links, anchors and the sample comparison. `npm run preview:site` serves it locally. To deploy on Cloudflare, use the build command `npm install && npm run build:site`. With Workers, the deploy command is `npx wrangler deploy` (configured by `wrangler.jsonc`, which serves `site/dist`); with Pages, set the output directory to `site/dist`. Set `SITE_URL` to the public address.
 
 ## Conduct
 
