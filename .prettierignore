@@ -1,0 +1,5 @@
+dist
+site/dist
+site/public
+node_modules
+*.md
