@@ -4,6 +4,10 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+### Changed
+
+- The website says clearly, below the results, that images need figcraft-cli, and the command line guide explains how to install it.
+
 ### Added
 
 - Instances are shown with the name of their component, and a swap within a component set is reported as a variant change.

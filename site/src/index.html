@@ -152,6 +152,12 @@
           </div>
           <div class="filters" id="filters" role="group" aria-label="Filter changes"></div>
           <div class="report-rows" id="report-rows"></div>
+          <aside class="img-callout" aria-labelledby="img-callout-title">
+            <p class="img-callout-title" id="img-callout-title">Want to see the frames too?</p>
+            <p>This page lists the changes but cannot draw them, because drawing needs FigCraft’s own renderer (<code>figcraft-cli</code>). On your computer, add <code>--images</code> to get before and after pictures with a slider, and click a change to outline it on the image.</p>
+            <pre class="img-callout-cmd"><code>npx figdiff before.figcraft after.figcraft --html report.html --images --scale 2</code></pre>
+            <p><a href="/docs/cli/#install-figcraft-cli">How to install figcraft-cli and use --images</a></p>
+          </aside>
         </div>
         <p class="report-error" id="report-error" role="alert" hidden></p>
       </div>

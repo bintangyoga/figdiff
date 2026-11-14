@@ -68,6 +68,13 @@ const ID = {
     "Gambar butuh renderer FigCraft, jadi browser menampilkan daftar perubahan. Untuk gambar sebelum/sesudah gunakan command line dengan",
   ", or the GitHub Action.": ", atau GitHub Action.",
   "Choose two files, or load the sample, to see the changes here.": "Pilih dua file, atau muat contoh, untuk melihat perubahannya di sini.",
+  "Want to see the frames too?": "Mau melihat framenya juga?",
+  "This page lists the changes but cannot draw them, because drawing needs FigCraft’s own renderer (":
+    "Halaman ini menampilkan daftar perubahan tetapi tidak bisa menggambarnya, karena menggambar butuh renderer milik FigCraft (",
+  "). On your computer, add": "). Di komputermu, tambahkan",
+  "to get before and after pictures with a slider, and click a change to outline it on the image.":
+    "untuk mendapat gambar sebelum dan sesudah dengan slider, dan klik sebuah perubahan untuk menandainya di gambar.",
+  "How to install figcraft-cli and use --images": "Cara memasang figcraft-cli dan memakai --images",
   "Copy Markdown": "Salin Markdown",
   "Copy JSON": "Salin JSON",
   "Save HTML report": "Simpan laporan HTML",

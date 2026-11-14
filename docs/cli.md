@@ -86,6 +86,15 @@ Each entry of `tokens` has `kind` (`added`, `removed` or `modified`), `entity` (
 
 `kind` of a node change is one of `added`, `removed`, `moved` (with `fromTrail`), `modified` (with `props`) or `reordered`. The format is not frozen until 1.0.
 
+## Install figcraft-cli
+
+The change list, JSON, Markdown and HTML report need nothing besides figdiff. Pictures of the frames need FigCraft's own renderer, `figcraft-cli`, which the website cannot run, so images only appear when you run figdiff on your computer or in the GitHub Action (which downloads it for you).
+
+- **Linux:** the tarball attached to each [FigCraft release](https://github.com/storytold/figcraft/releases) contains `figcraft-cli`. Unpack it and put the file somewhere on your `PATH`.
+- **macOS and Windows:** the app installers do not include it, as far as we know. Build it from source with [Rust](https://rustup.rs): `git clone https://github.com/storytold/figcraft`, then `cd figcraft` and `cargo build --release -p figcraft-cli`. The program ends up in `target/release/figcraft-cli`.
+
+Then point figdiff at it, either with `--figcraft-cli /path/to/figcraft-cli` or by setting the `FIGCRAFT_CLI` environment variable. `figcraft-cli convert` can also turn a `.fig` file from Figma into a `.figcraft` file (best effort), which figdiff can then compare.
+
 ## Recipes
 
 Compare against the main branch:
