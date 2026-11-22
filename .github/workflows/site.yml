@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install
+      - run: npm ci
       - run: npm run build:site
       - run: npm run check:site
       # The runner image already has the libraries Chromium needs; installing them with --with-deps
