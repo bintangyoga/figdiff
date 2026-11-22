@@ -161,7 +161,15 @@ function initTry() {
       else if (c.kind === "reordered") rows.push({ ...base, kind: "moved", sign: "⇅", extra: "layers reordered" });
       else
         for (const p of c.props)
-          rows.push({ ...base, kind: "changed", sign: "~", prop: p.prop, from: formatValue(p.from), to: formatValue(p.to), extra: p.derived ? "follows the text" : "" });
+          rows.push({
+            ...base,
+            kind: "changed",
+            sign: "~",
+            prop: p.prop,
+            from: formatValue(p.from),
+            to: formatValue(p.to),
+            extra: p.derived ? "follows the text" : "",
+          });
     }
     const ent = { variable: "Variable", style: "Style", collection: "Collection" };
     for (const t of result.tokens) {
