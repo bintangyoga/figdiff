@@ -6,6 +6,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ### Changed
 
+- When a text's words change, a layer name that just follows the words is no longer listed as a separate change, and the width, height or position that changed with it is marked "follows the text" (`derived: true` in the JSON).
 - The website says clearly, below the results, that images need figcraft-cli, and the command line guide explains how to install it.
 
 ### Added

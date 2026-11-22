@@ -3,6 +3,7 @@
 
 const ID = {
   // header, footer
+  "follows the text": "mengikuti teks",
   "Skip to content": "Lewati ke konten",
   "Try it": "Coba",
   "Visual diff": "Diff visual",

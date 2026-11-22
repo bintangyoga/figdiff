@@ -31,7 +31,7 @@ function lineOnly(c: Change, label: string): string[] {
     case "reordered":
       return [`- 🔀 ${name} layer order changed`];
     case "modified":
-      return c.props.map((p) => `- ✏️ ${name} ${prop(p)}`);
+      return c.props.map((p) => `- ✏️ ${name} ${prop(p)}${p.derived ? " _(follows the text)_" : ""}`);
   }
 }
 

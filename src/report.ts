@@ -77,7 +77,7 @@ function describeOnly(c: Change, label: string): string[] {
     case "reordered":
       return [`~ ${label}: layer order changed`];
     case "modified":
-      return c.props.map((p) => `~ ${label}: ${p.prop} ${formatValue(p.from)} → ${formatValue(p.to)}`);
+      return c.props.map((p) => `~ ${label}: ${p.prop} ${formatValue(p.from)} → ${formatValue(p.to)}${p.derived ? " (follows the text)" : ""}`);
   }
 }
 

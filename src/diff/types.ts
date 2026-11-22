@@ -19,6 +19,8 @@ export interface PropChange {
   prop: string;
   from: unknown;
   to: unknown;
+  /** True when the change follows from another one on the same node (a text that grew is wider), not from its own edit. */
+  derived?: boolean;
 }
 
 interface ChangeBase {

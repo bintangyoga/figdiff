@@ -80,7 +80,9 @@ function rowBody(c: Change): string {
             (p) =>
               `<li><span class="prop">${escapeHtml(p.prop)}</span>` +
               `<span class="from">${valueHtml(p.from)}</span><span class="arrow">→</span>` +
-              `<span class="to">${valueHtml(p.to)}</span></li>`,
+              `<span class="to">${valueHtml(p.to)}</span>` +
+              (p.derived ? `<span class="note">follows the text</span>` : "") +
+              `</li>`,
           )
           .join("") +
         `</ul>`

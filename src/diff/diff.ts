@@ -60,6 +60,19 @@ export function diffProps(a: Record<string, unknown>, b: Record<string, unknown>
   return changes;
 }
 
+/**
+ * A text whose words changed also changes by itself: a layer named after its text follows the words, and the box
+ * grows or shrinks with them. The name change is folded into the text change (it adds nothing), and size and
+ * position are marked as derived so reports can show them as following the text.
+ */
+function foldTextChanges(type: string, old: Record<string, unknown>, now: Record<string, unknown>, props: PropChange[]): PropChange[] {
+  if (type !== "text" || !props.some((p) => p.prop === "characters")) return props;
+  const followsText = old.name === old.characters && now.name === now.characters;
+  return props
+    .filter((p) => !(p.prop === "name" && followsText))
+    .map((p) => (["width", "height", "transform"].includes(p.prop) ? { ...p, derived: true } : p));
+}
+
 /** True when children present in both versions appear in a different order. */
 function childOrderChanged(old: DesignNode, now: DesignNode): boolean {
   const inNow = new Set(now.children.map((c) => c.id));
@@ -204,11 +217,9 @@ export function diffTrees(before: DesignNode, after: DesignNode, options: DiffOp
     if (old.parentId !== now.parentId) {
       changes.push({ ...base, kind: "moved", fromTrail: old.trail });
     }
-    const props = diffProps(
-      { name: old.node.name, type: old.node.type, ...old.node.props },
-      { name: now.node.name, type: now.node.type, ...now.node.props },
-      options,
-    );
+    const oldAll = { name: old.node.name, type: old.node.type, ...old.node.props };
+    const nowAll = { name: now.node.name, type: now.node.type, ...now.node.props };
+    const props = foldTextChanges(now.node.type, oldAll, nowAll, diffProps(oldAll, nowAll, options));
     if (props.length > 0) changes.push({ ...base, kind: "modified", props });
     if (childOrderChanged(old.node, now.node)) changes.push({ ...base, kind: "reordered" });
   }
