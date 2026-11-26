@@ -137,12 +137,12 @@ try {
             title: "<b>New</b> headline",
             state: "open",
             user: { login: "bo" },
-            base: { sha: "aaa111", ref: "main" },
-            head: { sha: "bbb222", ref: "edit" },
+            base: { sha: "aaa11100", ref: "main" },
+            head: { sha: "bbb22200", ref: "edit" },
           }),
         );
       }
-      if (p === "/repos/acme/app/compare/aaa111...bbb222" || p === "/repos/acme/app/compare/main...edit") {
+      if (p === "/repos/acme/app/compare/aaa11100...bbb22200" || p === "/repos/acme/app/compare/main...edit") {
         return route.fulfill(
           json({
             ahead_by: 1,
@@ -156,10 +156,26 @@ try {
       }
       if (p === "/repos/acme/app/contents/design/home.figcraft") {
         const ref = url.searchParams.get("ref");
-        const body = ref === "aaa111" || ref === "main" ? before : after;
+        const body = ref === "aaa11100" || ref === "main" ? before : after;
         return route.fulfill({ status: 200, headers: { ...cors, "content-type": "application/octet-stream" }, body });
       }
       return route.fulfill(json({ message: "Not Found" }, 404));
+    });
+    // raw.githubusercontent.com: the manifest and pictures the Action saved ("none" = the Action was not used).
+    let pics = "none";
+    const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64");
+    const rawCalls = [];
+    await ghContext.route("https://raw.githubusercontent.com/**", (route) => {
+      const p = decodeURIComponent(new URL(route.request().url()).pathname);
+      rawCalls.push(p);
+      const dir = "/acme/app/figdiff-assets/pr-7/bbb22200";
+      if (pics === "none") return route.fulfill({ status: 404, headers: cors, body: "404: Not Found" });
+      if (p === `${dir}/manifest.json`) {
+        const frame = pics === "good" ? { page: "Onboarding", frame: "1 Welcome", changedRatio: 0.125, before: "pr-7/bbb22200/f0-0-before.png", after: "pr-7/bbb22200/f0-0-after.png" } : { page: "P", frame: "F", before: "../../x.png", after: "https://evil.example/x.png" };
+        return route.fulfill(json({ version: 1, pr: 7, head: "bbb22200ffffffffffffffffffffffffffffffff", files: [{ path: "design/home.figcraft", frames: [frame] }] }));
+      }
+      if (p.startsWith(`${dir}/`) && p.endsWith(".png")) return route.fulfill({ status: 200, headers: { ...cors, "content-type": "image/png" }, body: png });
+      return route.fulfill({ status: 404, headers: cors, body: "" });
     });
     const gp = await ghContext.newPage();
     const ghErrors = [];
@@ -179,6 +195,21 @@ try {
       "a pull request title is shown as text, not as HTML",
     );
     check((await gp.$$("#gh-out b")).length === 0, "no markup from GitHub data is rendered");
+
+    // With pictures saved by the Action: they replace the wireframes
+    pics = "good";
+    await gp.goto(`${base}/gh/acme/app/pull/7`, { waitUntil: "networkidle" });
+    await gp.waitForSelector(".gh-pic img");
+    const srcs = await gp.$$eval(".gh-pic img", (i) => i.map((x) => x.src));
+    check(srcs.length === 2 && srcs.every((u) => u.startsWith("https://raw.githubusercontent.com/acme/app/figdiff-assets/pr-7/bbb22200/")), "saved pictures load from raw.githubusercontent.com");
+    check((await gp.$$eval(".gh-pic img", (i) => i.every((x) => x.complete && x.naturalWidth > 0))) === true, "the pictures are allowed by the page's security policy and load");
+    check((await gp.$$(".gh-card svg.wf")).length === 0, "pictures replace the wireframes");
+    check(((await gp.textContent(".gh-pic figcaption")) ?? "").includes("12.5%"), "the changed share of pixels is shown");
+    pics = "bad";
+    await gp.goto(`${base}/gh/acme/app/pull/7`, { waitUntil: "networkidle" });
+    await gp.waitForSelector(".gh-card .gh-summary");
+    check((await gp.$$(".gh-pic img")).length === 0 && (await gp.$$(".gh-card svg.wf")).length > 0, "a manifest with unsafe paths is ignored and wireframes are shown");
+    pics = "none";
 
     await gp.goto(`${base}/gh/acme/app`, { waitUntil: "networkidle" });
     await gp.waitForSelector(".gh-files a");

@@ -1,7 +1,10 @@
 // A small client for the public GitHub API, for the browser. It reads, nothing else.
 // Without a token GitHub allows 60 requests an hour per address, so the callers ask for as little as they can.
 
+import { assetsDir, parseManifest } from "/gh-manifest.js";
+
 const API = "https://api.github.com";
+const RAW = "https://raw.githubusercontent.com";
 export const MAX_FILE_BYTES = 25 * 1024 * 1024;
 
 export class GitHubError extends Error {
@@ -16,7 +19,12 @@ export class GitHubError extends Error {
 
 const seg = (path) => path.split("/").map(encodeURIComponent).join("/");
 
-export function createClient({ fetchImpl = (...a) => globalThis.fetch(...a), base = API } = {}) {
+/** The address of a file on a branch, for an <img>. No API request is used, so it does not count against GitHub's limit. */
+export function rawUrl(owner, repo, branch, path, raw = RAW) {
+  return `${raw}/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(branch)}/${seg(path)}`;
+}
+
+export function createClient({ fetchImpl = (...a) => globalThis.fetch(...a), base = API, raw = RAW } = {}) {
   async function request(url, accept) {
     let res;
     try {
@@ -90,6 +98,27 @@ export function createClient({ fetchImpl = (...a) => globalThis.fetch(...a), bas
         baseRef: String(p.base?.ref ?? ""),
         headRef: String(p.head?.ref ?? ""),
       };
+    },
+
+    /**
+     * The pictures the figdiff Action saved for a pull request, as a Map from design file path to frames,
+     * or null when there are none (the Action's `images` and `host-images` were not used).
+     */
+    async pullImages(owner, repo, branch, number, headSha) {
+      let res;
+      try {
+        res = await fetchImpl(rawUrl(owner, repo, branch, `${assetsDir(number, headSha)}/manifest.json`, raw), { credentials: "omit", cache: "no-cache" });
+      } catch {
+        return null;
+      }
+      if (!res.ok) return null;
+      const text = await res.text();
+      if (text.length > 1_000_000) return null;
+      try {
+        return parseManifest(JSON.parse(text), number, headSha);
+      } catch {
+        return null;
+      }
     },
 
     /** The bytes of one file at a ref, refusing anything larger than `maxBytes`. */

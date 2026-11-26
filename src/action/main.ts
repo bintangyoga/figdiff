@@ -4,7 +4,7 @@ import { basename, join } from "node:path";
 import type { Change, Summary, TokenChange } from "../diff/types.js";
 import { formatText } from "../report.js";
 import { run as runFigdiff } from "../run.js";
-import { assetUrl, commitFiles, decodePngDataUri, type AssetFile } from "./assets.js";
+import { assetUrl, buildManifestBase, commitFiles, decodePngDataUri, type AssetFile, type ManifestFile, type ManifestFrame } from "./assets.js";
 import type { FrameImages } from "../html.js";
 import { filterByPatterns, parseNameStatus, type ChangedFile } from "./changed-files.js";
 import { buildComment, buildEmptyComment, isSubstantive, type FileResult, type FrameLinks } from "./comment.js";
@@ -97,24 +97,32 @@ async function hostFrameImages(
   const serverUrl = env.GITHUB_SERVER_URL ?? "https://github.com";
   const dir = `pr-${pr.number}/${pr.head.sha.slice(0, 8)}`;
   const files: AssetFile[] = [];
+  const manifest = buildManifestBase(pr);
   results.forEach((r, i) => {
     if (!r.raw) return;
     const frames: FrameLinks[] = [];
+    const entry: ManifestFile = { path: r.file.path, frames: [] };
     Object.entries(r.raw).forEach(([key, img], j) => {
       const [page, frame] = key.split("\u0000");
       const link: FrameLinks = { name: `${page ?? ""} › ${frame ?? ""}`, changedRatio: img.changedRatio };
+      const saved: ManifestFrame = { page: page ?? "", frame: frame ?? "", changedRatio: img.changedRatio };
       for (const kind of ["before", "after", "diff"] as const) {
         const bytes = decodePngDataUri(img[kind]);
         if (!bytes) continue;
         const path = `${dir}/f${i}-${j}-${kind}.png`;
         files.push({ path, bytes });
         link[kind] = assetUrl(serverUrl, repo, branch, path);
+        saved[kind] = path;
       }
       frames.push(link);
+      entry.frames.push(saved);
     });
+    manifest.files.push(entry);
     r.frames = frames;
   });
   if (files.length === 0) return;
+  // The website reads this to show the pictures on its /gh/ page for the pull request.
+  files.push({ path: `${dir}/manifest.json`, bytes: new TextEncoder().encode(JSON.stringify(manifest, null, 2) + "\n") });
   try {
     await commitFiles(api, repo, branch, files, `figdiff images for #${pr.number} at ${pr.head.sha.slice(0, 8)}`);
     log.push(`figdiff: ${files.length} image(s) saved to branch ${branch}.`);

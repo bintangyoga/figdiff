@@ -1,0 +1,24 @@
+name: Format run (temporary)
+on:
+  push:
+    branches: [format-run]
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npx prettier --write src test scripts "site/src/**/*.{js,css}" worker
+      - run: |
+          git config user.name "format-run"
+          git config user.email "format-run@users.noreply.github.com"
+          git checkout -b format-result
+          git rm -q --cached package-lock.json 2>/dev/null || true
+          git add -A -- . ':!package-lock.json'
+          git diff --cached --quiet || git commit -m "format"
+          git push -f origin format-result

@@ -1,7 +1,7 @@
 import { compareFigcraft, parseFigcraftBytes, formatSummary } from "/lib/browser.js";
 import { renderRows, toRows } from "/report-rows.js";
-import { createClient, GitHubError } from "/gh-api.js";
-import { parseRoute, routeFromInput, routeUrl } from "/gh-route.js";
+import { createClient, GitHubError, rawUrl } from "/gh-api.js";
+import { isRef, parseRoute, routeFromInput, routeUrl } from "/gh-route.js";
 import { drawFrame, framesWithIds } from "/wireframe.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -168,8 +168,36 @@ async function blobView(r) {
   out.replaceChildren(box);
 }
 
-function wireNote() {
-  return el("p", "gh-note", "These are wireframes drawn from the file: boxes, outlines and text, without fonts, images or effects.");
+function wireNote(hint = false) {
+  const p = el("p", "gh-note", "These are wireframes drawn from the file: boxes, outlines and text, without fonts, images or effects.");
+  if (hint) p.append(" For real pictures, add ", el("code", "", "images: true"), " and ", el("code", "", "host-images: true"), " to the figdiff Action. ", link("/docs/github/#pictures", "How"));
+  return p;
+}
+
+/** Before, after and difference pictures that the Action saved on a branch of the repository. */
+function pictures(r, branch, frames) {
+  const row = el("div", "gh-pics");
+  for (const fr of frames.slice(0, MAX_FRAMES)) {
+    const fig = el("figure", "gh-pic");
+    const name = `${fr.page} › ${fr.frame}`;
+    const set = el("div", "gh-pic-set");
+    for (const [kind, label] of [["before", "Before"], ["after", "After"], ["diff", "Difference"]]) {
+      if (!fr[kind]) continue;
+      const cell = el("div", "gh-pic-cell");
+      const img = el("img");
+      img.src = rawUrl(r.owner, r.repo, branch, fr[kind]);
+      img.alt = `${label}: ${name}`;
+      img.loading = "lazy";
+      img.decoding = "async";
+      img.referrerPolicy = "no-referrer";
+      cell.append(el("span", "gh-pic-label", label), img);
+      set.append(cell);
+    }
+    const pct = typeof fr.changedRatio === "number" ? ` · ${(fr.changedRatio * 100).toFixed(1)}% of the pixels changed` : "";
+    fig.append(set, el("figcaption", "", `${name}${pct}`));
+    row.append(fig);
+  }
+  return row;
 }
 
 function wireframes(frames, highlight) {
@@ -184,19 +212,19 @@ function wireframes(frames, highlight) {
 }
 
 // ---------- two versions ----------
-async function compareView(r, baseRef, headRef, heading) {
+async function compareView(r, baseRef, headRef, heading, pics = null) {
   out.replaceChildren(message("Looking for changed designs…"));
   const { files } = await gh.changedFiles(r.owner, r.repo, baseRef, headRef);
   setTitle(heading, `${r.owner}/${r.repo}: ${files.length} changed .figcraft file${files.length === 1 ? "" : "s"}`);
   const box = el("div");
   box.append(repoLinks(r, "compare"));
   if (files.length === 0) box.append(message("No .figcraft file differs between these two versions."));
-  files.forEach((f, i) => box.append(fileCard(r, f, baseRef, headRef, i < AUTO_OPEN)));
-  if (files.length > 0) box.append(wireNote());
+  files.forEach((f, i) => box.append(fileCard(r, f, baseRef, headRef, i < AUTO_OPEN, pics)));
+  if (files.length > 0) box.append(pics ? el("p", "gh-note", "The pictures were rendered by FigCraft in the pull request's GitHub Action.") : wireNote(r.view === "pull"));
   out.replaceChildren(box);
 }
 
-function fileCard(r, f, baseRef, headRef, open) {
+function fileCard(r, f, baseRef, headRef, open, pics) {
   const card = el("section", "gh-card");
   const head = el("div", "gh-card-head");
   head.append(
@@ -213,7 +241,7 @@ function fileCard(r, f, baseRef, headRef, open) {
     const run = async () => {
       body.replaceChildren(message("Comparing…"));
       try {
-        body.replaceChildren(await diffBody(r, f, baseRef, headRef));
+        body.replaceChildren(await diffBody(r, f, baseRef, headRef, pics));
       } catch (err) {
         body.replaceChildren(message(describe(err), "error"));
       }
@@ -229,7 +257,7 @@ function fileCard(r, f, baseRef, headRef, open) {
   return card;
 }
 
-async function diffBody(r, f, baseRef, headRef) {
+async function diffBody(r, f, baseRef, headRef, pics) {
   const [before, after] = await Promise.all([
     gh.file(r.owner, r.repo, f.previousPath ?? f.path, baseRef),
     gh.file(r.owner, r.repo, f.path, headRef),
@@ -246,8 +274,12 @@ async function diffBody(r, f, baseRef, headRef) {
   if (total === 0) return wrap;
 
   const ids = new Set(result.changes.map((c) => c.id));
-  const frames = framesWithIds(parseFigcraftBytes(after, f.path).tree, ids);
-  if (frames.length > 0) {
+  const saved = pics?.map.get(f.path);
+  const frames = saved ? [] : framesWithIds(parseFigcraftBytes(after, f.path).tree, ids);
+  if (saved) {
+    wrap.append(el("h3", "gh-h", "Before, after and what differs"));
+    wrap.append(pictures(r, pics.branch, saved));
+  } else if (frames.length > 0) {
     wrap.append(el("h3", "gh-h", "Where it changed (outlined in orange)"));
     wrap.append(wireframes(frames.slice(0, MAX_FRAMES), ids));
     if (frames.length > MAX_FRAMES) wrap.append(message(`Showing the first ${MAX_FRAMES} of ${frames.length} changed frames.`, "warn"));
@@ -275,7 +307,10 @@ async function main() {
       setTitle(`Pull request #${r.number}`, `${r.owner}/${r.repo}`);
       out.replaceChildren(message("Reading the pull request…"));
       const p = await gh.pull(r.owner, r.repo, r.number);
-      return await compareView(r, p.baseSha, p.headSha, `#${r.number} ${p.title}`.slice(0, 120));
+      const asked = new URLSearchParams(location.search).get("assets");
+      const branch = asked && isRef(asked) ? asked : "figdiff-assets";
+      const map = await gh.pullImages(r.owner, r.repo, branch, r.number, p.headSha);
+      return await compareView(r, p.baseSha, p.headSha, `#${r.number} ${p.title}`.slice(0, 120), map ? { map, branch } : null);
     }
   } catch (err) {
     setTitle(`${location.pathname.replace(/^\/gh\//, "")}`.slice(0, 80) || "Error");
