@@ -72,12 +72,16 @@ for (const f of readdirSync(join(root, "site/src"))) {
 
 const home = fill(read(join(root, "site/src/index.html")), { DOCS_CURRENT: "" });
 write("index.html", home);
+// /gh/: one page for every GitHub address (the Worker in worker/index.js serves it for /gh/<owner>/<repo>/...)
+const ghPage = fill(read(join(root, "site/src/gh.html")), { DOCS_CURRENT: "" });
+write("gh/index.html", ghPage);
 
 // ---------- 4. docs from the Markdown files ----------
 const DOCS = [
   { slug: "", file: "docs/quick-start.md", group: "Getting started", label: "Quick start" },
   { slug: "cli", file: "docs/cli.md", group: "Guides", label: "Command line" },
   { slug: "action", file: "docs/action.md", group: "Guides", label: "GitHub Action" },
+  { slug: "github", file: "docs/github.md", group: "Guides", label: "Designs on GitHub" },
   { slug: "compatibility", file: "docs/compatibility.md", group: "Reference", label: "Compatibility" },
   { slug: "format-notes", file: "docs/format-notes.md", group: "Reference", label: ".figcraft format notes" },
   { slug: "changelog", file: "CHANGELOG.md", group: "Project", label: "Changelog" },
@@ -167,12 +171,14 @@ write(
 write("robots.txt", `User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 write(
   "sitemap.xml",
-  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${["/", ...pages.map((p) => urlOf(p.slug))].map((u) => `  <url><loc>${SITE_URL}${u}</loc></url>`).join("\n")}\n</urlset>\n`,
+  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${["/", "/gh/", ...pages.map((p) => urlOf(p.slug))].map((u) => `  <url><loc>${SITE_URL}${u}</loc></url>`).join("\n")}\n</urlset>\n`,
 );
 
 // The import map is an inline script, so the Content-Security-Policy needs its hash.
 const importMap = (home.match(/<script type="importmap">([\s\S]*?)<\/script>/) ?? [])[1];
 if (!importMap) throw new Error("index.html has no import map");
+if ((ghPage.match(/<script type="importmap">([\s\S]*?)<\/script>/) ?? [])[1] !== importMap)
+  throw new Error("gh.html needs the same import map as index.html");
 const hash = createHash("sha256").update(importMap).digest("base64");
 const csp = [
   "default-src 'self'",
@@ -180,7 +186,7 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self'",
-  "connect-src 'self'",
+  "connect-src 'self' https://api.github.com",
   "base-uri 'none'",
   "form-action 'none'",
   "frame-ancestors 'none'",

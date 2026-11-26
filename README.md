@@ -48,7 +48,7 @@ npx figdiff@alpha design/app.figcraft --against main
 npx figdiff@alpha before.figcraft after.figcraft --html report.html --images
 ```
 
-On GitHub, add the Action and every pull request that touches a design file gets one comment with the changes. See it live in the [demo pull request](https://github.com/bintangyoga/figdiff-demo/pull/1), and read the [CLI guide](docs/cli.md) and the [Action guide](docs/action.md) for every option.
+On GitHub, add the Action and every pull request that touches a design file gets one comment with the changes. See it live in the [demo pull request](https://github.com/bintangyoga/figdiff-demo/pull/1), and read the [CLI guide](docs/cli.md) and the [Action guide](docs/action.md) for every option. To look at a design or a pull request from a public repository without installing anything, use [figdiff on GitHub](docs/github.md).
 
 ---
 

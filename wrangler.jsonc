@@ -3,9 +3,13 @@
   // Build command: npm install && npm run build:site
   // Deploy command: npx wrangler deploy
   "name": "figdiff-landingpage",
+  "main": "worker/index.js",
   "compatibility_date": "2026-11-01",
   "routes": [{ "pattern": "figdiff.bintangyoga.dev", "custom_domain": true }],
   "assets": {
-    "directory": "./site/dist"
+    "directory": "./site/dist",
+    "binding": "ASSETS",
+    // Only /gh/... goes through the Worker (see worker/index.js); every other path is served as a file.
+    "run_worker_first": ["/gh/*"]
   }
 }

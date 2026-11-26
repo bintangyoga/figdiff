@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!--include:head-->
+<title>Designs on GitHub · figdiff</title>
+<meta name="description" content="Look at a FigCraft design in a GitHub repository, or at what changed in a pull request, in your browser. Nothing is uploaded.">
+<meta property="og:title" content="Designs on GitHub · figdiff">
+<meta property="og:description" content="Open a public GitHub repository, pull request or compare link and see what changed in its FigCraft designs.">
+<link rel="canonical" href="{{SITE_URL}}/gh/">
+<meta property="og:url" content="{{SITE_URL}}/gh/">
+<meta property="og:image" content="{{SITE_URL}}/img/social-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/home.css">
+<link rel="stylesheet" href="/gh.css">
+<script type="importmap">{"imports":{"fflate":"/vendor/fflate.js"}}</script>
+<script type="module" src="/gh.js"></script>
+</head>
+<body>
+<!--include:header-->
+<main id="main" class="gh">
+  <div class="wrap">
+    <h1 class="h1 serif gh-title" id="gh-title">Look at a design on GitHub</h1>
+    <p class="lead gh-sub" id="gh-sub"></p>
+    <div id="gh-out" aria-live="polite"><noscript><p>This page needs JavaScript to read files from GitHub in your browser.</p></noscript></div>
+  </div>
+</main>
+<!--include:footer-->
+</body>
+</html>

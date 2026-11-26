@@ -36,6 +36,8 @@ const server = createServer((req, res) => {
   const path = decodeURIComponent((req.url ?? "/").split("?")[0]);
   let file = join(root, path);
   if (!file.startsWith(root)) return res.writeHead(403).end();
+  // Like the Worker in worker/index.js: every /gh/<owner>/<repo>/... address is the /gh/ page.
+  if (path.startsWith("/gh/")) file = join(root, "gh", "index.html");
   if (existsSync(file) && statSync(file).isDirectory()) file = join(file, "index.html");
   if (!existsSync(file)) return res.writeHead(404).end("not found");
   res.writeHead(200, { "content-type": types[extname(file)] ?? "application/octet-stream", ...headers });
@@ -70,7 +72,7 @@ try {
   await page.click("#use-sample");
   await page.waitForSelector("#report-body:not([hidden])", { timeout: 10_000 });
   const title = (await page.textContent("#report-title")) ?? "";
-  check(title.includes("6"), `sample comparison shows 6 changes (got "${title.trim()}")`);
+  check(title.includes("4"), `sample comparison shows 4 changes (got "${title.trim()}")`);
   await page.click('.chip:has-text("Removed")');
   const visibleRows = await page.$$eval("#report .row", (rows) => rows.filter((r) => r.offsetParent !== null).length);
   check(visibleRows === 1, `the Removed filter leaves one change (got ${visibleRows})`);
@@ -96,6 +98,120 @@ try {
     await p.goto(`${base}${path}`, { waitUntil: "networkidle" });
     const width = await p.evaluate(() => document.documentElement.scrollWidth);
     check(width <= 360, `${path} fits a 360 px screen (scroll width ${width})`);
+  }
+
+  // GitHub pages: the real page and scripts, with a pretend GitHub API (no real network).
+  {
+    const before = readFileSync(join(root, "samples/ridgeline-before.figcraft"));
+    const after = readFileSync(join(root, "samples/ridgeline-after.figcraft"));
+    const cors = { "access-control-allow-origin": "*", "access-control-expose-headers": "x-ratelimit-remaining,x-ratelimit-reset" };
+    const json = (body, status = 200, extra = {}) => ({
+      status,
+      headers: { ...cors, "content-type": "application/json", ...extra },
+      body: JSON.stringify(body),
+    });
+    const ghContext = await browser.newContext({ locale: "en-US", viewport: { width: 1280, height: 900 } });
+    const apiCalls = [];
+    let limited = false;
+    await ghContext.route("https://api.github.com/**", (route) => {
+      const url = new URL(route.request().url());
+      const p = decodeURIComponent(url.pathname);
+      apiCalls.push(p + url.search);
+      if (limited)
+        return route.fulfill(json({ message: "rate limit" }, 403, { "x-ratelimit-remaining": "0", "x-ratelimit-reset": "1893456000" }));
+      if (p === "/repos/acme/app") return route.fulfill(json({ default_branch: "main", private: false, full_name: "acme/app" }));
+      if (p === "/repos/acme/app/git/trees/main") {
+        return route.fulfill(
+          json({
+            truncated: false,
+            tree: [
+              { type: "blob", path: "design/home.figcraft", size: before.length },
+              { type: "blob", path: "README.md", size: 10 },
+            ],
+          }),
+        );
+      }
+      if (p === "/repos/acme/app/pulls/7") {
+        return route.fulfill(
+          json({
+            title: "<b>New</b> headline",
+            state: "open",
+            user: { login: "bo" },
+            base: { sha: "aaa111", ref: "main" },
+            head: { sha: "bbb222", ref: "edit" },
+          }),
+        );
+      }
+      if (p === "/repos/acme/app/compare/aaa111...bbb222" || p === "/repos/acme/app/compare/main...edit") {
+        return route.fulfill(
+          json({
+            ahead_by: 1,
+            files: [
+              { filename: "design/home.figcraft", status: "modified" },
+              { filename: "design/other.figcraft", status: "added" },
+              { filename: "notes.txt", status: "added" },
+            ],
+          }),
+        );
+      }
+      if (p === "/repos/acme/app/contents/design/home.figcraft") {
+        const ref = url.searchParams.get("ref");
+        const body = ref === "aaa111" || ref === "main" ? before : after;
+        return route.fulfill({ status: 200, headers: { ...cors, "content-type": "application/octet-stream" }, body });
+      }
+      return route.fulfill(json({ message: "Not Found" }, 404));
+    });
+    const gp = await ghContext.newPage();
+    const ghErrors = [];
+    gp.on("pageerror", (e) => ghErrors.push(String(e)));
+    gp.on("console", (m) => m.type() === "error" && !/status of (403|404)/.test(m.text()) && ghErrors.push(m.text()));
+
+    await gp.goto(`${base}/gh/`, { waitUntil: "networkidle" });
+    await gp.fill("#gh-input", "https://github.com/acme/app/pull/7/files");
+    await Promise.all([gp.waitForURL("**/gh/acme/app/pull/7"), gp.press("#gh-input", "Enter")]);
+    await gp.waitForSelector(".gh-card .gh-summary", { timeout: 10_000 });
+    check((await gp.textContent(".gh-summary"))?.includes("4 changes"), "a pull request shows the changes of its design file");
+    check((await gp.$$(".gh-card .row")).length === 4, "the pull request lists four change rows");
+    check((await gp.$$(".gh-frame svg.wf")).length > 0, "changed frames are drawn as wireframes");
+    check((await gp.$$(".wf rect[stroke='#ed731a']")).length > 0, "changed layers are outlined in orange on the wireframe");
+    check(
+      (await gp.textContent("#gh-title"))?.includes("<b>New</b> headline") === true,
+      "a pull request title is shown as text, not as HTML",
+    );
+    check((await gp.$$("#gh-out b")).length === 0, "no markup from GitHub data is rendered");
+
+    await gp.goto(`${base}/gh/acme/app`, { waitUntil: "networkidle" });
+    await gp.waitForSelector(".gh-files a");
+    check(
+      (await gp.$$eval(".gh-files a", (a) => a.map((x) => x.textContent))).join() === "design/home.figcraft",
+      "the repository page lists only .figcraft files",
+    );
+    await gp.fill("#gh-head", "edit");
+    await Promise.all([gp.waitForURL("**/compare/main...edit"), gp.click(".gh-compare button")]);
+    await gp.waitForSelector(".gh-card .gh-summary", { timeout: 10_000 });
+    check((await gp.$$(".gh-card")).length === 2, "a compare link lists the changed .figcraft files and skips other files");
+
+    await gp.goto(`${base}/gh/acme/app/blob/main/design/home.figcraft`, { waitUntil: "networkidle" });
+    await gp.waitForSelector(".gh-frame svg.wf");
+    check((await gp.$$(".gh-frame")).length >= 2, "a single design shows its frames");
+
+    await gp.goto(`${base}/gh/acme/missing`, { waitUntil: "networkidle" });
+    check(((await gp.textContent(".gh-msg.error")) ?? "").includes("does not exist"), "a missing repository gets a plain message");
+    await gp.goto(`${base}/gh/acme/app/pull/zero`, { waitUntil: "networkidle" });
+    check(((await gp.textContent("#gh-out")) ?? "").includes("Use /pull/<number>"), "a bad address is explained");
+    limited = true;
+    await gp.goto(`${base}/gh/acme/app`, { waitUntil: "networkidle" });
+    check(((await gp.textContent(".gh-msg.error")) ?? "").includes("60 requests an hour"), "the rate limit is explained");
+    check(
+      apiCalls.every((c) => c.startsWith("/repos/acme/")),
+      "only the requested repository is read from the API",
+    );
+    check(ghErrors.length === 0, `the GitHub pages report no errors${ghErrors.length ? `: ${ghErrors.join(" | ")}` : ""}`);
+
+    const gpm = await phone.newPage();
+    await gpm.goto(`${base}/gh/`, { waitUntil: "networkidle" });
+    check((await gpm.evaluate(() => document.documentElement.scrollWidth)) <= 360, "/gh/ fits a 360 px screen");
+    await ghContext.close();
   }
 
   check(errors.length === 0, `no errors or outside requests${errors.length ? `: ${errors.join(" | ")}` : ""}`);

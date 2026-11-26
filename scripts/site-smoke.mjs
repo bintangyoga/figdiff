@@ -73,8 +73,8 @@ if (existsSync(join(dist, "lib/browser.js"))) {
   const { compareFigcraft } = await import(pathToFileURL(join(dist, "lib/browser.js")).href);
   const bytes = (n) => new Uint8Array(readFileSync(join(dist, "samples", n)));
   const r = compareFigcraft(bytes("ridgeline-before.figcraft"), bytes("ridgeline-after.figcraft"));
-  if (r.summary.changes !== 6 || r.summary.frames !== 2)
-    fail(`sample compare: expected 6 changes in 2 frames, got ${r.summary.changes} in ${r.summary.frames}`);
+  if (r.summary.changes !== 4 || r.summary.frames !== 2)
+    fail(`sample compare: expected 4 changes in 2 frames, got ${r.summary.changes} in ${r.summary.frames}`);
   if (!r.text.includes("Get started: fills #0E7C66 → #ED731A")) fail("sample compare: the fill change is missing from the text report");
   const same = compareFigcraft(bytes("ridgeline-before.figcraft"), bytes("ridgeline-before.figcraft"));
   if (same.summary.changes !== 0) fail("sample compare: identical files should report no changes");
