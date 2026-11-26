@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [0.1.0-alpha.10] - 2026-11-27
+
 ### Changed
 
 - When a text's words change, a layer name that just follows the words is no longer listed as a separate change, and the width, height or position that changed with it is marked "follows the text" (`derived: true` in the JSON).
