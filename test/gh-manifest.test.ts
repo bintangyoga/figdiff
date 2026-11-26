@@ -10,7 +10,9 @@ const good = {
   files: [
     {
       path: "design/app.figcraft",
-      frames: [{ page: "P", frame: "F", changedRatio: 0.25, before: "pr-7/01234567/f0-0-before.png", after: "pr-7/01234567/f0-0-after.png" }],
+      frames: [
+        { page: "P", frame: "F", changedRatio: 0.25, before: "pr-7/01234567/f0-0-before.png", after: "pr-7/01234567/f0-0-after.png" },
+      ],
     },
   ],
 };

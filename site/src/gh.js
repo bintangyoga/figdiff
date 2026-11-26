@@ -170,7 +170,15 @@ async function blobView(r) {
 
 function wireNote(hint = false) {
   const p = el("p", "gh-note", "These are wireframes drawn from the file: boxes, outlines and text, without fonts, images or effects.");
-  if (hint) p.append(" For real pictures, add ", el("code", "", "images: true"), " and ", el("code", "", "host-images: true"), " to the figdiff Action. ", link("/docs/github/#pictures", "How"));
+  if (hint)
+    p.append(
+      " For real pictures, add ",
+      el("code", "", "images: true"),
+      " and ",
+      el("code", "", "host-images: true"),
+      " to the figdiff Action. ",
+      link("/docs/github/#pictures", "How"),
+    );
   return p;
 }
 
@@ -181,7 +189,11 @@ function pictures(r, branch, frames) {
     const fig = el("figure", "gh-pic");
     const name = `${fr.page} › ${fr.frame}`;
     const set = el("div", "gh-pic-set");
-    for (const [kind, label] of [["before", "Before"], ["after", "After"], ["diff", "Difference"]]) {
+    for (const [kind, label] of [
+      ["before", "Before"],
+      ["after", "After"],
+      ["diff", "Difference"],
+    ]) {
       if (!fr[kind]) continue;
       const cell = el("div", "gh-pic-cell");
       const img = el("img");
@@ -220,7 +232,12 @@ async function compareView(r, baseRef, headRef, heading, pics = null) {
   box.append(repoLinks(r, "compare"));
   if (files.length === 0) box.append(message("No .figcraft file differs between these two versions."));
   files.forEach((f, i) => box.append(fileCard(r, f, baseRef, headRef, i < AUTO_OPEN, pics)));
-  if (files.length > 0) box.append(pics ? el("p", "gh-note", "The pictures were rendered by FigCraft in the pull request's GitHub Action.") : wireNote(r.view === "pull"));
+  if (files.length > 0)
+    box.append(
+      pics
+        ? el("p", "gh-note", "The pictures were rendered by FigCraft in the pull request's GitHub Action.")
+        : wireNote(r.view === "pull"),
+    );
   out.replaceChildren(box);
 }
 

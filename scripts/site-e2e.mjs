@@ -171,10 +171,27 @@ try {
       const dir = "/acme/app/figdiff-assets/pr-7/bbb22200";
       if (pics === "none") return route.fulfill({ status: 404, headers: cors, body: "404: Not Found" });
       if (p === `${dir}/manifest.json`) {
-        const frame = pics === "good" ? { page: "Onboarding", frame: "1 Welcome", changedRatio: 0.125, before: "pr-7/bbb22200/f0-0-before.png", after: "pr-7/bbb22200/f0-0-after.png" } : { page: "P", frame: "F", before: "../../x.png", after: "https://evil.example/x.png" };
-        return route.fulfill(json({ version: 1, pr: 7, head: "bbb22200ffffffffffffffffffffffffffffffff", files: [{ path: "design/home.figcraft", frames: [frame] }] }));
+        const frame =
+          pics === "good"
+            ? {
+                page: "Onboarding",
+                frame: "1 Welcome",
+                changedRatio: 0.125,
+                before: "pr-7/bbb22200/f0-0-before.png",
+                after: "pr-7/bbb22200/f0-0-after.png",
+              }
+            : { page: "P", frame: "F", before: "../../x.png", after: "https://evil.example/x.png" };
+        return route.fulfill(
+          json({
+            version: 1,
+            pr: 7,
+            head: "bbb22200ffffffffffffffffffffffffffffffff",
+            files: [{ path: "design/home.figcraft", frames: [frame] }],
+          }),
+        );
       }
-      if (p.startsWith(`${dir}/`) && p.endsWith(".png")) return route.fulfill({ status: 200, headers: { ...cors, "content-type": "image/png" }, body: png });
+      if (p.startsWith(`${dir}/`) && p.endsWith(".png"))
+        return route.fulfill({ status: 200, headers: { ...cors, "content-type": "image/png" }, body: png });
       return route.fulfill({ status: 404, headers: cors, body: "" });
     });
     const gp = await ghContext.newPage();
@@ -201,14 +218,23 @@ try {
     await gp.goto(`${base}/gh/acme/app/pull/7`, { waitUntil: "networkidle" });
     await gp.waitForSelector(".gh-pic img");
     const srcs = await gp.$$eval(".gh-pic img", (i) => i.map((x) => x.src));
-    check(srcs.length === 2 && srcs.every((u) => u.startsWith("https://raw.githubusercontent.com/acme/app/figdiff-assets/pr-7/bbb22200/")), "saved pictures load from raw.githubusercontent.com");
-    check((await gp.$$eval(".gh-pic img", (i) => i.every((x) => x.complete && x.naturalWidth > 0))) === true, "the pictures are allowed by the page's security policy and load");
+    check(
+      srcs.length === 2 && srcs.every((u) => u.startsWith("https://raw.githubusercontent.com/acme/app/figdiff-assets/pr-7/bbb22200/")),
+      "saved pictures load from raw.githubusercontent.com",
+    );
+    check(
+      (await gp.$$eval(".gh-pic img", (i) => i.every((x) => x.complete && x.naturalWidth > 0))) === true,
+      "the pictures are allowed by the page's security policy and load",
+    );
     check((await gp.$$(".gh-card svg.wf")).length === 0, "pictures replace the wireframes");
     check(((await gp.textContent(".gh-pic figcaption")) ?? "").includes("12.5%"), "the changed share of pixels is shown");
     pics = "bad";
     await gp.goto(`${base}/gh/acme/app/pull/7`, { waitUntil: "networkidle" });
     await gp.waitForSelector(".gh-card .gh-summary");
-    check((await gp.$$(".gh-pic img")).length === 0 && (await gp.$$(".gh-card svg.wf")).length > 0, "a manifest with unsafe paths is ignored and wireframes are shown");
+    check(
+      (await gp.$$(".gh-pic img")).length === 0 && (await gp.$$(".gh-card svg.wf")).length > 0,
+      "a manifest with unsafe paths is ignored and wireframes are shown",
+    );
     pics = "none";
 
     await gp.goto(`${base}/gh/acme/app`, { waitUntil: "networkidle" });

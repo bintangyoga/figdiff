@@ -4,7 +4,15 @@ import { basename, join } from "node:path";
 import type { Change, Summary, TokenChange } from "../diff/types.js";
 import { formatText } from "../report.js";
 import { run as runFigdiff } from "../run.js";
-import { assetUrl, buildManifestBase, commitFiles, decodePngDataUri, type AssetFile, type ManifestFile, type ManifestFrame } from "./assets.js";
+import {
+  assetUrl,
+  buildManifestBase,
+  commitFiles,
+  decodePngDataUri,
+  type AssetFile,
+  type ManifestFile,
+  type ManifestFrame,
+} from "./assets.js";
 import type { FrameImages } from "../html.js";
 import { filterByPatterns, parseNameStatus, type ChangedFile } from "./changed-files.js";
 import { buildComment, buildEmptyComment, isSubstantive, type FileResult, type FrameLinks } from "./comment.js";

@@ -107,7 +107,10 @@ export function createClient({ fetchImpl = (...a) => globalThis.fetch(...a), bas
     async pullImages(owner, repo, branch, number, headSha) {
       let res;
       try {
-        res = await fetchImpl(rawUrl(owner, repo, branch, `${assetsDir(number, headSha)}/manifest.json`, raw), { credentials: "omit", cache: "no-cache" });
+        res = await fetchImpl(rawUrl(owner, repo, branch, `${assetsDir(number, headSha)}/manifest.json`, raw), {
+          credentials: "omit",
+          cache: "no-cache",
+        });
       } catch {
         return null;
       }
