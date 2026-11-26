@@ -12,6 +12,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 ### Added
 
 - Look at designs on GitHub from the website: `/gh/<owner>/<repo>`, `/blob/`, `/compare/` and `/pull/` addresses for public repositories. The browser reads the files from GitHub, lists the changes and draws wireframes with the changed layers outlined. See [Designs on GitHub](docs/github.md).
+- With `images` and `host-images`, the Action also saves a `manifest.json` next to the pictures, and the website's `/gh/<owner>/<repo>/pull/<number>` page shows those before, after and difference pictures instead of wireframes.
 - Instances are shown with the name of their component, and a swap within a component set is reported as a variant change.
 - A change inside a component says how many instances use it.
 - HTML reports with images list the changes next to the images and outline a change on the image when you click it. Images rendered with `--scale 2` are shown at their real size.

@@ -58,3 +58,29 @@ export async function commitFiles(api: GitHubApi, repo: string, branch: string, 
     await request(api, "POST", `/repos/${repo}/git/refs`, { ref: `refs/heads/${branch}`, sha: commit.sha });
   }
 }
+
+/** What the website reads to find the pictures of a pull request: `<dir>/manifest.json` on the assets branch. */
+export interface ManifestFrame {
+  page: string;
+  frame: string;
+  changedRatio?: number;
+  /** Paths of the PNG files inside the assets branch. */
+  before?: string;
+  after?: string;
+  diff?: string;
+}
+export interface ManifestFile {
+  /** Path of the design file in the repository. */
+  path: string;
+  frames: ManifestFrame[];
+}
+export interface Manifest {
+  version: 1;
+  pr: number;
+  head: string;
+  files: ManifestFile[];
+}
+
+export function buildManifestBase(pr: { number: number; head: { sha: string } }): Manifest {
+  return { version: 1, pr: pr.number, head: pr.head.sha, files: [] };
+}

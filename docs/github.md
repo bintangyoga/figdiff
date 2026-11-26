@@ -20,6 +20,19 @@ For each changed design: the list of changes, the same one `figdiff` prints, and
 
 The wireframes are drawn from the file alone: boxes, outlines and text, without fonts, images or effects. They show where things are, not what the design looks like. For real pictures, use the [GitHub Action](/docs/action/), which renders the frames with FigCraft's own renderer.
 
+## Pictures
+
+For a pull request, the page shows real before, after and difference pictures when the repository's workflow saves them. Add `images: true` and `host-images: true` to the [GitHub Action](/docs/action/) (it needs `contents: write`):
+
+```yaml
+- uses: bintangyoga/figdiff@main
+  with:
+    images: true
+    host-images: true
+```
+
+The Action renders the frames with FigCraft's own renderer and commits them, with a small `manifest.json`, to the `figdiff-assets` branch. The page reads that file and loads the pictures from `raw.githubusercontent.com`, which does not count against the 60 requests an hour. If the branch has another name, add `?assets=<branch>` to the address. Without these pictures the page draws wireframes.
+
 ## Limits
 
 - **Public repositories only.** Private repositories need a login, which is planned.
@@ -29,4 +42,4 @@ The wireframes are drawn from the file alone: boxes, outlines and text, without 
 
 ## Privacy
 
-The page loads from figdiff's website and then talks to `api.github.com` only. figdiff sets no cookies and keeps no accounts. The address you open is not sent to figdiff's server, except as the page you asked for.
+The page loads from figdiff's website and then talks to `api.github.com` and `raw.githubusercontent.com` only. figdiff sets no cookies and keeps no accounts. The address you open is not sent to figdiff's server, except as the page you asked for.

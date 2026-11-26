@@ -55,7 +55,7 @@ permissions:
           host-images: true
 ```
 
-The pictures are committed to the `figdiff-assets` branch, one folder per pull request and commit. Anyone who can read the repository can see them, and the repository keeps a copy of every rendered frame. Delete the branch to clean up.
+The pictures are committed to the `figdiff-assets` branch, one folder per pull request and commit. Anyone who can read the repository can see them, and the repository keeps a copy of every rendered frame. Each folder also holds a `manifest.json` that lists the pictures, so the figdiff website can show them on its [GitHub page](/docs/github/) for the pull request. Delete the branch to clean up.
 
 ## Behavior to know about
 

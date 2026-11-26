@@ -203,7 +203,13 @@ describe("runAction with a real git repository", () => {
     }) as unknown as typeof fetch;
     const r = await runAction({ ...env(), INPUT_IMAGES: "true", INPUT_HOST_IMAGES: "true" }, { run: fakeRun, fetch: f });
     expect(r.code).toBe(0);
-    expect(calls.filter((c) => c.url.endsWith("/git/blobs")).length).toBe(3);
+    const blobs = calls.filter((c) => c.url.endsWith("/git/blobs"));
+    expect(blobs.length).toBe(4); // three pictures and the manifest the website reads
+    const texts = blobs.map((b) => Buffer.from(JSON.parse(b.body ?? "{}").content as string, "base64").toString("utf8"));
+    const manifest = JSON.parse(texts.find((t) => t.includes('"version"')) ?? "{}");
+    expect(manifest.version).toBe(1);
+    expect(manifest.pr).toBe(7);
+    expect(manifest.files[0].frames[0].after).toMatch(/^pr-7\/[0-9a-f]+\/f0-0-after\.png$/);
     const post = calls.find((c) => c.url.endsWith("/issues/7/comments") && c.method === "POST");
     const body = JSON.parse(post?.body ?? "{}").body as string;
     expect(body).toContain("/o/r/blob/figdiff-assets/pr-7/");
