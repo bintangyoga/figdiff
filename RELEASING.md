@@ -6,8 +6,10 @@ Releases are published to npm by GitHub Actions when a version tag is pushed. Th
 
 1. **Check the package name.** Run `npm view figdiff`. If it says `E404`, the name is free. If a package exists, either pick another name or use a scoped name such as `@your-username/figdiff` by changing `name` in `package.json` (scoped packages publish with `--access public`, which the workflow already sets).
 2. **Create an npm account** at npmjs.com and enable two-factor authentication.
-3. **Create an access token.** On npmjs.com: profile picture → Access Tokens → Generate New Token → *Granular Access Token*. Give it permission to publish packages (Read and write). For the very first publish, the token cannot be limited to one package because the package does not exist yet, so choose all packages, then restrict it to `figdiff` afterwards.
-4. **Add the token to GitHub.** Repository → Settings → Secrets and variables → Actions → New repository secret. Name it `NPM_TOKEN`.
+3. **Connect npm to this repository (trusted publishing).** On npmjs.com, open the `figdiff` package → *Settings* → *Trusted Publisher* → *GitHub Actions*, and fill in: organization or user `bintangyoga`, repository `figdiff`, workflow filename `release.yml`, environment left empty. Save. The Release workflow then signs in to npm with a short-lived GitHub identity on each run, so there is no npm token to create, store or renew.
+4. **Optional clean-up.** Once a release has published this way, you can delete the old `NPM_TOKEN` repository secret and its token on npmjs.com, and under the package's *Settings* → *Publishing access* choose to disallow tokens.
+
+A brand-new package name cannot have a trusted publisher until it exists on npm, so its very first version has to be published once by hand or with a token.
 
 ## Publishing a version
 
@@ -34,6 +36,6 @@ Releases are published to npm by GitHub Actions when a version tag is pushed. Th
 
 ## If something goes wrong
 
-- **403 or "need auth":** the `NPM_TOKEN` secret is missing, expired, or lacks publish permission.
+- **404 or 403 on publish** (`PUT https://registry.npmjs.org/figdiff - Not found`): npm did not accept the run's identity. Check that the trusted publisher on npmjs.com names `bintangyoga/figdiff` and `release.yml` exactly, and that the workflow still has `id-token: write`.
 - **"Tag does not match package.json":** fix the version, delete the tag (`git tag -d v… && git push origin :refs/tags/v…`), and tag again.
 - **A bad version was published:** within 72 hours you can `npm unpublish figdiff@<version>`. Otherwise publish a fixed version and run `npm deprecate figdiff@<version> "reason"`. Versions cannot be reused.
