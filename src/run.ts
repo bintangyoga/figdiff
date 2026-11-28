@@ -13,12 +13,15 @@ import type { Renderer } from "./render/figcraft-cli.js";
 import { renderChangedFrames } from "./render/frames.js";
 import { extractFromGit } from "./git.js";
 import type { GitCopy } from "./git.js";
+import { init } from "./init.js";
 
 export const USAGE = `figdiff (pre-alpha)
 
 Usage:
   figdiff <before.figcraft> <after.figcraft> [options]
   figdiff <file.figcraft> --against <git-revision> [options]
+  figdiff init [directory] [--force]   Set up a repository for design changes from Claude
+                                       (figdiff init --help for details)
 
 Options:
   --against <revision>   Compare the file with its version at a git revision
@@ -41,6 +44,8 @@ Exit codes: 0 ok, 1 differences found (only with --exit-code), 2 error.
 export interface FileWrite {
   path: string;
   content: string;
+  /** File mode to set after writing, for example 0o755 for a script. */
+  mode?: number;
 }
 
 export interface RunResult {
@@ -88,6 +93,7 @@ const fail = (message: string, withUsage = true): RunResult => ({
 
 /** Run the CLI. Free of side effects on the file system and process, so it can be tested. */
 export function run(argv: string[], overrides: Partial<RunDeps> = {}): RunResult {
+  if (argv[0] === "init") return init(argv.slice(1));
   const deps: RunDeps = { ...defaultDeps, ...overrides };
   const files: string[] = [];
   const flags = new Set<string>();
