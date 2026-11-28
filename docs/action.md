@@ -39,7 +39,7 @@ jobs:
 | `scale` | `1` | Render scale for the images, 0.25 to 4. |
 | `host-images` | `false` | With `images`: show the images in the comment, by saving them on a branch. Needs `contents: write`. |
 | `assets-branch` | `figdiff-assets` | The branch that holds those images. |
-| `version` | `latest` | Version of the `figdiff` npm package. Pin it (for example `0.1.0-alpha.5`) for repeatable runs. |
+| `version` | `latest` | Version of the `figdiff` npm package. Pin it (for example `0.1.0`) for repeatable runs. |
 | `token` | `github.token` | Token used to comment. |
 
 ## Pictures in the comment

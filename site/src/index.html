@@ -208,7 +208,7 @@
     <p class="eyebrow">03 · Four ways in</p>
     <h2 class="h2 serif">Start with one command. <span class="muted">Grow into your workflow.</span></h2>
     <div class="steps">
-      <div class="step"><div><h3>Compare two files</h3><p>A readable list, grouped by page and frame.</p><code>npx figdiff@alpha a.figcraft b.figcraft</code></div><span class="num serif" aria-hidden="true">01</span></div>
+      <div class="step"><div><h3>Compare two files</h3><p>A readable list, grouped by page and frame.</p><code>npx figdiff a.figcraft b.figcraft</code></div><span class="num serif" aria-hidden="true">01</span></div>
       <div class="step"><div><h3>Against git</h3><p>Compare your working file with any branch or commit.</p><code>figdiff app.figcraft --against main</code></div><span class="num serif" aria-hidden="true">02</span></div>
       <div class="step"><div><h3>HTML report</h3><p>One file with filters and before/after images. Send it to anyone.</p><code>--html report.html --images</code></div><span class="num serif" aria-hidden="true">03</span></div>
       <div class="step"><div><h3>Pull request comments</h3><p>The GitHub Action reviews every PR that touches a design.</p><code>uses: bintangyoga/figdiff@main</code></div><span class="num serif" aria-hidden="true">04</span></div>
@@ -306,7 +306,7 @@ jobs:
       <details><summary>Do I need FigCraft installed?</summary><p>Not for the change list, the JSON or the HTML report. Before/after images use figcraft-cli, FigCraft's command line renderer; the GitHub Action downloads it for you.</p></details>
       <details><summary>How are layers matched between versions?</summary><p>By node id. FigCraft keeps ids when it saves a file, and a weekly check against figcraft-cli verifies this on FigCraft's example files.</p></details>
       <details><summary>Is figdiff part of FigCraft?</summary><p>No. It is an independent, MIT-licensed project that reads the open .figcraft format.</p></details>
-      <details><summary>What does alpha mean here?</summary><p>It works and is tested in CI, but option names and the JSON format may still change before 1.0. Pin a version in CI.</p></details>
+      <details><summary>Is figdiff stable?</summary><p>0.1.0 is the first stable release. It works and is tested in CI, but option names and the JSON format may still change before 1.0. Pin a version in CI.</p></details>
     </div>
   </div>
 </section>
@@ -317,7 +317,7 @@ jobs:
   <div class="wrap cta-in">
     <h2 class="h1 serif">Review design changes<br><span class="accent">like code.</span></h2>
     <div class="cmd">
-      <code id="cmd-text"><span class="muted">$</span> npx figdiff@alpha before.figcraft after.figcraft</code>
+      <code id="cmd-text"><span class="muted">$</span> npx figdiff before.figcraft after.figcraft</code>
       <button type="button" class="btn btn-primary btn-sm" id="cmd-copy">Copy</button>
     </div>
     <div class="cta-links">
