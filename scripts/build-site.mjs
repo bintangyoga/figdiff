@@ -82,6 +82,7 @@ const DOCS = [
   { slug: "cli", file: "docs/cli.md", group: "Guides", label: "Command line" },
   { slug: "action", file: "docs/action.md", group: "Guides", label: "GitHub Action" },
   { slug: "github", file: "docs/github.md", group: "Guides", label: "Designs on GitHub" },
+  { slug: "claude-designer", file: "docs/claude-designer.md", group: "Guides", label: "Design changes from Claude" },
   { slug: "compatibility", file: "docs/compatibility.md", group: "Reference", label: "Compatibility" },
   { slug: "format-notes", file: "docs/format-notes.md", group: "Reference", label: ".figcraft format notes" },
   { slug: "changelog", file: "CHANGELOG.md", group: "Project", label: "Changelog" },

@@ -1,0 +1,25 @@
+# Comments on each pull request with what changed in the design files,
+# with before/after images saved to the figdiff-assets branch.
+name: Design changes
+
+on:
+  pull_request:
+    paths:
+      - "**/*.figcraft"
+
+permissions:
+  contents: write # host-images saves the pictures on a branch
+  pull-requests: write
+
+jobs:
+  figdiff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # figdiff needs the base commit to compare with
+      - uses: bintangyoga/figdiff@main
+        with:
+          version: 0.1.0
+          images: true
+          host-images: true
