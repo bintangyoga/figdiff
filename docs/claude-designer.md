@@ -18,6 +18,8 @@ In the root of your repository, run:
 npx figdiff init
 ```
 
+`figdiff init` comes with the next figdiff release. With figdiff 0.1.0, copy the files from [`examples/claude-designer`](../examples/claude-designer) instead (see below).
+
 It writes four files:
 
 | File | What it does |

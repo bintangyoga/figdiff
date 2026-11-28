@@ -211,7 +211,7 @@
       <div class="step"><div><h3>Compare two files</h3><p>A readable list, grouped by page and frame.</p><code>npx figdiff a.figcraft b.figcraft</code></div><span class="num serif" aria-hidden="true">01</span></div>
       <div class="step"><div><h3>Against git</h3><p>Compare your working file with any branch or commit.</p><code>figdiff app.figcraft --against main</code></div><span class="num serif" aria-hidden="true">02</span></div>
       <div class="step"><div><h3>HTML report</h3><p>One file with filters and before/after images. Send it to anyone.</p><code>--html report.html --images</code></div><span class="num serif" aria-hidden="true">03</span></div>
-      <div class="step"><div><h3>Pull request comments</h3><p>The GitHub Action reviews every PR that touches a design.</p><code>uses: bintangyoga/figdiff@main</code></div><span class="num serif" aria-hidden="true">04</span></div>
+      <div class="step"><div><h3>Pull request comments</h3><p>The GitHub Action reviews every PR that touches a design. GitLab merge requests get the same note.</p><code>uses: bintangyoga/figdiff@main</code></div><span class="num serif" aria-hidden="true">04</span></div>
     </div>
   </div>
 </section>
@@ -245,6 +245,11 @@ jobs:
         with: { fetch-depth: 0 }
       - uses: bintangyoga/figdiff@main</code></pre>
       </div>
+      <aside class="side-note" aria-labelledby="gitlab-title">
+        <p class="side-note-title" id="gitlab-title"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ED731A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 21-9-7 3-11 3 7h6l3-7 3 11z"/></svg>On GitLab?</p>
+        <p>Copy the CI template and every merge request that changes a design gets one note with the changes, updated on each push, plus HTML reports as job artifacts. It works with figdiff 0.1.0. Pictures in the note are experimental.</p>
+        <p><a href="/docs/gitlab/">Set up GitLab CI →</a></p>
+      </aside>
     </div>
 
     <div class="pr">
@@ -279,10 +284,51 @@ jobs:
   </div>
 </section>
 
+<!-- Design changes from Claude -->
+<section id="claude" class="block">
+  <div class="wrap claude">
+    <div class="claude-copy">
+      <p class="eyebrow">05 · Design changes from Claude</p>
+      <h2 class="h2 serif">Ask for a change. <span class="accent">Get a pull request back.</span></h2>
+      <p class="body">Claude edits your <code>.figcraft</code> files in a Claude Code cloud session and opens a pull request, where figdiff shows the changes and the before/after images. Nothing runs on your computer and nothing needs hosting.</p>
+      <ol class="flow">
+        <li><span class="flow-n serif" aria-hidden="true">1</span><span>Ask in plain words, in a cloud session on your design repository.</span></li>
+        <li><span class="flow-n serif" aria-hidden="true">2</span><span>The session installs figcraft-cli from the official FigCraft release, checksum checked.</span></li>
+        <li><span class="flow-n serif" aria-hidden="true">3</span><span>Claude changes the layers in place and checks its own work with figdiff.</span></li>
+        <li><span class="flow-n serif" aria-hidden="true">4</span><span>You review the pull request. Ask for revisions in the same session.</span></li>
+      </ol>
+      <div class="code-card">
+        <div class="code-card-head"><span>Set up a design repository</span><span class="soon">Coming in the next release</span></div>
+        <pre><code>npx figdiff init</code></pre>
+      </div>
+      <p class="after-cards">It writes the session hook, the Claude settings, a <code>CLAUDE.md</code> with editing rules and the Action workflow, and keeps your own files. Until the next release, copy the same files from <a class="accent" href="https://github.com/bintangyoga/figdiff/tree/main/examples/claude-designer">examples/claude-designer</a>. <a class="accent" href="/docs/claude-designer/">How it works →</a></p>
+    </div>
+
+    <div class="chat" aria-label="Example: a design change asked of Claude">
+      <div class="chat-msg chat-you">
+        <span class="chat-who">You</span>
+        <p>Make the Get started button green and rename it Start hiking.</p>
+      </div>
+      <div class="chat-msg chat-claude">
+        <span class="chat-who accent">Claude</span>
+        <ul class="chat-steps">
+          <li>Changed 2 properties in <code>design/ridgeline-onboarding.figcraft</code></li>
+          <li>Checked with <code>figdiff --against origin/main</code>: only what you asked for</li>
+          <li>Opened a pull request with before/after images</li>
+        </ul>
+        <pre class="chat-pre"><code>Page "Onboarding"
+  Frame "1 Welcome"
+    ~ Panel › Get started: fills #ED731A → #0E7C66
+    ~ Panel › Get started: characters</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- Under the hood -->
 <section class="block">
   <div class="wrap">
-    <p class="eyebrow">05 · Under the hood</p>
+    <p class="eyebrow">06 · Under the hood</p>
     <h2 class="h2 serif">It reads the file, <span class="muted">not just the picture.</span></h2>
     <div class="cards">
       <div class="card"><span class="glyph" aria-hidden="true">+ − ↳</span><h3>Structure</h3><p>Layers that were added, removed, moved to another parent or reordered.</p></div>
@@ -298,13 +344,15 @@ jobs:
 <section id="faq" class="block">
   <div class="wrap faq">
     <div class="faq-head">
-      <p class="eyebrow">06 · Questions</p>
+      <p class="eyebrow">07 · Questions</p>
       <h2 class="h2 serif">Good to know</h2>
     </div>
     <div class="faq-list">
       <details open><summary>Are my files uploaded anywhere?</summary><p>No. The comparison on this page runs in your browser. The CLI and the GitHub Action run on your own machine or your own CI runner.</p></details>
       <details><summary>Do I need FigCraft installed?</summary><p>Not for the change list, the JSON or the HTML report. Before/after images use figcraft-cli, FigCraft's command line renderer; the GitHub Action downloads it for you.</p></details>
       <details><summary>How are layers matched between versions?</summary><p>By node id. FigCraft keeps ids when it saves a file, and a weekly check against figcraft-cli verifies this on FigCraft's example files.</p></details>
+      <details><summary>Does it work on GitLab?</summary><p>Yes. A CI template keeps one note with the design changes on each merge request and saves HTML reports as job artifacts. It works with figdiff 0.1.0; pictures in the note are experimental.</p></details>
+      <details><summary>Can Claude make the design change for me?</summary><p>Yes, in a Claude Code cloud session on your repository. Claude edits the file with figcraft-cli, checks it with figdiff and opens a pull request for you to review. You decide what gets merged.</p></details>
       <details><summary>Is figdiff part of FigCraft?</summary><p>No. It is an independent, MIT-licensed project that reads the open .figcraft format.</p></details>
       <details><summary>Is figdiff stable?</summary><p>0.1.0 is the first stable release. It works and is tested in CI, but option names and the JSON format may still change before 1.0. Pin a version in CI.</p></details>
     </div>
