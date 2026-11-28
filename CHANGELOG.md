@@ -4,6 +4,10 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+### Added
+
+- A template for design repositories where Claude makes design changes in a Claude Code cloud session and opens pull requests: a session hook that installs `figcraft-cli` from the official FigCraft release (checksum checked) and figdiff, instructions for Claude, and the Action workflow. See [Design changes from Claude](docs/claude-designer.md).
+
 ## [0.1.0] - 2026-11-28
 
 First stable release. It has the same code as 0.1.0-alpha.10 and is published under the `latest` tag, so `npx figdiff` installs it.
