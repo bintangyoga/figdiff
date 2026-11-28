@@ -1234,6 +1234,162 @@ code {
   gap: 10px;
 }
 
+/* GitLab note under the Action workflow */
+.side-note {
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #131313;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--fg-3);
+}
+.side-note p {
+  margin: 0 0 8px;
+}
+.side-note p:last-child {
+  margin-bottom: 0;
+}
+.side-note-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fg);
+  font-weight: 500;
+}
+.side-note a {
+  color: var(--accent);
+}
+
+/* design changes from Claude */
+.claude {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 56px;
+  align-items: flex-start;
+}
+.claude-copy {
+  flex: 1 1 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+.claude-copy .h2 {
+  margin: 0;
+}
+.claude-copy .after-cards {
+  margin: 0;
+  line-height: 1.6;
+}
+.flow {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 15px;
+  color: #c8c8c8;
+}
+.flow li {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+.flow-n {
+  flex: none;
+  width: 20px;
+  font-size: 22px;
+  color: var(--accent);
+}
+.soon {
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(237, 115, 26, 0.45);
+  background: rgba(237, 115, 26, 0.08);
+  font: 500 11px var(--sans);
+  color: var(--accent);
+  white-space: nowrap;
+}
+.chat {
+  flex: 1 1 440px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+}
+.chat-msg {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 1px solid #222;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #c8c8c8;
+}
+.chat-msg p {
+  margin: 0;
+}
+.chat-you {
+  align-self: flex-end;
+  max-width: 85%;
+  background: #1a1a1a;
+}
+.chat-claude {
+  background: var(--bg);
+}
+.chat-who {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+.chat-who.accent {
+  color: var(--accent);
+}
+.chat-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.chat-steps li {
+  display: flex;
+  gap: 10px;
+}
+.chat-steps li::before {
+  content: "✓";
+  color: var(--accent);
+}
+.chat-steps code {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  font-size: 12.5px;
+  word-break: break-word;
+}
+.chat-pre {
+  margin: 4px 0 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #111;
+  border: 1px solid #222;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #c8c8c8;
+  overflow-x: auto;
+}
+
 @media (max-width: 760px) {
   .h1 {
     font-size: 46px;
@@ -1338,6 +1494,15 @@ code {
   .sbs img {
     max-width: 44%;
     border-radius: 22px;
+  }
+  .chat {
+    padding: 14px;
+  }
+  .chat-you {
+    max-width: 100%;
+  }
+  .code-card-head {
+    flex-wrap: wrap;
   }
 }
 @media (max-width: 380px) {
