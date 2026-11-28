@@ -25,9 +25,9 @@
     "build:site": "npm run build && node scripts/build-site.mjs",
     "check:site": "node scripts/site-smoke.mjs",
     "preview:site": "npx --yes serve site/dist",
-    "lint": "eslint src test scripts",
-    "format": "prettier --write src test scripts \"site/src/**/*.{js,css}\"",
-    "format:check": "prettier --check src test scripts \"site/src/**/*.{js,css}\"",
+    "lint": "eslint src test scripts examples/gitlab-ci",
+    "format": "prettier --write src test scripts examples/gitlab-ci \"site/src/**/*.{js,css}\"",
+    "format:check": "prettier --check src test scripts examples/gitlab-ci \"site/src/**/*.{js,css}\"",
     "test:site": "node scripts/site-e2e.mjs"
   },
   "publishConfig": {

@@ -1,0 +1,57 @@
+# figdiff for GitLab: one note on each merge request that changes .figcraft files.
+#
+# 1. Copy this job into your .gitlab-ci.yml (or include this file).
+# 2. Copy figdiff-gitlab.mjs to .gitlab/figdiff-gitlab.mjs in your repository.
+# 3. Add a CI/CD variable FIGDIFF_GITLAB_TOKEN: a project access token with the api scope
+#    and the Reporter role (Developer if you turn on images). Mark it masked, not protected.
+#
+# Guide: https://github.com/bintangyoga/figdiff/blob/main/docs/gitlab.md
+
+figdiff:
+  image: node:20
+  stage: test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        paths:
+          - "**/*.figcraft"
+  variables:
+    GIT_DEPTH: "0" # figdiff needs the base commit of the merge request
+    FIGDIFF_VERSION: "0.1.0" # pin a version for repeatable runs, or use "latest"
+    FIGDIFF_HOME: /tmp/figdiff
+    FIGDIFF_FILES: "**/*.figcraft" # glob patterns, separated by commas
+    FIGDIFF_IMAGES: "false" # "true" renders before/after images (experimental, see the guide)
+    FIGCRAFT_VERSION: "" # with images: FigCraft release to use, for example 0.18.1; empty means the newest
+  script:
+    - npm install --prefix "$FIGDIFF_HOME" --no-audit --no-fund --silent "figdiff@$FIGDIFF_VERSION"
+    - |
+      if [ "$FIGDIFF_IMAGES" = "true" ]; then
+        # figcraft-cli only from the official FigCraft release, checked against its sha256sums.txt.
+        repo="https://github.com/storytold/figcraft"
+        version="$FIGCRAFT_VERSION"
+        if [ -z "$version" ]; then
+          version="$(git ls-remote --tags --refs "$repo" | sed -n 's#.*refs/tags/v\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)$#\1#p' | sort -V | tail -n 1 || true)"
+        fi
+        asset="figcraft-$version-linux-x86_64.tar.gz"
+        dir="$(mktemp -d)"
+        if [ -n "$version" ] \
+          && curl -fsSL --retry 3 -o "$dir/$asset" "$repo/releases/download/v$version/$asset" \
+          && curl -fsSL --retry 3 -o "$dir/sha256sums.txt" "$repo/releases/download/v$version/sha256sums.txt" \
+          && awk -v f="$asset" '$2 == f' "$dir/sha256sums.txt" > "$dir/check.txt" && [ -s "$dir/check.txt" ] \
+          && (cd "$dir" && sha256sum --check --status check.txt); then
+          tar -xzf "$dir/$asset" -C "$dir"
+          FIGCRAFT_CLI="$(find "$dir" -type f -name figcraft-cli | head -n 1)"
+          chmod +x "$FIGCRAFT_CLI"
+          export FIGCRAFT_CLI
+          echo "Using figcraft-cli $version"
+        else
+          echo "Could not download or check figcraft-cli $version; the note will have no images."
+        fi
+      fi
+    - node .gitlab/figdiff-gitlab.mjs
+  artifacts:
+    when: always
+    expose_as: figdiff reports
+    paths:
+      - figdiff-reports/
+    expire_in: 30 days
