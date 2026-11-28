@@ -4,6 +4,10 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-28
+
+First stable release. It has the same code as 0.1.0-alpha.10 and is published under the `latest` tag, so `npx figdiff` installs it.
+
 ## [0.1.0-alpha.10] - 2026-11-27
 
 ### Changed
