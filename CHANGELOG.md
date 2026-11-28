@@ -7,6 +7,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 ### Added
 
 - A template for design repositories where Claude makes design changes in a Claude Code cloud session and opens pull requests: a session hook that installs `figcraft-cli` from the official FigCraft release (checksum checked) and figdiff, instructions for Claude, and the Action workflow. See [Design changes from Claude](docs/claude-designer.md).
+- `figdiff init` writes that template into a repository: the session hook, the Claude settings, the Action workflow (pinned to the figdiff version) and the figdiff section of `CLAUDE.md`. It keeps existing files, adds the figdiff section to an existing `CLAUDE.md` only once, and adds the hook to existing Claude settings. `--force` updates figdiff's own files.
 
 ## [0.1.0] - 2026-11-28
 

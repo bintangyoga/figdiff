@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { mkdirSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { run } from "./run.js";
 
@@ -11,6 +11,7 @@ for (const file of result.writes) {
   try {
     mkdirSync(dirname(file.path), { recursive: true });
     writeFileSync(file.path, file.content);
+    if (file.mode !== undefined) chmodSync(file.path, file.mode);
   } catch (err) {
     stderr = `figdiff: cannot write ${file.path}: ${err instanceof Error ? err.message : String(err)}\n`;
     code = 2;

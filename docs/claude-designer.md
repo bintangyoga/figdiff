@@ -12,15 +12,29 @@ Ask Claude for a design change and get a pull request back, with figdiff's list 
 
 ## Set up a design repository
 
-Copy three things from [`examples/claude-designer`](../examples/claude-designer) into the root of your repository:
+In the root of your repository, run:
+
+```sh
+npx figdiff init
+```
+
+It writes four files:
 
 | File | What it does |
 | --- | --- |
 | `.claude/settings.json` and `.claude/hooks/session-start.sh` | Install `figcraft-cli` and `figdiff` when a Claude Code cloud session starts (only in cloud sessions) |
 | `CLAUDE.md` | Tells Claude how to edit `.figcraft` files so the diff stays readable, and how to open the pull request |
-| `.github/workflows/figdiff.yml` | The figdiff Action with images in the comment |
+| `.github/workflows/figdiff.yml` | The figdiff Action with images in the comment, pinned to the figdiff version that wrote it |
 
-Then commit them to your default branch. Sessions started after that use them.
+Your own files are kept:
+
+- An existing `CLAUDE.md` gets the figdiff section added at the end, between `<!-- figdiff:start … -->` and `<!-- figdiff:end -->` markers. Running `init` again does not add it twice.
+- An existing `.claude/settings.json` gets the session hook added; your other settings stay as they are. If the file is not valid JSON, `init` stops and writes nothing.
+- An existing hook script or workflow is skipped. `npx figdiff init --force` replaces them, and the figdiff section of `CLAUDE.md`, with the template of the figdiff version you run. It never removes your other settings or `CLAUDE.md` text.
+
+Then commit the files and push them to your default branch. Sessions started after that use them.
+
+The same files are in [`examples/claude-designer`](../examples/claude-designer) if you would rather copy them by hand.
 
 The hook installs the newest FigCraft release by default, the same one the Action renders with. To pin a version, set `FIGCRAFT_VERSION` (for example `0.18.1`) in the cloud environment's variables.
 

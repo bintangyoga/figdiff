@@ -3,6 +3,7 @@
 ```sh
 npx figdiff <before.figcraft> <after.figcraft> [options]
 npx figdiff <file.figcraft> --against <git-revision> [options]
+npx figdiff init [directory] [--force]
 ```
 
 Requires Node.js 20 or later. Run `figdiff --help` for the same summary.
@@ -24,6 +25,10 @@ Requires Node.js 20 or later. Run `figdiff --help` for the same summary.
 | `--help` | Show help. |
 
 Exit codes: `0` success, `1` differences found (only with `--exit-code`), `2` error.
+
+## Set up a repository for Claude
+
+`figdiff init` writes the files a design repository needs so Claude can make design changes in a Claude Code cloud session and open pull requests: `.claude/settings.json`, `.claude/hooks/session-start.sh`, `CLAUDE.md` and `.github/workflows/figdiff.yml`. Run it in the root of the repository, or give the folder as an argument. Existing files are kept (an existing `CLAUDE.md` gets the figdiff section added once, an existing `.claude/settings.json` gets the hook added); `--force` replaces the hook, the workflow and the figdiff section with the current template. See [Design changes from Claude](claude-designer.md).
 
 ## What is compared
 
