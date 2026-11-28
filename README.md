@@ -48,7 +48,7 @@ npx figdiff design/app.figcraft --against main
 npx figdiff before.figcraft after.figcraft --html report.html --images
 ```
 
-On GitHub, add the Action and every pull request that touches a design file gets one comment with the changes. See it live in the [demo pull request](https://github.com/bintangyoga/figdiff-demo/pull/1), and read the [CLI guide](docs/cli.md) and the [Action guide](docs/action.md) for every option. To look at a design or a pull request from a public repository without installing anything, use [figdiff on GitHub](docs/github.md). To have Claude make design changes and open pull requests for you, run `npx figdiff init` in your design repository and see [Design changes from Claude](docs/claude-designer.md).
+On GitHub, add the Action and every pull request that touches a design file gets one comment with the changes. See it live in the [demo pull request](https://github.com/bintangyoga/figdiff-demo/pull/1), and read the [CLI guide](docs/cli.md) and the [Action guide](docs/action.md) for every option. To look at a design or a pull request from a public repository without installing anything, use [figdiff on GitHub](docs/github.md). To have Claude make design changes and open pull requests for you, run `npx figdiff init` in your design repository and see [Design changes from Claude](docs/claude-designer.md). On GitLab, copy the [GitLab CI template](docs/gitlab.md) to get the same note on merge requests.
 
 ---
 
@@ -289,7 +289,7 @@ Direction will follow user demand. Candidates:
 
 - **Three-way merge** of design files from different branches, with conflict markers
 - **Token and consistency checks** that warn in a pull request about colors or spacing outside the design system
-- **Other platforms:** GitLab CI, Gitea, Forgejo
+- **Other platforms:** Gitea and Forgejo (a GitLab CI template is already available: [GitLab CI guide](docs/gitlab.md), not yet tested on a real GitLab instance)
 - **MCP server**, so AI agents can ask "what changed in this design?"
 - **Automatic design changelog** generated from Git tags
 - **Upstream collaboration:** open a diff report directly in FigCraft, if the maintainers are interested
