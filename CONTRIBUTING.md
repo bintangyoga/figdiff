@@ -1,6 +1,6 @@
 # Contributing to figdiff
 
-Thanks for your interest! figdiff is in alpha. Code, tests, documentation, ideas and sample files are all welcome.
+Thanks for your interest! figdiff is young (0.1.0). Code, tests, documentation, ideas and sample files are all welcome.
 
 ## Ways to help today
 

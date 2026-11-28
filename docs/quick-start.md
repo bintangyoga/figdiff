@@ -5,7 +5,7 @@ figdiff compares two versions of a `.figcraft` design file and tells you what ch
 ## Compare two files
 
 ```sh
-npx figdiff@alpha before.figcraft after.figcraft
+npx figdiff before.figcraft after.figcraft
 ```
 
 The output is grouped by page and frame, with a summary line at the end. It needs Node.js 20 or later.
@@ -15,7 +15,7 @@ The output is grouped by page and frame, with a summary line at the end. It need
 Run this inside your design repository:
 
 ```sh
-npx figdiff@alpha design/app.figcraft --against main
+npx figdiff design/app.figcraft --against main
 ```
 
 `--against` takes any branch, tag or commit, for example `HEAD~1`.
@@ -23,7 +23,7 @@ npx figdiff@alpha design/app.figcraft --against main
 ## Share a report
 
 ```sh
-npx figdiff@alpha design/app.figcraft --against main --html report.html
+npx figdiff design/app.figcraft --against main --html report.html
 ```
 
 The report is a single HTML file with filters by kind of change. Add `--images` to include before and after pictures of every changed frame. Images are drawn by FigCraft's own `figcraft-cli`; see the [command line guide](/docs/cli/).
@@ -60,6 +60,6 @@ The [home page](/#try) compares two files in your browser. Your files are not up
 
 ## Things to know
 
-- figdiff is in alpha. Option names and the JSON format may still change before 1.0, so pin a version in CI.
+- figdiff 0.1.0 is the first stable release. Option names and the JSON format may still change before 1.0, so pin a version in CI (for example `figdiff@0.1.0`).
 - Layers are matched by id. See [compatibility](/docs/compatibility/) for what has been checked.
 - figdiff is an independent project and is not affiliated with FigCraft.

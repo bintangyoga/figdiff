@@ -1,6 +1,6 @@
 # figdiff
 
-[![npm](https://img.shields.io/npm/v/figdiff/alpha?label=npm%40alpha)](https://www.npmjs.com/package/figdiff)
+[![npm](https://img.shields.io/npm/v/figdiff)](https://www.npmjs.com/package/figdiff)
 [![CI](https://github.com/bintangyoga/figdiff/actions/workflows/ci.yml/badge.svg)](https://github.com/bintangyoga/figdiff/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
@@ -12,7 +12,7 @@
 
 `figdiff` compares two versions of a [FigCraft](https://github.com/storytold/figcraft) design file (`.figcraft`) and explains what changed: a readable list of changes per frame, before/after images, and a pull request comment that stays up to date.
 
-> **Status: alpha.** The CLI, the HTML report (with images rendered by FigCraft's own `figcraft-cli`) and the GitHub Action all work, and are tested in CI. Node matching relies on ids staying stable when FigCraft saves a file again. This holds for FigCraft's example files saved through `figcraft-cli` ([details](docs/compatibility.md)), but not yet checked with the desktop app. Feedback is very welcome: please open an issue.
+> **Status: 0.1.0, the first stable release.** The CLI, the HTML report (with images rendered by FigCraft's own `figcraft-cli`) and the GitHub Action all work, and are tested in CI. Node matching relies on ids staying stable when FigCraft saves a file again. This holds for FigCraft's example files saved through `figcraft-cli` ([details](docs/compatibility.md)), but not yet checked with the desktop app. Option names and the JSON format may still change before 1.0, so pin a version in CI (for example `figdiff@0.1.0`). Feedback is very welcome: please open an issue.
 
 > **Not affiliated.** figdiff is an independent community project. It is not made by, endorsed by, or connected to the FigCraft / ArtCraft authors. FigCraft is a trademark of its respective owners.
 
@@ -39,13 +39,13 @@ Needs Node.js 20 or newer.
 
 ```sh
 # What changed between two files?
-npx figdiff@alpha before.figcraft after.figcraft
+npx figdiff before.figcraft after.figcraft
 
 # What changed since main? (inside a git repository)
-npx figdiff@alpha design/app.figcraft --against main
+npx figdiff design/app.figcraft --against main
 
 # A shareable report with a before/after slider (needs figcraft-cli for the images)
-npx figdiff@alpha before.figcraft after.figcraft --html report.html --images
+npx figdiff before.figcraft after.figcraft --html report.html --images
 ```
 
 On GitHub, add the Action and every pull request that touches a design file gets one comment with the changes. See it live in the [demo pull request](https://github.com/bintangyoga/figdiff-demo/pull/1), and read the [CLI guide](docs/cli.md) and the [Action guide](docs/action.md) for every option. To look at a design or a pull request from a public repository without installing anything, use [figdiff on GitHub](docs/github.md).
@@ -114,7 +114,7 @@ git difftool -y -t figdiff main -- design/app.figcraft
 
 **Run on every pull request**
 
-The GitHub Action (`action.yml`, currently in alpha) posts one comment per pull request with what changed in each `.figcraft` file, and keeps that comment up to date on every push. Full HTML reports are attached to the workflow run.
+The GitHub Action (`action.yml`) posts one comment per pull request with what changed in each `.figcraft` file, and keeps that comment up to date on every push. Full HTML reports are attached to the workflow run.
 
 ```yaml
 # .github/workflows/figdiff.yml  (also in examples/figdiff.yml)

@@ -333,7 +333,7 @@ function initMisc() {
   const cmd = $("#cmd-copy");
   if (cmd)
     cmd.addEventListener("click", async () => {
-      if (await copyText("npx figdiff@alpha before.figcraft after.figcraft")) flash(cmd);
+      if (await copyText("npx figdiff before.figcraft after.figcraft")) flash(cmd);
     });
 }
 

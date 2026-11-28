@@ -163,9 +163,9 @@ const ID = {
   "Is figdiff part of FigCraft?": "Apakah figdiff bagian dari FigCraft?",
   "No. It is an independent, MIT-licensed project that reads the open .figcraft format.":
     "Bukan. Ini proyek independen berlisensi MIT yang membaca format .figcraft yang terbuka.",
-  "What does alpha mean here?": "Apa arti alpha di sini?",
-  "It works and is tested in CI, but option names and the JSON format may still change before 1.0. Pin a version in CI.":
-    "Sudah berfungsi dan diuji di CI, tetapi nama opsi dan format JSON masih bisa berubah sebelum 1.0. Kunci versinya di CI.",
+  "Is figdiff stable?": "Apakah figdiff sudah stabil?",
+  "0.1.0 is the first stable release. It works and is tested in CI, but option names and the JSON format may still change before 1.0. Pin a version in CI.":
+    "0.1.0 adalah rilis stabil pertama. Sudah berfungsi dan diuji di CI, tetapi nama opsi dan format JSON masih bisa berubah sebelum 1.0. Kunci versinya di CI.",
   // cta
   "Review design changes": "Tinjau perubahan desain",
   "like code.": "seperti kode.",
