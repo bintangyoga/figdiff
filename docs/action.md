@@ -1,6 +1,6 @@
 # GitHub Action guide
 
-The action comments on pull requests that change `.figcraft` files, and keeps one comment up to date on every push.
+The action comments on pull requests that change `.figcraft` files, and keeps one comment up to date on every push. On GitLab, use the [GitLab CI template](gitlab.md) instead.
 
 ## Minimal setup
 

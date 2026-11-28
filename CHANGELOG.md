@@ -7,6 +7,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 ### Added
 
 - A template for design repositories where Claude makes design changes in a Claude Code cloud session and opens pull requests: a session hook that installs `figcraft-cli` from the official FigCraft release (checksum checked) and figdiff, instructions for Claude, and the Action workflow. See [Design changes from Claude](docs/claude-designer.md).
+- A GitLab CI template that keeps one note with the design changes on each merge request, with HTML reports as job artifacts and, optionally, before/after pictures uploaded to the project. It works with figdiff 0.1.0, no new release needed. See the [GitLab CI guide](docs/gitlab.md).
 
 ## [0.1.0] - 2026-11-28
 
